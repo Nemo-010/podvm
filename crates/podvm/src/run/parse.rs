@@ -1,27 +1,5 @@
 use super::*;
 
-/// The usage text for whichever verb this parser is serving.
-///
-/// ⛔ `create` shares `run`'s parser, so before this existed `podvm create
-/// --no-such-flag` answered `podvm run: unknown option` and printed
-/// `usage: podvm run`, naming a verb the caller had not typed. A diagnostic
-/// that names the wrong operation is the class TODO/cli.md T-0805 exists to
-/// close, and T-0804 forbids outright.
-pub fn usage(verb: &str) -> String {
-    let mut s = format!("usage: podvm {verb} [options] <image> [command] [arg...]\n\n");
-    if verb != "run" {
-        // ⭐ Said rather than implied. The option set below is `run`'s, because
-        // one parser serves both, and `podvm system info` says the same thing
-        // about the same rows instead of holding a second copy of them.
-        s.push_str(&format!(
-            "  note: podvm {verb} takes podvm run's option set, listed below, because one\n    \
-             parser serves both. `podvm system info` lists those rows under `run`.\n\n"
-        ));
-    }
-    s.push_str(RUN_OPTIONS);
-    s
-}
-
 /// The options of `run` and `create`, with `--profile` applied: the
 /// profile's flags go first, so that a flag of the command line wins over
 /// the profile where a flag takes one value. TODO/cli.md T-1654.
@@ -39,6 +17,7 @@ pub(super) fn parse(verb: &str, args: &[String]) -> std::result::Result<Opts, i3
         }
         super::report::note_parsed(o.image.clone(), o.command.clone());
         detached_tty(verb, &o)?;
+        create_detach(verb, &o)?; // T-1831
         o.hardening.ulimits = ulimits_of(verb, &o.hardening.ulimits)?; // T-1827
         return Ok(o);
     };
@@ -66,6 +45,7 @@ pub(super) fn parse(verb: &str, args: &[String]) -> std::result::Result<Opts, i3
     o.needs = shape.needs;
     super::report::note_parsed(o.image.clone(), o.command.clone());
     detached_tty(verb, &o)?;
+    create_detach(verb, &o)?; // T-1831
     o.hardening.ulimits = ulimits_of(verb, &o.hardening.ulimits)?; // T-1827
     Ok(o)
 }
@@ -164,10 +144,7 @@ fn parse_flags_with(
                 },
                 "--podvm-cpus" => o.cpus = Some(cpus(verb, a)?),
                 // TODO/cli.md T-1695, T-1801: the parser gives the path.
-                "--report" => {
-                    report(verb)?;
-                    super::report::note_path(a);
-                }
+                "--report" => report_path(verb, a)?, // T-1825
                 "--podvm-confine" => {
                     let c = confine(verb, a)?;
                     o.hardening.confine = Some(podvm_enter::confine::render(&c));
@@ -281,8 +258,7 @@ fn parse_flags_with(
             "--podvm-confine" => expecting = Some("--podvm-confine"),
             "--report" => expecting = Some("--report"),
             other if other.starts_with("--report=") => {
-                report(verb)?;
-                super::report::note_path(&other["--report=".len()..]);
+                report_path(verb, &other["--report=".len()..])?;
             }
             "--profile" => expecting = Some("--profile"),
             "--network" | "--net" => expecting = Some("--network"),
@@ -485,6 +461,7 @@ fn parse_flags_with(
 
 pub(super) mod values;
 pub(crate) use values::env_arg;
+pub use values::usage;
 use values::*;
 
 mod opts;

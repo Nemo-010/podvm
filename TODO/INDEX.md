@@ -487,13 +487,13 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1822](supervise.md) | P2 | S | none | supervise | open | `cp` of a file onto a directory fails and blames the source, `cp -r` drops directory modes, and the containment refusals name the wrong operation |
 | [T-1823](machine.md) | P2 | M | none | machine | open | An early end of the guest init reads "the guest gave no exit marker" with the socket of QEMU |
 | [T-1824](cli.md) | P2 | S | none | cli | open | The machine notice ignores `-q`, and the banner is said to print "on every run" where runs are quiet by default |
-| [T-1825](cli.md) | P2 | M | none | cli | open | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
+| [T-1825](cli.md) | P2 | M | none | cli | partial | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
 | [T-1826](complete.md) | P2 | S | none | complete | open | `--no-steps` leaves no line and no report row that says what the caller gave up |
 | [T-1827](cli.md) | P2 | S | none | cli | done | A repeated `--ulimit` that raises a hard limit, `--ulimit nofile=-1` and a hard value over podvm's own all fail with a bare EPERM |
 | [T-1828](cli.md) | P2 | S | none | cli | done | `--add-host` takes a non-address, `-e =V` is dropped, `--env-file` removes quotes, and a repeated `--label` key keeps both values |
 | [T-1829](cli.md) | P3 | S | none | cli | open | Refusals of `run` lead with the wrong cause or name the wrong spelling |
 | [T-1830](cli.md) | P2 | S | none | cli | done | A `--tmpfs` run leaves its map in the record, so a later `exec` cannot see the path |
-| [T-1831](cli.md) | P2 | S | none | cli | open | The help of `run` and `create` promises what the verbs do not do |
+| [T-1831](cli.md) | P2 | S | none | cli | done | The help of `run` and `create` promises what the verbs do not do |
 | [T-1832](cli.md) | P3 | S | none | cli | open | The manual, `--help` and `docs/limits.md` disagree with the binary in six places |
 | [T-1833](cli.md) | P2 | S | none | cli | done | Twelve commands refuse `-h` and `--help`, and `system df --help` prints the usage of `system info` |
 | [T-1834](cli.md) | P2 | S | none | cli | done | `system info --format '{{json .X}}'` prints counts and `StrictOk` as strings |
@@ -560,7 +560,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-491 entries: 44 open, 10 partial, 4 blocked, 433 done.
+491 entries: 42 open, 11 partial, 4 blocked, 434 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -571,9 +571,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 6 | 2 | 193 | 202 |
-| P2 | 27 | 2 | 2 | 144 | 175 |
+| P2 | 25 | 3 | 2 | 145 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 44 | 10 | 4 | 433 | 491 |
+| **All** | 42 | 11 | 4 | 434 | 491 |
 
 ## Work order
 

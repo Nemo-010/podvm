@@ -207,7 +207,7 @@ for r in ns ul; do
 	t run.env.$r $r "bar" '[ "$out" = bar ]' "\$X \$PB run --rm -e FOO=bar \$A sh -c 'echo \$FOO'"
 	t run.env-pass.$r $r "hostval (docker -e NAME takes the host value)" '[ "$out" = hostval ]' "FOO=hostval \$X \$PB run --rm -e FOO \$A sh -c 'echo \$FOO'"
 	t run.env-unset-pass.$r $r "empty, rc 0 (docker drops an unset -e NAME)" '[ $rc -eq 0 ] && [ -z "$out" ]' "unset QAUNSET; \$X \$PB run --rm -e QAUNSET \$A sh -c 'echo \${QAUNSET:-}'"
-	t run.envfile.$r $r "1|two words|x=y" '[ "$out" = "1|two words|x=y" ]' "\$X \$PB run --rm --env-file \$W/env.list \$A sh -c 'echo \"\$EA|\$EB|\$EC\"'"
+	t run.envfile.$r $r "1|\"two words\"|x=y (quotes kept, T-1828)" '[ "$out" = "1|\"two words\"|x=y" ]' "\$X \$PB run --rm --env-file \$W/env.list \$A sh -c 'echo \"\$EA|\$EB|\$EC\"'"
 	t run.envfile-order.$r $r "9 (a later -e wins)" '[ "$out" = 9 ]' "\$X \$PB run --rm --env-file \$W/env.list -e EA=9 \$A sh -c 'echo \$EA'"
 	t run.env-path.$r $r "image PATH kept" 'has "$out" /usr/local/bin' "\$X \$PB run --rm \$PY sh -c 'echo \$PATH'"
 	t run.env-home.$r $r "HOME=/root" '[ "$out" = /root ]' "\$X \$PB run --rm \$A sh -c 'echo \$HOME'"

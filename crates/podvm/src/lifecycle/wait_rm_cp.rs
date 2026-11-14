@@ -112,25 +112,20 @@ pub(super) fn settle(
 /// How long `wait` reads the record again after the launcher went.
 const SETTLE_MS: u64 = 10_000;
 
+/// The usage of `rm` (TODO/cli.md T-1831: `-v` is in it).
+pub(crate) const RM_USAGE: &str =
+    "usage: podvm rm [-f|--force] [-v|--volumes] <container> [container...]
+  -v, --volumes  taken and does nothing: podvm has no named or anonymous volume";
+
 /// `podvm rm [-f] <container>...`
 pub fn rm(args: &[String]) -> i32 {
     // ⭐ TODO/cli.md T-1330: bundled shorts expand before admission.
     let expanded = match crate::parity::expand("rm", args) {
         Ok(a) => a,
-        Err(member) => {
-            return crate::parity::refuse_member(
-                "rm",
-                &member,
-                "usage: podvm rm [-f|--force] <container> [container...]",
-            )
-        }
+        Err(member) => return crate::parity::refuse_member("rm", &member, RM_USAGE),
     };
     let args: &[String] = &expanded;
-    if let Some(c) = crate::parity::admit_all(
-        "rm",
-        args,
-        "usage: podvm rm [-f|--force] <container> [container...]",
-    ) {
+    if let Some(c) = crate::parity::admit_all("rm", args, RM_USAGE) {
         return c;
     }
     let mut force = false;
@@ -138,17 +133,13 @@ pub fn rm(args: &[String]) -> i32 {
     for a in args {
         match a.as_str() {
             "-h" | "--help" => {
-                println!("usage: podvm rm [-f|--force] <container> [container...]");
+                println!("{RM_USAGE}");
                 return 0;
             }
             "-f" | "--force" => force = true,
             "-v" | "--volumes" => {}
             other if other.starts_with('-') => {
-                if let Err(c) = crate::parity::admit(
-                    "rm",
-                    other,
-                    "usage: podvm rm [-f|--force] <container> [container...]",
-                ) {
+                if let Err(c) = crate::parity::admit("rm", other, RM_USAGE) {
                     return c;
                 }
                 return crate::parity::no_arm("rm", other);
@@ -157,7 +148,7 @@ pub fn rm(args: &[String]) -> i32 {
         }
     }
     if names.is_empty() {
-        eprintln!("usage: podvm rm [-f|--force] <container> [container...]");
+        eprintln!("{RM_USAGE}");
         return EXIT_CLI_ERROR;
     }
     let s = match store() {

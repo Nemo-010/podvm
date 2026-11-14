@@ -132,3 +132,20 @@ fn run_values_refuse_and_keep_as_docker_does() {
     push_label(&mut labels, "a=c".into());
     assert_eq!(labels, v(&["z=1", "a=c"]));
 }
+
+/// TODO/cli.md T-1831: the help says what the verbs do.
+#[test]
+fn help_text_says_what_run_create_and_rm_do() {
+    let create = super::usage("create");
+    assert!(
+        !create.contains("--report") && !create.contains("--detach"),
+        "{create}"
+    );
+    let run = super::usage("run");
+    assert!(run.contains("--label") && run.contains("--detach"), "{run}");
+    assert!(!run.contains("until TODO/cli.md T-1761"), "{run}");
+    assert!(!run.contains("T-1761"), "{run}");
+    assert!(crate::lifecycle::RM_USAGE.contains("-v"));
+    assert!(super::parse("create", &v(&["-d", "img"])).is_err());
+    assert!(super::parse("run", &v(&["-d", "img"])).is_ok());
+}

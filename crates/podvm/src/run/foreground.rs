@@ -30,9 +30,13 @@ pub fn run(args: &[String]) -> i32 {
     if let Some(path) = super::report::take_path() {
         r.end(code);
         if let Err(e) = r.write(&path) {
+            // TODO/cli.md T-1825: a caller that reads the code believes it
+            // has a report; the code of the payload is named instead.
             eprintln!(
-                "podvm run: --report: the report could not be written: {e} (TODO/cli.md T-1695)"
+                "podvm run: --report: the report could not be written: {e}; the payload \
+                 exited {code} (TODO/cli.md T-1695, T-1825)"
             );
+            return podvm_image::error::EXIT_RUNTIME_ERROR;
         }
     }
     code

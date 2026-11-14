@@ -288,6 +288,62 @@ pub(super) fn report(verb: &str) -> std::result::Result<(), i32> {
     Err(EXIT_FLAG_ERROR)
 }
 
+/// TODO/cli.md T-1831: `create -d` printed an id and started nothing.
+pub(super) fn create_detach(verb: &str, o: &Opts) -> std::result::Result<(), i32> {
+    if verb == "create" && o.detach {
+        eprintln!(
+            "podvm create: -d is refused: create starts nothing; `podvm start NAME` \
+             starts the container (TODO/cli.md T-1831)"
+        );
+        return Err(EXIT_FLAG_ERROR);
+    }
+    Ok(())
+}
+
+/// TODO/cli.md T-1825: `--report PATH`, a flag of `run`, whose directory
+/// takes a file. A report that cannot be written is refused before the
+/// payload runs: it printed a notice after the run and exited 0.
+pub(super) fn report_path(verb: &str, path: &str) -> std::result::Result<(), i32> {
+    report(verb)?;
+    let p = std::path::Path::new(path);
+    let dir = p
+        .parent()
+        .filter(|d| !d.as_os_str().is_empty())
+        .unwrap_or(std::path::Path::new("."));
+    // A path that exists (a file, `/dev/stdout`) is checked itself, with
+    // nothing truncated; a new path through a probe file in its directory.
+    let probe = dir.join(format!(".podvm-report-{}", std::process::id()));
+    let opened = if p.exists() {
+        std::fs::OpenOptions::new()
+            .append(true)
+            .open(p)
+            .map(|_| false)
+    } else {
+        std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&probe)
+            .map(|_| true)
+    };
+    match opened {
+        Ok(made) => {
+            if made {
+                let _ = std::fs::remove_file(&probe);
+            }
+            super::super::report::note_path(path);
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!(
+                "podvm {verb}: --report {path:?}: the directory {} takes no file: {e} \
+                 (TODO/cli.md T-1825)",
+                dir.display()
+            );
+            Err(podvm_image::error::EXIT_RUNTIME_ERROR)
+        }
+    }
+}
+
 /// `--label KEY[=VALUE]` as `KEY=VALUE` (TODO/cli.md T-1695).
 pub(super) fn label(verb: &str, a: &str) -> std::result::Result<String, i32> {
     let (k, v) = a.split_once('=').unwrap_or((a, ""));
@@ -362,4 +418,53 @@ pub(super) fn detached_tty(verb: &str, o: &Opts) -> std::result::Result<(), i32>
         return Err(EXIT_FLAG_ERROR);
     }
     Ok(())
+}
+
+/// The usage text for whichever verb this parser is serving.
+///
+/// ⛔ `create` shares `run`'s parser, so before this existed `podvm create
+/// --no-such-flag` answered `podvm run: unknown option` and printed
+/// `usage: podvm run`, naming a verb the caller had not typed. A diagnostic
+/// that names the wrong operation is the class TODO/cli.md T-0805 exists to
+/// close, and T-0804 forbids outright.
+pub fn usage(verb: &str) -> String {
+    let mut s = format!("usage: podvm {verb} [options] <image> [command] [arg...]\n\n");
+    if verb != "run" {
+        // ⭐ Said rather than implied. The option set below is `run`'s, because
+        // one parser serves both, and `podvm system info` says the same thing
+        // about the same rows instead of holding a second copy of them.
+        s.push_str(&format!(
+            "  note: podvm {verb} takes podvm run's option set, listed below, because one\n    \
+             parser serves both. `podvm system info` lists those rows under `run`.\n\n"
+        ));
+    }
+    // TODO/cli.md T-1831: `create` starts nothing and writes no report, so
+    // its help lists neither -d nor --report.
+    if verb == "create" {
+        s.push_str(&without_blocks(RUN_OPTIONS, &["-d, --detach", "--report"]));
+    } else {
+        s.push_str(RUN_OPTIONS);
+    }
+    s
+}
+
+/// The option text with each block whose first line starts with one of
+/// `heads` left out. A block is its first line (`  -x` or `  --x`) and the
+/// lines that continue it (indented deeper).
+fn without_blocks(text: &str, heads: &[&str]) -> String {
+    let mut out = String::new();
+    let mut skip = false;
+    for line in text.lines() {
+        // The first line of the text has no indent: the string's `\`
+        // continuation eats it. A block starts with an option either way.
+        let t = line.trim_start();
+        if t.starts_with('-') && line.len() - t.len() <= 2 {
+            skip = heads.iter().any(|h| t.starts_with(h));
+        }
+        if !skip {
+            out.push_str(line);
+            out.push('\n');
+        }
+    }
+    out
 }

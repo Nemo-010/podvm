@@ -51,8 +51,7 @@ pub const RUN_OPTIONS: &str = "\
                    path rewrite through PODVM_MAPS on the userland loader
                    family, not a mount: a write lands in H, and :ro refuses
                    a write (TODO/cli.md T-1655). A 9p mount on the machine
-                   tier; refused on the namespace rung until TODO/cli.md
-                   T-1761, and for a -w or a first program inside G
+                   tier. A -w or a first program inside G is refused
                    (TODO/enter.md T-1653)
   --unsafe-host-paths
                    podvm's own, userland rung only: opt into the
@@ -91,13 +90,13 @@ pub const RUN_OPTIONS: &str = "\
                    the only trust store libzypp reads -- and podvm names
                    each on the banner before it runs it. This refuses them
                    all, and the fixup log then says what the caller gave up
-  --strict         refused: refuse to run at all where anything about this
-                   invocation is Degraded or Stub: a flag, the selected rung,
-                   or a fixup the completion layer had to make.
-                   Kind decides (TODO/cli.md T-1415): safety-relevant
-                   differences (no path virtualization, host and libc
-                   mixing, escape) still refuse, dev-shim substitutions
-                   warn, and --strict=all keeps refusing every one
+  --strict         refused: refuse to run where a difference of this run
+                   is one of the safety classes that podvm can attribute (no
+                   path virtualization, host and libc mixing), and warn on
+                   each other difference, a gap that podvm cannot attribute
+                   too (the raw-syscall escape of the userland rung): the
+                   warning names it. --strict=all refuses each one
+                   (TODO/cli.md T-1415, T-1831)
   -q, --quiet      force the banner off. note: Runs are already quiet by
                    default; this forces silence under --verbose too
                    (TODO/cli.md T-1416)
@@ -166,6 +165,9 @@ pub const RUN_OPTIONS: &str = "\
                    workdir, and the files of the guest), and reaches the
                    guest through the channel only: no NIC, no host file of
                    the run (TODO/machine.md T-1751)
+  --label K[=V]    a label of the container, repeatable; a repeated key
+                   keeps its last value. `ps --filter label=K[=V]` matches
+                   it and `inspect` prints .Labels (TODO/cli.md T-1695)
   --report PATH    podvm's own: one JSON document of the run at PATH,
                    written with a rename at its end, also when podvm refuses
                    before the start: the image and its digest, the rung,

@@ -4978,7 +4978,7 @@ the binary does now.
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -5011,6 +5011,27 @@ its end; a start record is not a report.
 
 `cargo test -p podvm --test report_paths` exits 0, with a test that an unwritable report directory exits 125 before the payload runs, and a test that a detached run with `--timeout 1` leaves a report with `timed_out: true` and `signal: 9` after `wait`
 
+## Correction
+
+**2026-11-15.** The Prove names one test target, `report_paths`, for
+both clauses. The clause of the detached run needs the launcher of
+`podvm-supervise` to write the report, so its test comes with that
+change.
+
+## Done
+
+**Partial 2026-11-15.** The foreground half: `--report PATH` is refused
+with 125 at the parse when the directory of a new PATH takes no file, or
+an existing PATH does not open for append (`run/parse/values.rs`,
+`report_path`), before an image is fetched and before the payload runs;
+a write that fails after the run exits 125 and names the code of the
+payload (`run/foreground.rs`). `cargo test -p podvm --test report_paths`
+exits 0 (`/nonexistent/podvm/r.json`: 125, the image never reached). By
+hand: `run --report /no/such/dir/rep.json alpine:3.20 sh -c 'echo ran'`
+exits 125 and prints no `ran`; a report into a writable directory or an
+existing file is written. The clause that remains: the launcher of a
+detached run rewrites the report at the end of the payload, with
+`timed_out` and `signal`.
 
 # T-1827: A repeated `--ulimit` that raises a hard limit, `--ulimit nofile=-1` and a hard value over podvm's own all fail with a bare EPERM
 
@@ -5235,7 +5256,7 @@ ls -ld /tmp` lists the directory of the tree and `/dev/zero` reads.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5275,6 +5296,16 @@ changes. T-1857 adds the check for an "until T-NNNN" whose entry is done.
 
 `cargo test -p podvm --bin podvm help_text` exits 0, with tests that `create -d` exits 125, that `create --help` has no `--report`, that `run --help` has `--label` and no "until TODO/cli.md T-1761", and that `rm --help` has `-v`
 
+## Done
+
+**Done 2026-11-15.** `create -d` is refused with 125 by name
+(`create_detach`); `create --help` leaves out `-d` and `--report`
+(`usage`, `without_blocks`); the text of `--strict` says that plain
+`--strict` refuses the safety classes podvm can attribute and warns on
+each other difference, the raw-syscall escape too, and that
+`--strict=all` refuses each; the `-v` text drops the clause of T-1761;
+`run --help` has `--label`; `rm --help` has `-v, --volumes`
+(`RM_USAGE`). `cargo test -p podvm --bin podvm help_text` exits 0.
 
 # T-1832: The manual, `--help` and `docs/limits.md` disagree with the binary in six places
 
