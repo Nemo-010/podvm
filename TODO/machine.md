@@ -4413,3 +4413,50 @@ The stop belongs to the code that spawned the emulator.
 **Blocked 2026-11-14.** Blocker: `pod_guest::provision` returns on a
 failure of the typing with the emulator running. Clears when: a
 podcrates tag carries the ask of COORD-115 (issue 370).
+
+# T-1894: The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails
+
+**Source:** `kvm.yml` run 43619241341 (2026-11-14): experiments 392 and 450 fail under KVM; experiment 450 under TCG on the cloud host
+**Category:** machine
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** blocked
+
+## Problem
+
+Since podcrates `v0.45.0`, `pod_guest::provision` types into the
+console when the screen changed and then stayed the same for `settle`.
+Under KVM the console of Validation OS never stays the same for 15 s
+(its cursor blinks), and the setup ends at the bound of 600 s: `the
+guest was not ready within 600s`. Under TCG a black boot screen settles
+first, the keys go nowhere, and the setup ends with `the installer
+wrote no SETUP.TXT`. Experiment 392 passed in run 43171009630
+(2026-11-12) with the fixed wait of the earlier tag, and fails now.
+
+## Premise
+
+Each sign of `pod_guest::ready::Sign` ends in an error at its deadline,
+so podvm has no fixed wait to give. The readiness is in `pod-guest`.
+
+## Approach
+
+COORD-116 (issue 372) asks podcrates for a sign that holds after a
+fixed time (`Sign::After`), or a screen sign that ignores the cursor.
+podvm passes it from `podvm_windows::ready_for` and runs `kvm.yml`
+again.
+
+## Decision
+
+A provision that worked must not stop working on a readiness sign that
+cannot see the guest.
+
+## Prove
+
+`kvm.yml` passes experiment 392 and experiment 450 under KVM
+
+## Blocker
+
+**Blocked 2026-11-15.** Blocker: `pod_guest::ready` has no sign that
+holds for the console of Validation OS. Clears when: a podcrates tag
+carries the ask of COORD-116 (issue 372).

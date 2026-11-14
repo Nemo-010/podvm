@@ -260,4 +260,5 @@
 368 issue closed
 369 issue open
 370 issue open
-371 issue open
+371 issue closed
+372 issue open

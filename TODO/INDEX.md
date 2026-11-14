@@ -556,10 +556,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1891](extract.md) | P1 | S | none | extract | done | A tree with a directory of mode 0555 cannot be removed by a user who is not root |
 | [T-1892](enter.md) | P3 | S | none | enter | open | Two exec tables reach the payload: podvm's guest paths and the crate's host paths |
 | [T-1893](machine.md) | P1 | S | none | machine | blocked | The provision of a Windows guest leaves the emulator running when the typing fails |
+| [T-1894](machine.md) | P1 | S | none | machine | blocked | The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails |
 
 ## Counts
 
-490 entries: 47 open, 10 partial, 3 blocked, 430 done.
+491 entries: 47 open, 10 partial, 4 blocked, 430 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -569,10 +570,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 1 | 6 | 1 | 193 | 201 |
+| P1 | 1 | 6 | 2 | 193 | 202 |
 | P2 | 30 | 2 | 2 | 141 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 47 | 10 | 3 | 430 | 490 |
+| **All** | 47 | 10 | 4 | 430 | 491 |
 
 ## Work order
 
