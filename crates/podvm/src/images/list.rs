@@ -104,10 +104,13 @@ pub fn images(verb: &str, args: &[String]) -> i32 {
         Err(e) => return fail(e),
     };
     let records = match &o.filter {
-        Some(f) => match store.find(f) {
-            Ok(r) => r,
-            Err(e) => return fail(e),
-        },
+        // TODO/image.md T-1840: a repository with no tag lists each tag.
+        Some(f) => {
+            match super::table_more::repository_filter(&store, f).unwrap_or_else(|| store.find(f)) {
+                Ok(r) => r,
+                Err(e) => return fail(e),
+            }
+        }
         None => match store.list() {
             Ok(r) => r,
             Err(e) => return fail(e),
@@ -172,6 +175,10 @@ pub fn images(verb: &str, args: &[String]) -> i32 {
     if o.digests {
         header.push("DIGEST");
     }
+    let platform = super::table_more::needs_platform(&records); // T-1840
+    if platform {
+        header.push("PLATFORM");
+    }
     header.extend(["IMAGE ID", "CREATED", "SIZE (STORED)"]);
     let mut rows: Vec<Vec<String>> = vec![header.iter().map(|s| s.to_string()).collect()];
     for r in &records {
@@ -180,6 +187,9 @@ pub fn images(verb: &str, args: &[String]) -> i32 {
         let mut row = vec![get("Repository"), get("Tag")];
         if o.digests {
             row.push(get("Digest"));
+        }
+        if platform {
+            row.push(r.platform.clone());
         }
         row.extend([get("ID"), get("CreatedSince"), get("Size")]);
         rows.push(row);

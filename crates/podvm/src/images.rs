@@ -339,6 +339,9 @@ pub use save_load::*;
 
 mod inspect;
 pub use inspect::*;
+mod table_more; // TODO/image.md T-1840
+#[cfg(test)]
+mod table_tests;
 
 #[cfg(test)]
 mod exit_tests;

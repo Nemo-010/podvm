@@ -4088,7 +4088,7 @@ IMAGE ID removes it; `install-names --dir` of a missing directory prints
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4124,6 +4124,17 @@ its store keeps a record for each platform.
 
 `cargo test -p podvm --bin podvm images_table` exits 0, with tests that two platform records give two rows that differ, that `images REPOSITORY` with no tag lists each tag of that repository, and that `{{json .Config.Labels}}` prints the labels
 
+## Done
+
+**Done 2026-11-15.** `images` adds a PLATFORM column when one reference
+has more than one record; a positional with no tag and no digest lists
+each record of that repository; `inspect` has `.Config.Labels`, an
+object or `null`, in `--format` (a JSON document) and in its JSON
+(`images/table_more.rs`). `cargo test -p podvm --bin podvm images_table`
+exits 0. By hand: `images mirror.gcr.io/library/alpine` lists `3.20
+linux/amd64 bf8527eb54c3` and `3.20 linux/arm64 ab3fe4defd29`;
+`inspect --format '{{json .Config.Labels}}'` of a busybox with no labels
+prints `null`.
 
 # T-1841: `save` advises a `--platform` it does not have, and `pull -a` records the endpoint host, which makes a duplicate record
 

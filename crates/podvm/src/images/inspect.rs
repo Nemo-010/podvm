@@ -122,7 +122,7 @@ pub fn inspect(verb: &str, args: &[String]) -> i32 {
     }
     if let Some(t) = &template {
         for r in &records {
-            match format::render(t, &inspect_fields(r, &store)) {
+            match format::render_with_documents(t, &inspect_fields(r, &store), &["Config.Labels"]) {
                 Ok(line) => println!("{line}"),
                 Err(bad) => {
                     eprintln!("podvm inspect: {bad}");
@@ -197,6 +197,7 @@ pub const INSPECT_FIELDS: &[&str] = &[
     "Config.Entrypoint",
     "Config.WorkingDir",
     "Config.User",
+    "Config.Labels",
 ];
 
 /// `podvm exec`'s mode, in one word each, for `inspect` and for the banner.
@@ -285,6 +286,11 @@ pub(super) fn inspect_fields(r: &Record, store: &Store) -> Vec<(&'static str, St
         ("Config.Entrypoint", flat.2),
         ("Config.WorkingDir", flat.3),
         ("Config.User", flat.4),
+        // TODO/image.md T-1840: an object, as `images --filter label=` reads.
+        (
+            "Config.Labels",
+            super::table_more::labels_json(store, r).to_string(),
+        ),
     ]
 }
 
@@ -355,6 +361,9 @@ pub(super) fn config_json(c: &Option<podvm_image::oci::RunConfig>) -> serde_json
 }
 
 fn inspect_json(r: &Record, store: &Store) -> String {
+    // TODO/image.md T-1840: `.Config.Labels` beside the run config.
+    let mut config = config_json(&run_config_of(store, r));
+    config["Labels"] = super::table_more::labels_json(store, r);
     // ⚠ Built through serde_json rather than by concatenation, so a repository
     // or a tag carrying a quote cannot break the document.
     serde_json::json!({
@@ -373,7 +382,7 @@ fn inspect_json(r: &Record, store: &Store) -> String {
         "PulledAt": r.pulled_at,
         // ⭐ TODO/cli.md T-1417. What the image declares, with docker's key
         // names and null where it omits a field, beside what podvm applied.
-        "Config": config_json(&run_config_of(store, r)),
+        "Config": config,
         // ⛔ T-0505, and nested here because it is nested in --format too. A
         // caller that reads one and not the other must not find two shapes.
         "Exec": { "Mode": EXEC_MODE, "Shares": EXEC_SHARES },
