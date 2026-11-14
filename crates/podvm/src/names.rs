@@ -278,8 +278,11 @@ pub fn install(verb: &str, args: &[String]) -> i32 {
                 let _ = std::fs::remove_file(&dest);
             }
             Err(_) => {
-                if let Some(parent) = dest.parent() {
-                    let _ = std::fs::create_dir_all(parent);
+                // TODO/image.md T-1839: a directory that podvm makes is named.
+                if let Some(parent) = dest.parent().filter(|p| !p.is_dir()) {
+                    if std::fs::create_dir_all(parent).is_ok() {
+                        eprintln!("podvm {verb}: made the directory {}", parent.display());
+                    }
                 }
             }
         }

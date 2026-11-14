@@ -73,3 +73,84 @@ fn import_refuses_a_compressed_file_by_name() {
     let _ = std::fs::remove_dir_all(s.root());
     let _ = std::fs::remove_file(&tarball);
 }
+
+/// A `save` tarball of an imported image, with `edit` applied to the
+/// JSON of its `index.json`.
+fn saved_with_index(
+    s: &Store,
+    tag: &str,
+    edit: impl Fn(&mut serde_json::Value),
+) -> std::path::PathBuf {
+    let src =
+        std::env::temp_dir().join(format!("podvm-layout-src-{tag}-{}.tar", std::process::id()));
+    std::fs::write(&src, rootfs_tar()).unwrap();
+    import(s, &src, Some(&format!("lay:{tag}"))).unwrap();
+    let _ = std::fs::remove_file(&src);
+    let saved = std::env::temp_dir().join(format!("podvm-layout-{tag}-{}.tar", std::process::id()));
+    let mut out = std::fs::File::create(&saved).unwrap();
+    save(s, &format!("lay:{tag}"), &mut out).unwrap();
+    drop(out);
+    let mut a = tar::Archive::new(std::fs::File::open(&saved).unwrap());
+    let mut b = tar::Builder::new(Vec::new());
+    for e in a.entries().unwrap() {
+        let mut e = e.unwrap();
+        let path = e.path().unwrap().to_string_lossy().to_string();
+        let mut bytes = Vec::new();
+        std::io::Read::read_to_end(&mut e, &mut bytes).unwrap();
+        if path == "index.json" {
+            let mut v: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+            edit(&mut v);
+            bytes = serde_json::to_vec(&v).unwrap();
+        }
+        let mut h = tar::Header::new_gnu();
+        h.set_size(bytes.len() as u64);
+        h.set_mode(0o644);
+        h.set_entry_type(e.header().entry_type());
+        h.set_cksum();
+        b.append_data(&mut h, &path, &bytes[..]).unwrap();
+    }
+    std::fs::write(&saved, b.into_inner().unwrap()).unwrap();
+    saved
+}
+
+/// TODO/image.md T-1839: an index of schemaVersion 9 is refused, and an
+/// index entry with no name gives a record with no tag.
+#[test]
+fn layout_index_refuses_schema_9_and_records_no_tag_with_no_name() {
+    let s = scratch("index9");
+    let nine = saved_with_index(&s, "nine", |v| v["schemaVersion"] = 9.into());
+    let e = load(&s, &nine).unwrap_err().to_string();
+    assert!(e.contains("schemaVersion 9"), "{e}");
+    let unnamed = saved_with_index(&s, "anon", |v| {
+        for m in v["manifests"].as_array_mut().unwrap() {
+            m.as_object_mut().unwrap().remove("annotations");
+        }
+    });
+    let r = load(&s, &unnamed).unwrap();
+    assert_eq!(r.tag, None);
+    assert_eq!(r.repository, "<none>");
+    let _ = std::fs::remove_file(&nine);
+    let _ = std::fs::remove_file(&unnamed);
+    let _ = std::fs::remove_dir_all(s.root());
+}
+
+/// TODO/image.md T-1839: `import` refuses a member that leaves the root.
+#[test]
+fn layout_index_import_refuses_an_escaping_member() {
+    let s = scratch("escape");
+    for name in ["../escape", "/abs-escape"] {
+        let mut h = tar::Header::new_gnu();
+        h.set_size(1);
+        h.set_mode(0o644);
+        h.as_gnu_mut().unwrap().name[..name.len()].copy_from_slice(name.as_bytes());
+        h.set_cksum();
+        let mut b = tar::Builder::new(Vec::new());
+        b.append(&h, &b"x"[..]).unwrap();
+        let t = std::env::temp_dir().join(format!("podvm-escape-{}.tar", std::process::id()));
+        std::fs::write(&t, b.into_inner().unwrap()).unwrap();
+        let e = import(&s, &t, Some("esc:1")).unwrap_err().to_string();
+        assert!(e.contains(name) && e.contains("T-1839"), "{e}");
+        let _ = std::fs::remove_file(&t);
+    }
+    let _ = std::fs::remove_dir_all(s.root());
+}

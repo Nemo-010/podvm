@@ -4032,7 +4032,7 @@ Text only; each exit code stays.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4066,6 +4066,20 @@ saves a store write that no run can use.
 
 `cargo test -p podvm-image layout_index` exits 0, with tests that `schemaVersion` 9 is refused, that an index with no annotation gives a record with no tag, and that `import` refuses `../escape`
 
+## Done
+
+**Done 2026-11-15.** `load` refuses an index whose `schemaVersion` is not
+2, by name; an index entry with no `org.opencontainers.image.ref.name`
+gives a record with the repository `<none>` and no tag, found by its
+digest (`layout.rs`); `import` refuses a member with `..` in its path or
+an absolute path, with the reason, before the store takes it
+(`escaping_member`); `system install-names` names a directory that it
+made. `cargo test -p podvm-image layout_index` exits 0 (schemaVersion 9
+refused; an entry with no name gives no tag; `../escape` and
+`/abs-escape` refused). By hand: a `save` tarball with its annotation
+removed loads as `<none> <none>`, `images` lists it, and `rmi` of its
+IMAGE ID removes it; `install-names --dir` of a missing directory prints
+"made the directory".
 
 # T-1840: The `images` table cannot tell two platform records apart, `images REPO` shows only `latest`, and `inspect` has no `.Config.Labels`
 

@@ -501,7 +501,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1836](image.md) | P3 | S | none | image | open | Six image messages name the wrong cause or repeat themselves |
 | [T-1837](cli.md) | P3 | S | none | cli | open | The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb |
 | [T-1838](cli.md) | P3 | S | none | cli | open | The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:` |
-| [T-1839](image.md) | P2 | S | none | image | open | `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256` |
+| [T-1839](image.md) | P2 | S | none | image | done | `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256` |
 | [T-1840](image.md) | P2 | S | none | image | open | The `images` table cannot tell two platform records apart, `images REPO` shows only `latest`, and `inspect` has no `.Config.Labels` |
 | [T-1841](image.md) | P2 | S | none | image | open | `save` advises a `--platform` it does not have, and `pull -a` records the endpoint host, which makes a duplicate record |
 | [T-1842](image.md) | P2 | S | none | image | done | `save` and `import` exit 125 for an input error that their error type maps to 1, and a bad insecure-registry host is taken |
@@ -560,7 +560,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-491 entries: 41 open, 11 partial, 4 blocked, 435 done.
+491 entries: 40 open, 11 partial, 4 blocked, 436 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -571,9 +571,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 6 | 2 | 193 | 202 |
-| P2 | 24 | 3 | 2 | 146 | 175 |
+| P2 | 23 | 3 | 2 | 147 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 41 | 11 | 4 | 435 | 491 |
+| **All** | 40 | 11 | 4 | 436 | 491 |
 
 ## Work order
 

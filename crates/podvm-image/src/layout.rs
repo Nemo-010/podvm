@@ -173,6 +173,15 @@ fn load_inner(
             src.display()
         ))
     })?;
+    // TODO/image.md T-1839: the OCI image layout requires schemaVersion 2.
+    if index.schema_version != 2 {
+        return Err(Error::Oci(format!(
+            "{} has an index of schemaVersion {}; the OCI image layout has 2 \
+             (TODO/image.md T-1839)",
+            src.display(),
+            index.schema_version
+        )));
+    }
     if index.manifests.len() != 1 {
         return Err(Error::Oci(format!(
             "{} names {} manifests; podvm loads one image per tarball",
@@ -210,12 +219,11 @@ fn load_inner(
             staged.len()
         )));
     }
-    let refname = descriptor
-        .annotations
-        .get(REF_ANNOTATION)
-        .cloned()
-        .unwrap_or_else(|| manifest_digest.to_string());
-    let reference = Reference::parse(&refname)?;
+    // TODO/image.md T-1839: with no name, the record has no tag and is
+    // found by its digest, as docker's `<none>`. The digest read as a name
+    // gave the repository `sha256` and the tag of its hex.
+    let named = descriptor.annotations.get(REF_ANNOTATION).cloned();
+    let reference = Reference::parse(named.as_deref().unwrap_or(UNNAMED))?;
     let platform = if config.os.is_empty() || config.architecture.is_empty() {
         // ⚠ Degenerate configs exist; the host platform is the honest
         // fallback, and the record says exactly that.
@@ -232,6 +240,11 @@ fn load_inner(
         &config,
         &platform,
     )?;
+    let mut record = record;
+    if named.is_none() {
+        record.repository = "<none>".to_string();
+        record.tag = None;
+    }
     store.put_record(record.clone())?;
     Ok(record)
 }
@@ -296,6 +309,28 @@ fn commit_staged(
 /// and manifest are synthesized around the tar's own digest; a compressed
 /// file is refused by name rather than stored under a lie, because the
 /// record's media type promises a plain tar.
+/// The placeholder name of an index entry with no name (T-1839); the
+/// record replaces it with `<none>` and no tag.
+const UNNAMED: &str = "podvm.invalid/unnamed:none";
+
+/// TODO/image.md T-1839: a member that `extract` refuses (`..` in its path,
+/// or an absolute path) is refused at `import`, before the store takes it.
+fn escaping_member(tar: &Path) -> Result<Option<String>> {
+    let f = std::fs::File::open(tar).map_err(|e| Error::io(tar.display().to_string(), e))?;
+    let mut a = ::tar::Archive::new(f);
+    let entries = a
+        .entries()
+        .map_err(|e| Error::Oci(format!("{} does not read: {e}", tar.display())))?;
+    for e in entries {
+        let e = e.map_err(|e| Error::Oci(format!("{} does not read: {e}", tar.display())))?;
+        let raw = String::from_utf8_lossy(&e.path_bytes()).to_string();
+        if raw.starts_with('/') || raw.split('/').any(|c| c == "..") {
+            return Ok(Some(raw));
+        }
+    }
+    Ok(None)
+}
+
 pub fn import(store: &Store, tar: &Path, reference: Option<&str>) -> Result<Record> {
     let mut head = [0u8; 512];
     {
@@ -314,6 +349,13 @@ pub fn import(store: &Store, tar: &Path, reference: Option<&str>) -> Result<Reco
     if &head[257..262] != b"ustar" {
         return Err(Error::Oci(format!(
             "{} is not a tar archive (no ustar magic); nothing runnable can be built from it",
+            tar.display()
+        )));
+    }
+    if let Some(member) = escaping_member(tar)? {
+        return Err(Error::Oci(format!(
+            "{} has the member {member:?}, which leaves the root of the tree: \
+             extract would refuse it, so import refuses it now (TODO/image.md T-1839)",
             tar.display()
         )));
     }
