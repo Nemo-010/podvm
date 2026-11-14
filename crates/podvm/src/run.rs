@@ -37,7 +37,8 @@ pub const RUN_OPTIONS: &str = "\
                    (TODO/supervise.md T-1715)
   --env-file F     read KEY=VALUE lines from F into the environment.
                    Repeatable; entries load at the flag's position, so a
-                   later -e wins over the file (TODO/cli.md T-0801)
+                   later -e wins over the file; a value keeps its quotes
+                   (TODO/cli.md T-0801, T-1828)
   -w, --workdir D  working directory inside the container
   --device H[:G[:P]]
                    map a host device or file into the container: opened

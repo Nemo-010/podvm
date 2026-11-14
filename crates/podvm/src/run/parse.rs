@@ -106,7 +106,7 @@ fn parse_flags_with(
         let a = &args[i];
         if let Some(flag) = expecting.take() {
             match flag {
-                "-e" => o.env.extend(from_host(a)),
+                "-e" => o.env.extend(env_arg(verb, a)?),
                 "--env-file" => {
                     let es = read_env_file(verb, a)?;
                     o.env.extend(es);
@@ -127,7 +127,7 @@ fn parse_flags_with(
                     }
                 },
                 // TODO/cli.md T-1695: the record keeps each label.
-                "--label" => o.hardening.labels.push(label(verb, a)?),
+                "--label" => push_label(&mut o.hardening.labels, label(verb, a)?),
                 "-w" => o.workdir = Some(a.clone()),
                 "--entrypoint" => o.entrypoint = Some(a.clone()),
                 "--platform" => o.platform = Some(a.clone()),
@@ -331,7 +331,7 @@ fn parse_flags_with(
                     return Err(EXIT_FLAG_ERROR);
                 }
             },
-            other if other.starts_with("--env=") => o.env.extend(from_host(&other[6..])),
+            other if other.starts_with("--env=") => o.env.extend(env_arg(verb, &other[6..])?),
             other if other.starts_with("--log-driver=") => match &other[13..] {
                 "json-file" => {}
                 v => {
@@ -346,10 +346,10 @@ fn parse_flags_with(
                 let es = read_env_file(verb, &other[11..])?;
                 o.env.extend(es);
             }
-            other if other.starts_with("--label=") => o
-                .hardening
-                .labels
-                .push(label(verb, &other["--label=".len()..])?),
+            other if other.starts_with("--label=") => push_label(
+                &mut o.hardening.labels,
+                label(verb, &other["--label=".len()..])?,
+            ),
             other if other.starts_with("--user=") => o.user = Some(other[7..].to_string()),
             other if other.starts_with("--workdir=") => o.workdir = Some(other[10..].to_string()),
             other if other.starts_with("--device=") => {
@@ -484,7 +484,7 @@ fn parse_flags_with(
 }
 
 pub(super) mod values;
-pub(crate) use values::from_host;
+pub(crate) use values::env_arg;
 use values::*;
 
 mod opts;

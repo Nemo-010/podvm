@@ -22,7 +22,7 @@
 
 use std::io::Write;
 
-use podvm_image::error::{EXIT_FLAG_ERROR, EXIT_RUNTIME_ERROR};
+use podvm_image::error::EXIT_RUNTIME_ERROR;
 
 /// What the caller asked the completion layer for.
 #[derive(Debug, Clone, Default)]
@@ -162,6 +162,8 @@ pub fn prepare(
 mod step_output;
 mod strict;
 pub use strict::*;
+mod add_host; // TODO/cli.md T-1828
+pub use add_host::*;
 
 mod capability;
 pub use capability::*;

@@ -5077,7 +5077,7 @@ value 99999999 is over the hard limit 20000 of RLIMIT_NOFILE".
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5092,7 +5092,7 @@ keeps both; podman keeps `a=c`.
 
 ## Premise
 
-`add_host` (`crates/podvm/src/complete/strict.rs:481`) checks only for a
+`add_host` (`crates/podvm/src/complete/strict.rs` then; `complete/add_host.rs` now) checks only for a
 `:`. `from_host` (`crates/podvm/src/run/parse/values.rs:113`) takes each
 string with a `=`, an empty name too. The quote removal is at
 `crates/podvm/src/run/parse/values.rs:171`. `label`
@@ -5115,6 +5115,19 @@ docker's behaviour for each of the four, measured by the QA on docker
 
 `cargo test -p podvm --bin podvm run_values` exits 0, with tests for `foo:notanip` and a value with a newline (refused, value named), `-e =V` (refused), `B="two words"` (quotes kept) and `a=b a=c` (one label, `a=c`)
 
+## Done
+
+**Done 2026-11-15.** `--add-host` takes a host name and an IPv4 or IPv6
+address (or `host-gateway`), and refuses anything else with exit 125
+naming the value (`complete/strict.rs`, `check_add_host`); `-e` and
+`--env` refuse an empty name (`env_arg`, `run` and `exec`); `--env-file`
+keeps the value of a line byte for byte, quotes too; a repeated
+`--label` key keeps its last value (`push_label`). The help of `run` and
+the parity note of `--env-file` name the rule. `cargo test -p podvm
+--bin podvm run_values` exits 0; the test of `--env-file` of T-0801 now
+expects the quotes. By hand with `mirror.gcr.io/library/alpine:3.20`:
+`--add-host foo:notanip` and `-e =V` exit 125 with the value named;
+`--add-host foo:10.1.2.3` writes `10.1.2.3 foo` into `/etc/hosts`.
 
 # T-1829: Refusals of `run` lead with the wrong cause or name the wrong spelling
 

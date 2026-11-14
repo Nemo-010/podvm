@@ -145,7 +145,7 @@ fn parse(args: &[String]) -> std::result::Result<Opts, i32> {
     for a in args {
         if let Some(flag) = expecting.take() {
             match flag {
-                "-e" => o.env.extend(crate::run::from_host(a)),
+                "-e" => o.env.extend(crate::run::env_arg("exec", a)?),
                 "-w" => o.workdir = Some(a.clone()),
                 "--add-host" => crate::complete::add_host(&mut o.ask, "exec", a)?,
                 "--user" => o.user = Some(a.clone()),
@@ -222,7 +222,7 @@ fn parse(args: &[String]) -> std::result::Result<Opts, i32> {
                 }
             },
             other if other.starts_with("--env=") => {
-                o.env.extend(crate::run::from_host(&other[6..]))
+                o.env.extend(crate::run::env_arg("exec", &other[6..])?)
             }
             other if other.starts_with("--user=") => o.user = Some(other[7..].to_string()),
             other if other.starts_with("--workdir=") => o.workdir = Some(other[10..].to_string()),

@@ -198,6 +198,27 @@ pub(crate) fn from_host(e: &str) -> Option<String> {
     std::env::var_os(e).map(|v| format!("{e}={}", v.to_string_lossy()))
 }
 
+/// TODO/cli.md T-1828: `-e` and `--env` with a name. `-e =V` set nothing
+/// and exited 0; docker and podman refuse it.
+pub(crate) fn env_arg(verb: &str, e: &str) -> std::result::Result<Option<String>, i32> {
+    if e.is_empty() || e.starts_with('=') {
+        eprintln!("podvm {verb}: -e takes NAME=VALUE or NAME, with a name, not {e:?}");
+        return Err(EXIT_FLAG_ERROR);
+    }
+    Ok(from_host(e))
+}
+
+/// TODO/cli.md T-1828: a repeated `--label` key keeps its last value, as
+/// podman does.
+pub(crate) fn push_label(labels: &mut Vec<String>, kv: String) {
+    let key = kv
+        .split_once('=')
+        .map(|(k, _)| k.to_string())
+        .unwrap_or_default();
+    labels.retain(|l| l.split_once('=').map(|(k, _)| k) != Some(key.as_str()));
+    labels.push(kv);
+}
+
 /// `--env-file`: docker's file of `KEY=VALUE` lines, loaded at the flag's
 /// position so a later `-e` wins over the file and a later file over an
 /// earlier flag, the same rule `-e` already documents. TODO/cli.md T-0801.
@@ -207,7 +228,7 @@ pub(crate) fn from_host(e: &str) -> Option<String> {
 /// `docs/conventions/forbidden-patterns.md` refuses. A line without `=`
 /// is refused naming its number rather than skipped, because a skipped
 /// line is a variable the caller thinks is set.
-pub(super) fn read_env_file(verb: &str, path: &str) -> std::result::Result<Vec<String>, i32> {
+pub(crate) fn read_env_file(verb: &str, path: &str) -> std::result::Result<Vec<String>, i32> {
     const MAX_ENV_FILE: u64 = 1_048_576;
     let meta = std::fs::metadata(path).map_err(|e| {
         eprintln!("podvm {verb}: --env-file {path:?}: {e}");
@@ -249,15 +270,9 @@ pub(super) fn read_env_file(verb: &str, path: &str) -> std::result::Result<Vec<S
             );
             return Err(EXIT_FLAG_ERROR);
         }
-        let mut value = v.trim().to_string();
-        if value.len() >= 2
-            && value.starts_with(['\'', '"'])
-            && value.ends_with(value.as_bytes()[0] as char)
-        {
-            value.remove(0);
-            value.pop();
-        }
-        out.push(format!("{key}={value}"));
+        // TODO/cli.md T-1828: the value as the line gives it, quotes too,
+        // as docker and podman keep it (`B="two words"` is `"two words"`).
+        out.push(format!("{key}={v}"));
     }
     Ok(out)
 }

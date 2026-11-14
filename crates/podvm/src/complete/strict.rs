@@ -473,16 +473,3 @@ fn one_step(
     let _ = podvm_probe::sys::close(o2);
     spawned?.wait_bounded(STEP_TIMEOUT_MS)
 }
-
-/// Parse `--add-host name:ip` and friends out of the shared argument surface.
-///
-/// ⚠ Returned as an error code rather than a panic so the caller's own usage
-/// text is what the user sees.
-pub fn add_host(ask: &mut Ask, verb: &str, value: &str) -> Result<(), i32> {
-    if !value.contains(':') {
-        eprintln!("podvm {verb}: --add-host takes name:ip, not {value:?}");
-        return Err(EXIT_FLAG_ERROR);
-    }
-    ask.add_hosts.push(value.to_string());
-    Ok(())
-}

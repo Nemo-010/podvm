@@ -54,13 +54,18 @@ fn env_file_loads_and_stubs_parse() {
     let path = file.to_str().unwrap().to_string();
     // Both spellings land in the same place, at the flag's position:
     // a later -e wins over the file.
+    // TODO/cli.md T-1828: the value as the line gives it, quotes and a
+    // leading space too, as docker and podman keep it.
     let o = parse("run", &v(&["--env-file", &path, "-e", "A=9", "img"])).unwrap();
     assert_eq!(
         o.env,
-        v(&["A=1", "B=two words", "C=quoted", "D=single", "A=9"])
+        v(&["A=1", "B= two words", "C=\"quoted\"", "D='single'", "A=9"])
     );
     let o = parse("run", &v(&[&format!("--env-file={path}"), "img"])).unwrap();
-    assert_eq!(o.env, v(&["A=1", "B=two words", "C=quoted", "D=single"]));
+    assert_eq!(
+        o.env,
+        v(&["A=1", "B= two words", "C=\"quoted\"", "D='single'"])
+    );
     // A line without `=` is refused naming the file, never skipped.
     let bad = dir.join("bad.env");
     std::fs::write(&bad, "A=1\nNOEQUALS\n").unwrap();

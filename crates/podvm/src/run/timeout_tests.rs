@@ -103,3 +103,32 @@ fn ulimit_plan_keeps_the_last_value_and_resolves_minus_one() {
     let got = ulimit_plan(&v(&["core=-1"]), &unlimited).unwrap();
     assert_eq!(got, v(&["core=-1"]));
 }
+
+/// TODO/cli.md T-1828: `--add-host` takes a host name and an address,
+/// `-e` a name, `--env-file` keeps the quotes, and a repeated label key
+/// keeps its last value.
+#[test]
+fn run_values_refuse_and_keep_as_docker_does() {
+    use super::parse::values::{env_arg, push_label, read_env_file};
+    use crate::complete::check_add_host;
+    let e = check_add_host("foo:notanip").unwrap_err();
+    assert!(e.contains("notanip"), "{e}");
+    assert!(check_add_host("foo:1.2.3.4\nbar").is_err());
+    assert!(check_add_host("a b:1.2.3.4").is_err());
+    assert!(check_add_host("foo:1.2.3.4").is_ok());
+    assert!(check_add_host("foo:::1").is_ok());
+    assert!(check_add_host("foo:[fe80::1]").is_ok());
+    assert!(check_add_host("gw:host-gateway").is_ok());
+    assert!(env_arg("run", "=V").is_err());
+    assert!(env_arg("run", "A=1").unwrap().is_some());
+    let f = std::env::temp_dir().join(format!("podvm-envfile-{}", std::process::id()));
+    std::fs::write(&f, "B=\"two words\"\nC='x'\n").unwrap();
+    let got = read_env_file("run", f.to_str().unwrap()).unwrap();
+    let _ = std::fs::remove_file(&f);
+    assert_eq!(got, v(&["B=\"two words\"", "C='x'"]));
+    let mut labels = Vec::new();
+    push_label(&mut labels, "a=b".into());
+    push_label(&mut labels, "z=1".into());
+    push_label(&mut labels, "a=c".into());
+    assert_eq!(labels, v(&["z=1", "a=c"]));
+}

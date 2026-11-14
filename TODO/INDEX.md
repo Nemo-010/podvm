@@ -490,7 +490,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1825](cli.md) | P2 | M | none | cli | open | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
 | [T-1826](complete.md) | P2 | S | none | complete | open | `--no-steps` leaves no line and no report row that says what the caller gave up |
 | [T-1827](cli.md) | P2 | S | none | cli | done | A repeated `--ulimit` that raises a hard limit, `--ulimit nofile=-1` and a hard value over podvm's own all fail with a bare EPERM |
-| [T-1828](cli.md) | P2 | S | none | cli | open | `--add-host` takes a non-address, `-e =V` is dropped, `--env-file` removes quotes, and a repeated `--label` key keeps both values |
+| [T-1828](cli.md) | P2 | S | none | cli | done | `--add-host` takes a non-address, `-e =V` is dropped, `--env-file` removes quotes, and a repeated `--label` key keeps both values |
 | [T-1829](cli.md) | P3 | S | none | cli | open | Refusals of `run` lead with the wrong cause or name the wrong spelling |
 | [T-1830](cli.md) | P2 | S | none | cli | done | A `--tmpfs` run leaves its map in the record, so a later `exec` cannot see the path |
 | [T-1831](cli.md) | P2 | S | none | cli | open | The help of `run` and `create` promises what the verbs do not do |
@@ -560,7 +560,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-491 entries: 45 open, 10 partial, 4 blocked, 432 done.
+491 entries: 44 open, 10 partial, 4 blocked, 433 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -571,9 +571,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 6 | 2 | 193 | 202 |
-| P2 | 28 | 2 | 2 | 143 | 175 |
+| P2 | 27 | 2 | 2 | 144 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 45 | 10 | 4 | 432 | 491 |
+| **All** | 44 | 10 | 4 | 433 | 491 |
 
 ## Work order
 

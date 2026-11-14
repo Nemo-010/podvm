@@ -282,7 +282,7 @@ pub const TABLE: &[Row] = &[
     // bug in the table, so every docker spelling lands here, honored or
     // refused with its reason. `--env-file` is real behavior; `--label`,
     // `--attach` and `--expose` are Stub; the rest are None.
-    Row { verb: "run", flag: Some("--env-file"), status: Native, note: "repeatable; entries load at the flag's position, so a later -e wins over the file and a later file over an earlier flag. Lines are KEY=VALUE, `#` comments and blank lines ignored, one matching quote pair stripped, a line without `=` refused naming its number" },
+    Row { verb: "run", flag: Some("--env-file"), status: Native, note: "repeatable; entries load at the flag's position, so a later -e wins over the file and a later file over an earlier flag. Lines are KEY=VALUE, `#` comments and blank lines ignored, the value kept byte for byte with its quotes as docker keeps it (TODO/cli.md T-1828), a line without `=` refused naming its number" },
     Row { verb: "run", flag: Some("--label"), status: Native, note: "KEY=VALUE, repeatable: the container record keeps each label, `ps --filter label=KEY[=VALUE]` matches it, and `inspect` prints .Labels (TODO/cli.md T-1695)" },
     Row { verb: "run", flag: Some("--attach"), status: Stub, note: "accepted and does nothing: podvm always captures the payload's stdout and stderr together (TODO/supervise.md T-0605), and --strict refuses" },
     Row { verb: "run", flag: Some("--expose"), status: Stub, note: "accepted and does nothing: docker's --expose only documents ports and podvm publishes none, so the run is unchanged, and --strict refuses" },
