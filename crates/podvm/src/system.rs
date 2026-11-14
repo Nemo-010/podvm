@@ -87,7 +87,19 @@ usage: podvm system info [--format T]
 
 /// Fields whose value is already a JSON document, so `{{json .X}}` prints it
 /// rather than quoting it. ⚠ A subset of [`FIELDS`], never a second list.
-const DOCUMENTS: &[&str] = &["Parity", "ExitCodes"];
+// TODO/cli.md T-1834: a boolean and the counts are JSON values too, so
+// `{{json .StrictOk}}` is `true` and not the string `"true"`.
+const DOCUMENTS: &[&str] = &[
+    "Parity",
+    "ExitCodes",
+    "StrictOk",
+    "ParityRows",
+    "Verbs",
+    "VerbsNative",
+    "VerbsDegraded",
+    "VerbsStub",
+    "VerbsNone",
+];
 
 pub const FIELDS: &[&str] = &[
     "Parity",

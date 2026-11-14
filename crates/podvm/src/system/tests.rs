@@ -214,3 +214,19 @@ fn probe_cached_rung_is_the_live_rung() {
     to_entered(&cached, &mut served);
     assert_eq!(served.rung, live.rung);
 }
+
+/// TODO/cli.md T-1834: the boolean and the counts of `system info` are
+/// JSON values, not strings; the text template prints them as before.
+#[test]
+fn info_json_types_are_a_boolean_and_numbers() {
+    let f = vec![
+        ("StrictOk", "false".to_string()),
+        ("Verbs", "80".to_string()),
+        ("Version", "0.0.0".to_string()),
+    ];
+    let r = |t: &str| crate::format::render_with_documents(t, &f, DOCUMENTS).unwrap();
+    assert_eq!(r("{{json .StrictOk}}"), "false");
+    assert_eq!(r("{{json .Verbs}}"), "80");
+    assert_eq!(r("{{json .Version}}"), "\"0.0.0\"");
+    assert_eq!(r("{{.StrictOk}} {{.Verbs}}"), "false 80");
+}

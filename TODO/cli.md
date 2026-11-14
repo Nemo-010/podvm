@@ -5378,7 +5378,7 @@ scenarios`, `profile list`, `profile show`, `prune`, `abi`, `df` and
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5405,6 +5405,15 @@ The JSON form exists so that a program can branch on it.
 
 `cargo test -p podvm --bin podvm info_json_types` exits 0, with tests that `{{json .StrictOk}}` is `true` or `false` and `{{json .Verbs}}` is a number
 
+## Done
+
+**Done 2026-11-15.** `system info` names `StrictOk`, `ParityRows` and
+the `Verbs` counts as JSON documents beside `Parity` and `ExitCodes`
+(`system.rs`, `DOCUMENTS`), so `{{json .StrictOk}}` prints `true` or
+`false` and `{{json .Verbs}}` a number; the text template prints them as
+before. `cargo test -p podvm --bin podvm info_json_types` exits 0. By
+hand: `{{json .StrictOk}} {{json .Verbs}} {{json .VerbsNone}} {{json
+.Version}}` prints `true 80 33 "0.2.0-beta.18"`.
 
 # T-1837: The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb
 
