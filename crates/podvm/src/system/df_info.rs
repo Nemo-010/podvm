@@ -46,7 +46,7 @@ pub fn df(verb: &str, args: &[String]) -> i32 {
         }
     }
     if help {
-        print!("{SYSTEM_USAGE}");
+        print!("{DF_USAGE}"); // TODO/cli.md T-1833
         return 0;
     }
     let store = match podvm_image::open_store() {

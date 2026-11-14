@@ -137,6 +137,13 @@ pub fn check_needs(verb: &str, rootfs: &str, env: &[String], needs: &[String]) -
 /// `podvm profile ...`.
 pub fn main(args: &[String]) -> i32 {
     match args.first().map(String::as_str) {
+        // TODO/cli.md T-1833: `list` and `show` answer -h and --help.
+        Some("list" | "show")
+            if matches!(args.get(1).map(String::as_str), Some("-h" | "--help")) =>
+        {
+            println!("{USAGE}");
+            0
+        }
         Some("list") if args.len() == 1 => list(),
         Some("show") => show(&args[1..]),
         Some("-h" | "--help") => {

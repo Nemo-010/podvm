@@ -18,6 +18,23 @@ use crate::{format, parity};
 use podvm_image::error::{EXIT_CLI_ERROR, EXIT_FLAG_ERROR, EXIT_RUNTIME_ERROR};
 use podvm_probe::select::Rung;
 
+/// TODO/cli.md T-1833: the own usage of `system df` and `system abi`;
+/// each printed the whole usage of `system`, whose first line is `info`.
+pub const DF_USAGE: &str = "\
+usage: podvm system df
+
+Disk usage: images with one row each, containers, stored blob bytes beside
+extracted rootfs bytes, and what `image prune` would reclaim. Accounting
+never fails the verb: an unreadable file counts nothing (TODO/cli.md T-1337).
+";
+pub const ABI_USAGE: &str = "\
+usage: podvm system abi <object> <libc>
+
+May <object> be preloaded into a payload served by <libc>? Answered by
+reading both, never by loading one (TODO/interpose.md T-0709). Exit 0 it
+may, 1 it may not and the reason is on stderr, 2 a file could not be read.
+";
+
 pub const SYSTEM_USAGE: &str = "\
 usage: podvm system info [--format T]
        podvm system df
@@ -170,7 +187,7 @@ pub fn abi(verb: &str, args: &[String]) -> i32 {
     for a in args {
         match a.as_str() {
             "-h" | "--help" => {
-                print!("{SYSTEM_USAGE}");
+                print!("{ABI_USAGE}");
                 return 0;
             }
             other if other.starts_with('-') => {

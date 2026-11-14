@@ -256,20 +256,19 @@ fn main() -> std::process::ExitCode {
             }
             std::process::ExitCode::SUCCESS
         }
-        Some("-h") | Some("--help") | Some("help") => {
-            print!("{USAGE}");
-            std::process::ExitCode::SUCCESS
-        }
         // ⭐ T-0802, measured: `docker` with no arguments prints its help and
         // exits **0**. podvm does the same, because a script that runs the
         // bare name to see whether the tool is there reads that status.
-        None => {
+        None | Some("-h") | Some("--help") | Some("help") => {
             print!("{USAGE}");
             std::process::ExitCode::SUCCESS
         }
         other => {
-            let mut err = std::io::stderr().lock();
             let name = other.unwrap_or("");
+            if let Some(code) = man::alias_help(name, argv.get(2..).unwrap_or(&[])) {
+                return code; // TODO/cli.md T-1833
+            }
+            let mut err = std::io::stderr().lock();
             // ⛔ TODO/cli.md T-0801. The parity table answers, so a docker verb
             // podvm does not have gets the REASON it does not, from the one
             // place that records it, rather than a milestone number that ages.

@@ -51,6 +51,18 @@ fn help_argv(verb: &str) -> Vec<&str> {
     }
 }
 
+/// TODO/cli.md T-1833: `podvm prune --help` (and `install-names`, `abi`,
+/// `df`) prints the usage of the group verb that serves the name, exit 0.
+/// None for each other name or argv.
+pub(crate) fn alias_help(verb: &str, rest: &[String]) -> Option<std::process::ExitCode> {
+    let help = matches!(rest, [h] if h == "-h" || h == "--help");
+    if !help || help_argv(verb) == [verb] || verb.contains(' ') {
+        return None;
+    }
+    print!("{}", help_of(verb)?);
+    Some(std::process::ExitCode::SUCCESS)
+}
+
 /// Capture what `podvm <argv...> --help` prints on stdout: the same bytes
 /// the caller sees, so the manual cannot drift from them. Empty (a refusal,
 /// which goes to stderr) is `None`.

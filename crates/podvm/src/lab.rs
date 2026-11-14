@@ -51,6 +51,12 @@ pub fn main(args: &[String]) -> i32 {
             println!("{USAGE}");
             0
         }
+        // TODO/cli.md T-1833: each verb of lab answers -h and --help, before
+        // its flags and before the refusal of a guest verb.
+        Some(v) if matches!(args.get(1).map(String::as_str), Some("-h" | "--help")) => {
+            print!("{}", verb_usage(v));
+            0
+        }
         Some("scenarios") => {
             print!("{}", scenarios_text());
             0
@@ -75,6 +81,18 @@ pub fn main(args: &[String]) -> i32 {
             eprintln!("podvm lab: {other} is not a verb of lab\n{USAGE}");
             EXIT_FLAG_ERROR
         }
+    }
+}
+
+/// The usage of one verb of lab (TODO/cli.md T-1833).
+pub fn verb_usage(verb: &str) -> String {
+    match verb {
+        "scenarios" => "usage: podvm lab scenarios\n\nList the offline scenarios of the lab with their knobs.\n".into(),
+        "plan" => "usage: podvm lab plan SCENARIO\n       podvm lab plan [--stack S] [--nat N] [--policy P] [KNOB-FLAG]...\n\nCheck the knobs of a scenario, or of the flags of sand-net, and print the\nsteps that build and remove the lab and the verdict of each probe.\n".into(),
+        v if GUEST_VERBS.contains(&v) => format!(
+            "usage: podvm lab {v} [SCENARIO | KNOB-FLAG...]\n\nRuns the lab in a guest. It waits for the guest parts of pod-netlab\n(podcrates@T-345 to podcrates@T-347), and refuses until then.\n"
+        ),
+        _ => format!("{USAGE}\n"),
     }
 }
 

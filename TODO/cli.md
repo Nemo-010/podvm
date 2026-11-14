@@ -5319,7 +5319,7 @@ Text only. The behaviour of each verb stays.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5355,6 +5355,21 @@ parity table lists. T-1853 adds the check over the parity table.
 
 `cargo test -p podvm --test help_every_verb` exits 0, with a test that each verb and sub-verb of the parity table answers `-h` and `--help` with exit 0 and its own usage on stdout
 
+## Done
+
+**Done 2026-11-15.** Each verb of `lab` answers `-h` and `--help` before
+its flags and before the refusal of a guest verb (`lab::verb_usage`);
+`profile list` and `profile show` answer them; `podvm prune`,
+`install-names`, `abi` and `df` with `-h` or `--help` print the usage of
+the group verb that serves them with exit 0 (`man::alias_help`); `system
+df` and `system abi` print their own usage (`DF_USAGE`, `ABI_USAGE`),
+not the one of `system info`. `cargo test -p podvm --test
+help_every_verb` exits 0: each of the 45 verbs of the parity table
+(from `system info --format '{{json .Parity}}'`, without the names
+`docker` and `podman`) gives exit 0 and a usage on stdout for `-h` and
+for `--help`. By hand: `lab plan`, `lab up`, `lab matrix`, `lab
+scenarios`, `profile list`, `profile show`, `prune`, `abi`, `df` and
+`install-names` with `--help` give exit 0 and their usage.
 
 # T-1834: `system info --format '{{json .X}}'` prints counts and `StrictOk` as strings
 
