@@ -1778,7 +1778,7 @@ the fixture of the userland rung: beta.17 gave `probe` `userland` and
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1808,3 +1808,18 @@ A strict gate fails when it measured nothing.
 ## Prove
 
 `cargo test -p podvm-probe compare_strict` exits 0, with tests that an empty report, a prose file and a report with a missing invariant section each exit 1 under `--strict`
+
+## Done
+
+**Done 2026-11-15.** `compare` reads each file with
+`inside::parse_report_checked`, which refuses a file with no record or
+with a line that is neither a record, a `#` note nor blank (exit 1, the
+line named); under `--strict`, an invariant section of the reference
+with no record here fails the compare and the summary names it
+(`Outcome::missing_invariant`). `cargo test -p podvm-probe
+compare_strict` exits 0. By hand with a report of `probe-inside
+mirror.gcr.io/library/alpine:3.20` (62 lines): an empty file and a file
+of two lines of prose exit 1 as no report; the report with its 4 `proxy`
+lines removed exits 1 under `--strict` with "invariant sections of the
+reference with no record here: proxy"; the report against itself exits
+0.

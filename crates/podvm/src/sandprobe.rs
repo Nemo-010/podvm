@@ -194,12 +194,19 @@ pub fn compare(args: &[String]) -> i32 {
             EXIT_RUNTIME_ERROR
         })
     };
-    let here = match read(&report) {
-        Ok(t) => inside::parse_report(&t),
+    // TODO/probe.md T-1835: a file that holds no report is refused.
+    let parsed = |p: &str| -> Result<Vec<inside::Record>, i32> {
+        inside::parse_report_checked(&read(p)?).map_err(|why| {
+            eprintln!("podvm compare: {p} is no report: {why} (TODO/probe.md T-1835)");
+            podvm_image::error::EXIT_CLI_ERROR
+        })
+    };
+    let here = match parsed(&report) {
+        Ok(r) => r,
         Err(c) => return c,
     };
-    let refs = match read(&reference) {
-        Ok(t) => inside::parse_report(&t),
+    let refs = match parsed(&reference) {
+        Ok(r) => r,
         Err(c) => return c,
     };
     let exp = match expected.as_deref().map(read) {

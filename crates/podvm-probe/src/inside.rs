@@ -159,6 +159,26 @@ pub fn parse_report(text: &str) -> Vec<Record> {
     text.lines().filter_map(Record::parse).collect()
 }
 
+/// TODO/probe.md T-1835: the records of a report, refused where it has no
+/// record or a line that is neither a record, a `#` note nor blank. A file
+/// of prose compared as a report with nothing in it.
+pub fn parse_report_checked(text: &str) -> Result<Vec<Record>, String> {
+    let mut out = Vec::new();
+    for (n, line) in text.lines().enumerate() {
+        if line.trim().is_empty() || line.starts_with('#') {
+            continue;
+        }
+        match Record::parse(line) {
+            Some(r) => out.push(r),
+            None => return Err(format!("line {} is no record: {line:?}", n + 1)),
+        }
+    }
+    if out.is_empty() {
+        return Err("it holds no record".to_string());
+    }
+    Ok(out)
+}
+
 /// The count of each verdict, as `ALLOW 3, DENY 2`.
 pub fn tally(records: &[Record]) -> String {
     let mut parts = Vec::new();
