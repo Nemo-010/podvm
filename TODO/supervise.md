@@ -1879,7 +1879,7 @@ are fewer, and a second prune deletes nothing.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1908,6 +1908,17 @@ between uids.
 ## Prove
 
 `cargo test -p podvm store_owner_refusal` exits 0, with a test that a table owned by another uid gives a refusal that names the uid and `$PODVM_STORE`
+
+## Done
+
+**Done 2026-11-15.** Where a run cannot be recorded, podvm compares the
+owner of the container table and of the store with its effective uid,
+and on a difference refuses with the owner uid, the file and "use a
+store of your own ($PODVM_STORE)" (`run/foreground/record.rs`,
+`owner_refusal`). `cargo test -p podvm store_owner_refusal` exits 0. On
+the cloud host, after a run as root, a run as uid 1000 on the same store
+prints "containers.json is owned by uid 0, and this process runs as uid
+1000; use a store of your own ($PODVM_STORE)".
 
 
 # T-1858: The `ps` table pads by characters, so a wide character puts its row out of line

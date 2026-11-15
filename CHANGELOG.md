@@ -8,6 +8,22 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: refusals and help texts name the cause and what the binary does, 2026-11-15
+
+Record: T-1829, T-1832, T-1836, T-1838, T-1851, T-1857.
+Deployed: not deployed; no version change.
+
+- `run` with no image prints the usage line and the cause (exit 1); a
+  flag with no value names the spelling of the caller; `logs --tail -1`
+  says that the count is zero or more.
+- A pull of a repository that does not exist says that it does not exist
+  or is private; the platforms of an index show each one once, with no
+  attestation; a changed blob of `load` names its entry.
+- A run on a store of another user names the owner and `$PODVM_STORE`.
+- The help of `exec`, `extract` and `pull`, the manual heads and the help
+  columns of `windows` and `machine ssh` say what the binary does; the
+  gate fails a text that waits for a done entry.
+
 ## 0.2.0-beta.19 (2026-11-15)
 
 ### Added: `container prune` and the `container` group, 2026-11-15

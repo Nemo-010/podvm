@@ -58,6 +58,10 @@ pub(super) fn fg_begin(
         },
         Err(e) => {
             crate::run::drop_unrecorded(store, &p.rootfs); // T-1709
+            if let Some(why) = owner_refusal(store.root(), current_euid()) {
+                eprintln!("podvm run: {why}");
+                return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
+            }
             match &p.name {
                 Some(n) => {
                     eprintln!("podvm run: --name {n:?}: the run could not be recorded: {e}")
@@ -140,5 +144,60 @@ pub(super) fn take_hold(
         Err(e) => {
             let _ = writeln!(err, "podvm run: the record of the run is not live: {e}");
         }
+    }
+}
+
+/// TODO/supervise.md T-1851: a store of another user. The table of
+/// `pod-supervise` is replaced by a rename, so a run of root leaves it
+/// owned by root, and the next run of a user cannot write it. The refusal
+/// names the owner, the file and the remedy.
+pub(crate) fn owner_refusal(root: &std::path::Path, euid: u32) -> Option<String> {
+    use std::os::unix::fs::MetadataExt;
+    for f in [root.join("containers.json"), root.to_path_buf()] {
+        if let Ok(m) = std::fs::metadata(&f)
+            && m.uid() != euid
+        {
+            return Some(format!(
+                "the run could not be recorded: {} is owned by uid {}, and this \
+                 process runs as uid {euid}; use a store of your own ($PODVM_STORE) \
+                 (TODO/supervise.md T-1851)",
+                f.display(),
+                m.uid()
+            ));
+        }
+    }
+    None
+}
+
+fn current_euid() -> u32 {
+    use std::os::unix::fs::MetadataExt;
+    // The owner of a file this process makes is its effective uid.
+    std::fs::metadata("/proc/self")
+        .map(|m| m.uid())
+        .unwrap_or(u32::MAX)
+}
+
+#[cfg(test)]
+mod tests {
+    /// TODO/supervise.md T-1851: a table owned by another uid gives a
+    /// refusal that names the uid and `$PODVM_STORE`; a store of this uid
+    /// gives none.
+    #[test]
+    fn store_owner_refusal_names_the_uid_and_the_remedy() {
+        use std::os::unix::fs::MetadataExt;
+        let d = std::env::temp_dir().join(format!("podvm-t1851-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        std::fs::create_dir_all(&d).unwrap();
+        std::fs::write(d.join("containers.json"), "{}").unwrap();
+        let mine = std::fs::metadata(&d).unwrap().uid();
+        assert_eq!(super::owner_refusal(&d, mine), None);
+        let other = mine.wrapping_add(4242);
+        let why = super::owner_refusal(&d, other).unwrap();
+        assert!(why.contains(&format!("owned by uid {mine}")), "{why}");
+        assert!(
+            why.contains("$PODVM_STORE") && why.contains("containers.json"),
+            "{why}"
+        );
+        let _ = std::fs::remove_dir_all(&d);
     }
 }

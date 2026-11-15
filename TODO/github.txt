@@ -264,10 +264,10 @@
 372 issue closed
 373 issue closed
 374 issue open
-375 issue open
-376 issue open
+375 issue closed
+376 issue closed
 377 issue closed
 378 issue closed
 379 issue closed
 380 issue open
-381 issue open
+381 issue closed

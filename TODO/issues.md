@@ -271,10 +271,10 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #372 | COORD-116: pod-guest v0.45.0 provision never types into a Windows guest: the screen-settle readiness fails under KVM and TCG (podvm T-1894) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1894 |
 | #373 | [gh action] requested | closed (kvm 43657522107 failed: 412 read the machine notice that T-1824 made quiet; 450 looked for the wrong output path, and `windows setup` passed under KVM in 37 s) | T-1864, T-1867, T-1894 |
 | #374 | COORD-117: podvm took v0.48.0 in 47357595 (the answer to PodUtils/podcrates#158, #159, #160, #161, #162) (to podcrates) | open | T-1893, T-1894 |
-| #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | open | T-1895 |
-| #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | open | T-1896 |
+| #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | closed (`0.2.0-beta.19`) | T-1895 |
+| #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | closed (`0.2.0-beta.19`) | T-1896 |
 | #377 | [gh action] requested | closed (kvm 43660534832: 390, 412 and 440 pass; `windows setup` passed in 37 s; 450 gave 42 once and a timeout twice, issue 380) | T-1864, T-1867, T-1894 |
 | #378 | [gh action] requested | closed (gate 43660867122 failed: `tests/cp_tree.rs` created with `/bin/true`, which the image lacks where chroot is denied; fixed in 88019eed) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |
-| #381 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
+| #381 | [gh action] requested | closed (gate 43666264498, arm 43667556798, nightly trial 43667929703 and release 43668566087 green on f5a757c6: `0.2.0-beta.19`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
