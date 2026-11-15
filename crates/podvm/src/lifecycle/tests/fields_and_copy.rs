@@ -166,6 +166,25 @@ fn the_record_carries_the_loader_drive_and_nothing_else() {
     };
     assert!(detached_drive(Some(&memfd)).is_empty());
     assert!(detached_drive(None).is_empty());
+    // TODO/enter.md T-1896: the native-static rung drives its foreground
+    // argv; the syscall tier keeps no detached driver.
+    let native = Userland {
+        dispatch_exe: Some("/bin/sleep".to_string()),
+        guest_argv: vec!["sleep".to_string(), "9".to_string()],
+        ..memfd.clone()
+    };
+    let drive = detached_drive(Some(&native));
+    assert_eq!(
+        drive[1..],
+        ["--podvm-dispatch-enter", "/r", "/bin/sleep", "sleep", "9"]
+    );
+    assert!(refuse_detached_userland("run", Some(&native), true).is_ok());
+    let syscall = Userland {
+        syscall: true,
+        ..native.clone()
+    };
+    assert!(detached_drive(Some(&syscall)).is_empty());
+    assert!(refuse_detached_userland("run", Some(&syscall), true).is_err());
 }
 
 /// TODO/enter.md T-1317. The pre-fetch tier's truth table: chroot, the

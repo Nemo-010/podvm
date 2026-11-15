@@ -3951,3 +3951,52 @@ One table of each layer reaches the payload.
 ## Prove
 
 `cargo test -p podvm --bin podvm exec_table` exits 0, and a run on the userland fixture with `--podvm-confine exec=/vol` has `PODVM_EXEC_HOST` and no `PODVM_EXEC` in its environment, and still gives 126 for a program outside the table
+
+
+# T-1896: `run -d` of a static image where chroot is denied refuses: the native-static rung has no detached driver
+
+**Source:** PodUtils/podrunner#100, case 2 (podrunner@T-158, 2026-11-14); the answer is issue 376
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+On a host that denies chroot, `podvm run -d busybox:1.37.0-musl sleep 5`
+exits 125 with "the memfd family has no detached driver". A container of
+podrunner runs detached, so a static image cannot be a container there.
+
+## Premise
+
+The foreground entry of the native-static rung (`lifecycle/native.rs`)
+is `podvm --podvm-dispatch-enter ROOT EXE ARGV...` through
+`podvm_enter::spawn_userland`. The launcher of a detached run already
+execs a recorded argv through `spawn_userland` (T-1411).
+
+## Approach
+
+`detached_drive` records the foreground argv of the native-static rung,
+and `refuse_detached_userland` refuses only an entry with no drive. The
+emulate and syscall tiers keep no detached driver.
+
+## Decision
+
+A rung whose foreground entry is one argv through `spawn_userland` has a
+detached driver: that argv.
+
+## Prove
+
+`cargo test -p podvm --bin podvm the_record_carries` exits 0, and on the deny-chroot fixture `run -d` of `busybox:1.37.0-musl` with `exit 7` gives 7 from `wait`, and `stop` of a detached `sleep 60` gives `Exited (143)` with no `sleep` left
+
+## Done
+
+**Done 2026-11-15.** `native_drive` in `lifecycle/userland.rs` gives the
+drive. `cargo test -p podvm --bin podvm the_record_carries` exits 0. On
+the deny-chroot fixture with `mirror.gcr.io/library/busybox:1.37.0-musl`:
+`run -d` of `sh -c 'echo hello-detached; ls /bin/busybox; exit 7'` gives
+7 from `wait`, `logs` prints both lines, and `/bin/busybox` resolves in
+the image; `stop -t 2` of a detached `sleep 60` gives `Exited (143)`, and
+`pgrep` finds no `sleep`.
+

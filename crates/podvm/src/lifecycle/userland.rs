@@ -233,10 +233,32 @@ pub fn enter_userland_with(
 /// disagree about which family has a detached driver
 /// (`docs/conventions/code.md`).
 pub fn detached_drive(userland: Option<&Userland>) -> Vec<String> {
-    userland
-        .filter(|u| u.family == podvm_enter::userland::Family::Loader)
-        .map(|u| u.loader_argv.clone())
-        .unwrap_or_default()
+    match userland {
+        Some(u) if u.family == podvm_enter::userland::Family::Loader => u.loader_argv.clone(),
+        Some(u) => native_drive(u).unwrap_or_default(),
+        None => Vec::new(),
+    }
+}
+
+/// TODO/enter.md T-1896 (PodUtils/podrunner#100, case 2): the detached
+/// drive of the native-static rung is the argv of its foreground entry,
+/// `podvm --podvm-dispatch-enter ROOT EXE ARGV...`, which the launcher
+/// execs through `spawn_userland` as it execs a loader argv. The
+/// emulate and syscall tiers keep no detached driver.
+fn native_drive(u: &Userland) -> Option<Vec<String>> {
+    let exe = u.dispatch_exe.as_ref()?;
+    if u.emulator.is_some() || u.syscall {
+        return None;
+    }
+    let me = std::fs::read_link("/proc/self/exe").ok()?;
+    let mut argv = vec![
+        me.to_string_lossy().into_owned(),
+        super::native::ENTER.to_string(),
+        u.maps.rootfs().to_string(),
+        exe.clone(),
+    ];
+    argv.extend(u.guest_argv.iter().cloned());
+    Some(argv)
 }
 
 /// Refuse a detached entry (`run -d`, `create`) on a userland family with
@@ -250,7 +272,8 @@ pub fn refuse_detached_userland(
     match userland {
         Some(u)
             if (detach || verb == "create")
-                && u.family != podvm_enter::userland::Family::Loader =>
+                && u.family != podvm_enter::userland::Family::Loader
+                && native_drive(u).is_none() =>
         {
             eprintln!("{}", detached_userland_refusal(verb, u.family.name()));
             Err(podvm_image::error::EXIT_RUNTIME_ERROR)

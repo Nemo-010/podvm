@@ -62,8 +62,9 @@ fn labelled(tag: &str) -> (PathBuf, String) {
     let store = dir.join("store");
     let (rc, _, err) = podvm(&store, &["import", tar.to_str().unwrap(), "lab/one:1"]);
     assert_eq!(rc, 0, "import: {err}");
-    // A foreground run that leaves its record: where chroot is denied, a
-    // static program has no detached driver, so `create` refuses it there.
+    // A foreground run that leaves its record: it runs on each rung, also
+    // where the kernel refuses the dispatch of the native-static rung and
+    // a static program has no detached driver (TODO/enter.md T-1896).
     let (rc, _, err) = podvm(
         &store,
         &[
