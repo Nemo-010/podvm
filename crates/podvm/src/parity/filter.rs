@@ -6,6 +6,16 @@ use super::*;
 /// is what has no row. The usage line matches `admit`'s: one refusal
 /// shape for one surface.
 pub fn refuse_member(verb: &str, member: &str, usage: &str) -> i32 {
+    if let Some((name, _)) = member.split_once('=')
+        && BOOLEAN_LONGS.contains(&name)
+    {
+        eprintln!(
+            "podvm {verb}: {name} takes no value; it takes `{name}`, `{name}=true` \
+             or `{name}=false`, and {member:?} is none of them (TODO/gate.md T-1853)"
+        );
+        short_usage(verb, usage);
+        return podvm_image::error::EXIT_FLAG_ERROR;
+    }
     eprintln!(
         "podvm {verb}: unknown option {member:?}. It has no row in the parity \
          table; `podvm system info` lists every flag this verb takes"
@@ -97,6 +107,28 @@ pub fn expand(verb: &str, args: &[String]) -> Result<Vec<String>, String> {
             prev_dash = false;
             continue;
         }
+        // TODO/gate.md T-1853: `--flag=value` of a flag with a row. A
+        // boolean takes docker's `=true` and `=false`; a valued flag becomes
+        // `--flag value`, the form each parser has an arm for.
+        if let Some((name, val)) = a.strip_prefix("--").and_then(|_| a.split_once('='))
+            && flag(under, name).is_some()
+        {
+            if BOOLEAN_LONGS.contains(&name) {
+                match val {
+                    "true" => out.push(name.to_string()),
+                    "false" => {}
+                    // `run --strict=all` (T-1415): the parser takes it.
+                    _ if name == "--strict" => out.push(a.clone()),
+                    _ => return Err(a.clone()),
+                }
+                prev_dash = true;
+            } else {
+                out.push(name.to_string());
+                out.push(val.to_string());
+                prev_dash = false;
+            }
+            continue;
+        }
         if a.starts_with('-') && a.len() > 1 {
             out.push(a.clone());
             prev_dash = true;
@@ -114,3 +146,37 @@ pub fn expand(verb: &str, args: &[String]) -> Result<Vec<String>, String> {
     }
     Ok(out)
 }
+
+/// TODO/gate.md T-1853: the long flags of the parity table that take no
+/// value. `expand` gives them docker's `--flag=true` and `--flag=false`;
+/// each other long flag with a row takes a value, and `--flag=value`
+/// becomes `--flag value`. `tests/flag_equals.rs` walks the table.
+pub const BOOLEAN_LONGS: &[&str] = &[
+    "--all",
+    "--all-tags",
+    "--cached",
+    "--detach",
+    "--digests",
+    "--follow",
+    "--force",
+    "--interactive",
+    "--json",
+    "--no-host-cas",
+    "--no-pager",
+    "--no-source-fixup",
+    "--no-steps",
+    "--no-trunc",
+    "--password-stdin",
+    "--podvm-engine",
+    "--podvm-sealed",
+    "--quiet",
+    "--read-only",
+    "--recursive",
+    "--rm",
+    "--rows",
+    "--strict",
+    "--tty",
+    "--unsafe-host-paths",
+    "--verbose",
+    "--volumes",
+];

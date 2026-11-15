@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "true"
+  ],
+  "confine": null,
+  "container": null,
+  "degradations": [],
+  "detached": false,
+  "ended": "2026-11-15T00:52:24Z",
+  "exit_code": null,
+  "image": "localhost:1/t1853:1",
+  "image_digest": null,
+  "labels": [],
+  "limits": [],
+  "max_rss_kib": null,
+  "measured_by": "the rung that podvm entered, as its banner names it",
+  "no_new_privs": false,
+  "podvm": "0.2.0-beta.18",
+  "refused": 125,
+  "rung": null,
+  "schema": 1,
+  "signal": null,
+  "started": "2026-11-15T00:52:21Z",
+  "system_ms": null,
+  "timed_out": false,
+  "timeout_s": null,
+  "user_ms": null,
+  "wall_ms": 3012
+}

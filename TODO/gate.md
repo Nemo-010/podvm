@@ -5204,7 +5204,7 @@ section in `kvm.yml` before each release.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5234,6 +5234,27 @@ covered with no new test.
 ## Prove
 
 `cargo test -p podvm --bin podvm parity_surface` exits 0, and the test fails when one `=` arm or one help arm is removed (`podvm-plant` plants it)
+
+
+## Correction
+
+**Corrected 2026-11-15.** The walk needs the binary, so it is the
+integration test `tests/flag_equals.rs`, not `--bin podvm
+parity_surface`. In place of a plant, the test ran on the tree before the
+change of `expand` and failed on 50 rows; it runs on each push in CI.
+## Done
+
+**Done 2026-11-15.** `parity::expand` takes `--flag=value` of each flag
+with a row: a valued flag becomes `--flag value`, and a boolean of
+`BOOLEAN_LONGS` takes docker's `=true` and `=false` and refuses another
+value by name (`run --strict=all` stays for its parser). `compare` now
+goes through `expand`. `run --attach` and `--expose` take their value,
+as docker's do; before, `run --expose 80 alpine` read `80` as the image.
+`tests/flag_equals.rs` walks each long flag of the table with `=`: 50 of
+175 had no arm before the change (`stop --time=1`, `kill --signal=KILL`,
+`ps --all=true` among them), and none after. The `-h` and `--help` half
+is `tests/help_every_verb.rs` (T-1833). `cargo test -p podvm --test
+flag_equals` exits 0.
 
 
 # T-1854: No test proves that each option of `run` is honoured or refused on each tier

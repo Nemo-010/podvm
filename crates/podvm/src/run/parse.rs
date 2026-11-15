@@ -87,6 +87,7 @@ fn parse_flags_with(
         if let Some(flag) = expecting.take() {
             match flag {
                 "-e" => o.env.extend(env_arg(verb, a)?),
+                "--stub" => {}
                 "--env-file" => {
                     let es = read_env_file(verb, a)?;
                     o.env.extend(es);
@@ -228,14 +229,10 @@ fn parse_flags_with(
             "--env-file" => expecting = Some("--env-file"),
             "--label" => expecting = Some("--label"),
             "--log-driver" => expecting = Some("--log-driver"),
-            "--attach" => {
-                // ⚠ Stub by the table: podvm always captures stdout and
-                // stderr together, so stream selection changes nothing.
-            }
-            "--expose" => {
-                // ⚠ Stub by the table: docker's --expose only documents
-                // ports and podvm publishes none, so the run is unchanged.
-            }
+            // ⚠ Stub by the table, and each takes its value as docker's
+            // does (TODO/gate.md T-1853): podvm captures stdout and stderr
+            // together, and docker's --expose only documents ports.
+            "--attach" | "--expose" => expecting = Some("--stub"),
             "-w" | "--workdir" => expecting = Some("-w"),
             "--device" => expecting = Some("--device"),
             "-v" | "--volume" => expecting = Some("-v"),

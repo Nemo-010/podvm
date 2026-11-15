@@ -90,7 +90,9 @@ fn env_file_loads_and_stubs_parse() {
     // The stub trio parses and changes nothing about the run.
     let o = parse(
         "run",
-        &v(&["--label", "k=v", "--attach", "--expose", "img"]),
+        &v(&[
+            "--label", "k=v", "--attach", "stdout", "--expose", "80", "img",
+        ]),
     )
     .unwrap();
     assert_eq!(o.image.as_deref(), Some("img"));

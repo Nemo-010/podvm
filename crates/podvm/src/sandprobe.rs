@@ -163,6 +163,11 @@ pub fn probe_inside(args: &[String]) -> i32 {
 /// `podvm compare`.
 pub fn compare(args: &[String]) -> i32 {
     let (mut report, mut reference, mut expected, mut strict) = (None, None, None, false);
+    // TODO/gate.md T-1853: `--flag=value` as each other verb takes it.
+    let args = match crate::parity::expand("compare", args) {
+        Ok(a) => a,
+        Err(m) => return crate::parity::refuse_member("compare", &m, USAGE_COMPARE),
+    };
     let mut it = args.iter();
     while let Some(a) = it.next() {
         match a.as_str() {
