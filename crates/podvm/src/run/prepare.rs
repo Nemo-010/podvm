@@ -158,7 +158,7 @@ pub(crate) fn prepare(
     })?;
 
     if !podvm_extract::is_extracted(store, &record.manifest_digest) {
-        extract_now(verb, store, &record)?;
+        extract_now(verb, store, &record, o.ask.verbose)?;
     }
     // ⭐ TODO/image.md T-1709: the container's own copy of the image. Each
     // write below (the object, the fixups, the payload) lands in it.

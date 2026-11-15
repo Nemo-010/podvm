@@ -256,6 +256,7 @@ pub(crate) fn extract_now(
     verb: &str,
     store: &podvm_image::Store,
     record: &podvm_image::Record,
+    loud: bool,
 ) -> std::result::Result<(), i32> {
     // ⛔ Every caller reads `is_extracted` before it calls this, and two of
     // them that read it together both extract the same tree. Measured
@@ -282,12 +283,19 @@ pub(crate) fn extract_now(
         eprintln!("podvm {verb}: the manifest does not parse: {e}");
         podvm_image::error::EXIT_RUNTIME_ERROR
     })?;
+    // TODO/gate.md T-1852 (`img.load-run-quiet`): the line of each layer
+    // is progress, which a quiet run does not print; `--verbose` prints it.
+    // A failure and the warnings below print on each run.
+    let mut layers: Vec<u8> = Vec::new();
+    let done = podvm_extract::extract(store, &manifest, &record.manifest_digest, &mut layers);
     let mut err = std::io::stderr().lock();
-    let done = podvm_extract::extract(store, &manifest, &record.manifest_digest, &mut err)
-        .map_err(|e| {
-            let _ = writeln!(err, "podvm {verb}: {e}");
-            podvm_image::error::EXIT_RUNTIME_ERROR
-        })?;
+    if loud || done.is_err() {
+        let _ = err.write_all(&layers);
+    }
+    let done = done.map_err(|e| {
+        let _ = writeln!(err, "podvm {verb}: {e}");
+        podvm_image::error::EXIT_RUNTIME_ERROR
+    })?;
     crate::diagnose::report_dropped(&mut err, &done, &podvm_probe::identity::read(), false);
     crate::diagnose::report_skipped(&mut err, &done); // TODO/image.md T-1883
     Ok(())

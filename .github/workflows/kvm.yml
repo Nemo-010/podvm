@@ -109,6 +109,24 @@ jobs:
           fi
           exit "$rc"
 
+      # TODO/gate.md T-1852: the machine section of the QA pass under KVM
+      # before each release. The fixture of its rung `ul` needs user
+      # namespaces, which AppArmor of Ubuntu 24.04 restricts by default.
+      - name: experiment 443, the machine section, under KVM
+        if: always()
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+          rc=0
+          PODVM_443_ONLY=machine \
+            PODVM_443_BIN="$GITHUB_WORKSPACE/target/x86_64-unknown-linux-musl/debug/podvm" \
+            timeout 40m sh experiments/443-qa-surface.sh || rc=$?
+          if pgrep -a qemu-system; then
+            echo "an emulator stayed after the run"
+            pkill -9 qemu-system || true
+            rc=1
+          fi
+          exit "$rc"
+
       - name: keep the transcripts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -118,6 +136,7 @@ jobs:
             experiments/results/machine-ssh.txt
             experiments/results/microvm-boot.txt
             experiments/results/microvm-machine.txt
+            experiments/results/qa-surface.txt
           if-no-files-found: warn
 
   # TODO/gate.md T-1641, T-1350 and TODO/milestones.md T-1112: the Linux

@@ -359,7 +359,7 @@ fn copy_named(
         }
     };
     if !podvm_extract::is_extracted(s, &record.manifest_digest)
-        && let Err(c) = crate::run::extract_now("cp", s, &record)
+        && let Err(c) = crate::run::extract_now("cp", s, &record, false)
     {
         return c;
     }

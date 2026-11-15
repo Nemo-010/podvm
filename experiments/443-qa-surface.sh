@@ -145,6 +145,10 @@ t img.pull.ul ul "rc 0" '[ $rc -eq 0 ]' '$X $PB pull -q $A'
 t img.pull.q-stdout ns "pull -q prints the reference or nothing; stderr empty" '[ $rc -eq 0 ] && [ -z "$err" ]' '$PB pull -q $A'
 t img.images ns "lists alpine" 'has "$out" alpine' '$PB images'
 t img.images.ul ul "lists alpine" 'has "$out" alpine' '$X $PB images'
+# TODO/extract.md T-1813, TODO/gate.md T-1852: a setuid file keeps its bit.
+for r in ns ul; do
+	t img.setuid.$r $r "newgrp 4755 after extract (T-1813)" '[ "$out" = 4755 ]' "r=\$(\$X \$PB extract \$D 2>/dev/null | tail -1) && stat -c %a \"\$r/usr/bin/newgrp\""
+done
 t img.images-q ns "ids only" '[ $rc -eq 0 ] && ! has "$out" REPOSITORY' '$PB images -q'
 t img.images-format ns "repo:tag lines" 'has "$out" "alpine:3.20"' "\$PB images --format '{{.Repository}}:{{.Tag}}'"
 t img.images-filter ns "only alpine" 'has "$out" alpine && ! has "$out" debian' '$PB images --filter name=alpine'

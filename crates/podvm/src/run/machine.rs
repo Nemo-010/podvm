@@ -50,7 +50,7 @@ pub(super) fn prepare_image(
         podvm_image::error::EXIT_RUNTIME_ERROR
     })?;
     if !podvm_extract::is_extracted(store, &record.manifest_digest) {
-        extract_now(verb, store, &record)?;
+        extract_now(verb, store, &record, o.ask.verbose)?;
     }
     let (rootfs, _) = podvm_extract::paths(store, &record.manifest_digest);
     let cfg = config_of(verb, store, &record)?;
