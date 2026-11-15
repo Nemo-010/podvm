@@ -140,7 +140,25 @@ pub(super) fn take_hold(
     err: &mut dyn std::io::Write,
 ) {
     match podvm_supervise::foreground(store, id, pid) {
-        Ok(h) => *hold = Some(h),
+        Ok(h) => {
+            *hold = Some(h);
+            // TODO/probe.md T-1909: the record names host pids.
+            if crate::userns::active() {
+                let me = i64::from(std::process::id());
+                match (crate::userns::host_pid(pid), crate::userns::host_pid(me)) {
+                    (Some(p), Some(l)) => {
+                        if let Err(e) = podvm_supervise::set_pids(store, id, p, l) {
+                            writeln!(err, "podvm run: the host pids of the record: {e}")
+                                .unwrap_or(());
+                        }
+                    }
+                    _ => {
+                        writeln!(err, "podvm run: the host pids of the run are unknown")
+                            .unwrap_or(());
+                    }
+                }
+            }
+        }
         Err(e) => {
             let _ = writeln!(err, "podvm run: the record of the run is not live: {e}");
         }

@@ -213,6 +213,22 @@ pub fn set_hardening(store: &Store, want: &str, h: table::Hardening) -> Result<(
     Ok(())
 }
 
+/// TODO/probe.md T-1909: write the pids of a running record as the host
+/// sees them. A run in a PID namespace of its own holds the pids of that
+/// namespace, and `exec`, `cp` and `inspect` from outside read the record.
+pub fn set_pids(store: &Store, want: &str, pid: i64, launcher_pid: i64) -> Result<()> {
+    let s = settings(store);
+    let c: Container = pod_supervise::get(&s, want)?;
+    pod_supervise::table::update(&s, |t: &mut pod_supervise::table::Table<Detail>| {
+        if let Some(x) = t.containers.iter_mut().find(|x| x.id == c.id) {
+            x.pid = Some(pid);
+            x.launcher_pid = Some(launcher_pid);
+        }
+        Ok::<_, pod_core::Failure>(())
+    })?;
+    Ok(())
+}
+
 /// Wait for a container to end. `None` is the bound, never a guess.
 pub fn wait(store: &Store, want: &str, timeout_ms: u64) -> Result<(Container, Option<i32>)> {
     Ok(pod_supervise::wait(&settings(store), want, timeout_ms)?)

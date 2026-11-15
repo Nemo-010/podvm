@@ -57,11 +57,42 @@ unsafe extern "C" {
     ) -> i32;
     fn __errno_location() -> *mut i32;
     fn _exit(code: i32) -> !;
+    fn syscall(n: i64, ...) -> i64;
+    fn close(fd: i32) -> i32;
+    fn open(path: *const std::ffi::c_char, flags: i32, ...) -> i32;
 }
 
 static CHILD: AtomicI32 = AtomicI32::new(0);
 static ACTIVE: AtomicBool = AtomicBool::new(false);
 static UTS: AtomicBool = AtomicBool::new(false);
+/// A descriptor of the host's `/proc`, opened in pid 2 before its own
+/// `/proc` covers it.
+static HOST_PROC: AtomicI32 = AtomicI32::new(-1);
+
+/// The pid that the host gives the process `pid` of this namespace, or
+/// `pid` where podvm entered no namespace. A pidfd of the process, read
+/// through the `fdinfo` of the host's `/proc`, gives its `Pid:` in the
+/// namespace of that `/proc`.
+pub fn host_pid(pid: i64) -> Option<i64> {
+    let host = HOST_PROC.load(Ordering::Relaxed);
+    if !active() || host < 0 {
+        return Some(pid);
+    }
+    const PIDFD_OPEN: i64 = 434;
+    // SAFETY: pidfd_open takes two integers.
+    let fd = unsafe { syscall(PIDFD_OPEN, pid, 0) };
+    if fd < 0 {
+        return None;
+    }
+    let text = std::fs::read_to_string(format!("/proc/self/fd/{host}/self/fdinfo/{fd}"));
+    // SAFETY: fd is the pidfd of this call.
+    unsafe { close(fd as i32) };
+    text.ok()?
+        .lines()
+        .find_map(|l| l.strip_prefix("Pid:"))
+        .and_then(|v| v.trim().parse().ok())
+        .filter(|p: &i64| *p > 0)
+}
 
 /// True where this process owns a UTS namespace of its own: the entry of
 /// [`enter_if`], or a `run --hostname` of uid 0.
@@ -272,6 +303,10 @@ pub fn enter_if(argv: &[String]) {
         std::process::exit(125);
     }
     if pid2 == 0 {
+        const O_PATH_DIR_CLOEXEC: i32 = 0o10000000 | 0o200000 | 0o2000000;
+        // SAFETY: a NUL-ended literal.
+        let host = unsafe { open(c"/proc".as_ptr(), O_PATH_DIR_CLOEXEC) };
+        HOST_PROC.store(host, Ordering::Relaxed);
         if !own_proc() {
             eprintln!(
                 "podvm run: /proc of the PID namespace: {} (TODO/probe.md T-1909)",
