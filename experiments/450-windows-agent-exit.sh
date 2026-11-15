@@ -25,7 +25,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BIN="${PODVM_450_BIN:-$ROOT/target/x86_64-unknown-linux-musl/release/podvm}"
 VHDX="${PODVM_450_VHDX:?set PODVM_450_VHDX to the ValidationOS.vhdx}"
 OUT="$ROOT/experiments/results/windows-agent-exit.txt"
-PROV="$VHDX.podvm.qcow2"
+# `windows setup` names its output after the stem of the image: X.vhdx gives
+# X.podvm.qcow2 (`windows/setup.rs`).
+PROV="${VHDX%.*}.podvm.qcow2"
 fail=0
 : >"$OUT"
 say() { printf '%s\n' "$*" | tee -a "$OUT"; }
