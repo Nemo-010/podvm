@@ -1,15 +1,16 @@
 # Handoff
 
-The state on 2026-11-15, later. `0.2.0-beta.21` is released (issue 392:
-gate, arm, nightly trial and release green on `e4dd9168`). It carries the
-store copy of QEMU (T-1875), the detached Windows and DOS machines with
-`ps`, `stop`, `start`, `rm`, `logs -f`, `port` and `-p` (T-1870, T-1869),
-`windows screenshot` and `windows view` (T-1899), and a `:ro` volume on the
-native-static rung (T-1901, PodUtils/podrunner#111). `main` adds the
-arm64 guest of the machine tier (T-1890), the source-pattern ratchet of
-the gate (T-1855), the machine case of the report test (T-1856) and the
-evaluation days in the Windows doctor (T-1871). Request 388 runs the first
-Windows install under KVM.
+The state on 2026-11-15, evening. `0.2.0-beta.22` waits on request 410
+(gate, arm, nightly trial and release on `d2004f12`); request 408 and
+409 stopped at the gate (a stale `docs/runtime-state.md`, then plant 27f
+of `podvm-plant` that was not restored). beta.22 carries `--hostname`
+(T-1908, PodUtils/podrunner#115), name resolution under the confine layer
+(T-1902), the probe line that names the failed leg (T-1903), and the
+entry of an unprivileged foreground `run` through a user, a PID and a UTS
+namespace (T-1909, call C21). `main` after it adds `exec` and `cp` into
+such a run (T-1910). Request 411 runs `kvm.yml` with the Windows install
+in three legs: run 43689812413 stopped at "56% complete" for 2 h with no
+write to the disk (screenshots in its artifact).
 A fresh
 session with no memory reads this file first, then `AGENTS.md`,
 `TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
@@ -58,6 +59,11 @@ PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
   subtree (T-1747).
 * COORD-127 (#393): a client of the QEMU Guest Agent (T-1868).
 * COORD-128 (#394): the aarch64 netboot pins in `pod-services` (T-1890).
+* COORD-131 (#404): the answer to PodUtils/podrunner#115 (`--hostname`).
+* COORD-132 (#406): the user namespace in pod-enter, for `run -d` and
+  `create` (T-1909 serves the foreground `run` in podvm).
+* COORD-133 (#407): the `kvm` leg of `pod-hostprobe` checks the
+  architecture of the guest (T-1907).
 
 Each other COORD issue is closed; `TODO/issues.md` gives the state of
 each one.
@@ -65,13 +71,14 @@ each one.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8).
-2. The next release follows a batch of fixes, in the form of issue 392.
-3. The Windows proof is on KVM. Request 388 runs `kvm.yml` with the new
-   job `install` (experiment 452: `pull windows:2025` and `run
-   windows:2025 ver`). Read its transcript, record the first install
-   time in T-1867, then add `windows:11` to the job. A failure there is
-   most likely the "Press any key" of the ISO, the disk order of Setup
-   (the answer file wipes disk 0) or the image index of the Server ISO.
+2. Request 410 releases beta.22. Push nothing to `main` until it ran
+   (`.work/HOLD` holds the local commits). Then push, record the run ids,
+   check the attestation of each asset (T-1905: `gh attestation verify`
+   in the release notes), and close 410.
+3. Request 411 runs the Windows install in three legs (Ubuntu QEMU, the
+   store's QEMU 9.2, no Hyper-V flags). Read the screenshots of each leg
+   (`gh api repos/PodUtils/podvm/actions/artifacts/ID/zip`); the leg that
+   passes names the cause of the stall at 56 %. Record it in T-1867.
 4. A tool of the record (`podvm-gate`, `podvm-count`) finds the repository
    from its own path: in a worktree, build it in the worktree's own
    `target/`, or it reads and writes the main checkout. Commit no
