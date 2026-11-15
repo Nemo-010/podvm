@@ -225,36 +225,42 @@ fn show(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_FLAG_ERROR;
     };
-    let (table, c, source) = match effective(&name, &sets) {
-        Ok(x) => x,
-        Err(e) => {
-            eprintln!("podvm profile show: {e}");
-            return EXIT_FLAG_ERROR;
-        }
-    };
-    println!("# profile {name} ({})", source.word());
-    print!("{}", model::render(&table));
-    let cwd = std::env::current_dir().unwrap_or_default();
-    match model::run_args(&c, &cwd) {
-        Ok(a) => {
-            println!("\n# run flags: {}", a.join(" "));
-            if !c.wrap.is_empty() {
-                println!("# the command runs under: {}", c.wrap.join(" "));
-            }
-            // TODO/cli.md T-1661: the runtime's flags beside podvm's map.
-            if let Some(r) = &c.runtime
-                && let Ok((p, _)) = runtime::prefix(r, &c.read, &c.write)
-            {
-                println!("# the runtime enforces: {}", p.join(" "));
-                println!(
-                    "# podvm enforces: the path map of the run flags (-v, --read-only, --tmpfs)"
-                );
-            }
+    match document(&name, &sets) {
+        Ok(doc) => {
+            print!("{doc}");
             0
         }
         Err(e) => {
-            eprintln!("podvm profile show: profile {name}: {e}");
+            eprintln!("podvm profile show: {e}");
             EXIT_FLAG_ERROR
         }
     }
+}
+
+/// TODO/cli.md T-1845: the whole document of `show`, or the refusal. The
+/// caller prints it only when it is whole, so a refusal writes nothing on
+/// stdout and no reader takes a part for the whole.
+fn document(name: &str, sets: &[String]) -> Result<String, String> {
+    use std::fmt::Write as _;
+    let (table, c, source) = effective(name, sets).map_err(|e| e.to_string())?;
+    let cwd = std::env::current_dir().unwrap_or_default();
+    let a = model::run_args(&c, &cwd).map_err(|e| format!("profile {name}: {e}"))?;
+    let mut d = String::new();
+    let _ = writeln!(d, "# profile {name} ({})", source.word());
+    d.push_str(&model::render(&table));
+    let _ = writeln!(d, "\n# run flags: {}", a.join(" "));
+    if !c.wrap.is_empty() {
+        let _ = writeln!(d, "# the command runs under: {}", c.wrap.join(" "));
+    }
+    // TODO/cli.md T-1661: the runtime's flags beside podvm's map.
+    if let Some(r) = &c.runtime
+        && let Ok((p, _)) = runtime::prefix(r, &c.read, &c.write)
+    {
+        let _ = writeln!(d, "# the runtime enforces: {}", p.join(" "));
+        let _ = writeln!(
+            d,
+            "# podvm enforces: the path map of the run flags (-v, --read-only, --tmpfs)"
+        );
+    }
+    Ok(d)
 }

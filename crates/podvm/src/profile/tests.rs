@@ -334,3 +334,17 @@ fn workerd_profile_holds_each_tcp_connect() {
     let (t, _) = resolve("playwright-chromium", None).unwrap();
     assert_eq!(check(&t).unwrap().net_ports, None);
 }
+
+/// TODO/cli.md T-1845: a profile that cannot become a run gives no
+/// document, so `show` writes 0 bytes to stdout; one that can gives the
+/// whole document with its run flags.
+#[test]
+fn profile_show_refusal_writes_no_document() {
+    let e = super::document("default", &["limits.cpus=3".to_string()]).unwrap_err();
+    assert!(e.contains("`limits.cpus` needs"), "{e}");
+    let d = super::document("default", &[]).unwrap();
+    assert!(
+        d.starts_with("# profile default") && d.contains("# run flags:"),
+        "{d}"
+    );
+}

@@ -5576,7 +5576,7 @@ The marker stays lowercase: it is the marker of each help text.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5602,6 +5602,15 @@ A refused verb writes no answer to stdout.
 ## Prove
 
 `cargo test -p podvm --bin podvm profile_show_refusal` exits 0, with a test that a profile that cannot become a run writes 0 bytes to stdout
+
+## Done
+
+**Done 2026-11-15.** `profile show` builds the whole document first
+(`profile.rs`, `document`), the run flags included, and prints it only
+when it is whole; a refusal goes to stderr with 125 and writes nothing on
+stdout. `cargo test -p podvm --bin podvm profile_show_refusal` exits 0:
+`default` with `limits.cpus=3` gives no document, and `default` gives the
+document with its `# run flags:` line.
 
 
 # T-1850: `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull`

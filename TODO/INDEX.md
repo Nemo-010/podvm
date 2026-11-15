@@ -507,7 +507,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1842](image.md) | P2 | S | none | image | done | `save` and `import` exit 125 for an input error that their error type maps to 1, and a bad insecure-registry host is taken |
 | [T-1843](image.md) | P2 | S | none | image | done | `extract --force` removes the extracted root before it takes the lock of the store |
 | [T-1844](interpose.md) | P2 | S | none | interpose | done | `interpose::place` writes the object through one fixed temporary name in the root |
-| [T-1845](cli.md) | P3 | S | none | cli | open | `profile show` writes a part of the document to stdout and then fails |
+| [T-1845](cli.md) | P3 | S | none | cli | done | `profile show` writes a part of the document to stdout and then fails |
 | [T-1846](machine.md) | P2 | M | none | machine | open | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
 | [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
 | [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 28 open, 12 partial, 2 blocked, 451 done.
+493 entries: 27 open, 12 partial, 2 blocked, 452 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 12 | 3 | 2 | 158 | 175 |
-| P3 | 15 | 2 | 0 | 23 | 40 |
-| **All** | 28 | 12 | 2 | 451 | 493 |
+| P3 | 14 | 2 | 0 | 24 | 40 |
+| **All** | 27 | 12 | 2 | 452 | 493 |
 
 ## Work order
 
