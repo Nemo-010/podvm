@@ -4087,6 +4087,11 @@ podvm in a guest on the cloud host can hold the Prove as root. The
 report of a delegated subtree belongs to the probe of `pod-hostprobe`
 (PodUtils/podcrates); ask it there first.
 
+**Amended 2026-11-15.** The ask is COORD-125 (issue 390): a leg of
+`pod-hostprobe` that reports a delegated cgroup2 subtree, its path and its
+controllers, or the reason for none. podvm keeps the child cgroup of each
+run and the read of `memory.events`.
+
 
 # T-1752: A versioned JSON Schema for the record of `run --report`, published in each release
 

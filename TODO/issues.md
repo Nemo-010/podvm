@@ -286,3 +286,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #387 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` at 35d5b686 (AGENTS.md, section 9) |
 | #388 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
 | #389 | COORD-124: pod-services: list the host api.ghcr.pkgforge.dev (podvm T-1875) (to podcrates) | open | T-1875 |
+| #390 | COORD-125: pod-hostprobe: report a delegated cgroup2 subtree (podvm T-1747) (to podcrates) | open | T-1747 |
