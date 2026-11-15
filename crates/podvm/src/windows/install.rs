@@ -150,11 +150,32 @@ pub(crate) fn install(verb: &str, e: &Entry, iso: &Path, quiet: bool) -> Result<
         std::fs::write(meta_path(e), text).map_err(|why| fail(verb, e.name, why))
     });
     if done.is_err() {
+        keep_failed(&plan);
         let _ = std::fs::remove_file(&golden);
         let _ = std::fs::remove_file(password_path(e));
         let _ = std::fs::remove_file(meta_path(e));
     }
     done.map(|()| golden)
+}
+
+/// TODO/machine.md T-1867: `PODVM_WINDOWS_KEEP_FAILED=DIR` keeps the root
+/// disk of a failed install as `DIR/root.qcow2`, for the logs of Setup
+/// (`$WINDOWS.~BT/Sources/Panther`). The emulator stopped before this.
+fn keep_failed(plan: &Plan) {
+    let Some(dir) = std::env::var_os("PODVM_WINDOWS_KEEP_FAILED").map(PathBuf::from) else {
+        return;
+    };
+    let to = dir.join("root.qcow2");
+    let kept = std::fs::create_dir_all(&dir).and_then(|()| {
+        std::fs::rename(&plan.root, &to).or_else(|_| std::fs::copy(&plan.root, &to).map(|_| ()))
+    });
+    match kept {
+        Ok(()) => eprintln!(
+            "podvm: the root disk of the failed install is {}",
+            to.display()
+        ),
+        Err(e) => eprintln!("podvm: PODVM_WINDOWS_KEEP_FAILED: {}: {e}", to.display()),
+    }
 }
 
 /// The blank root disk, the empty mailbox, the answer stick and the

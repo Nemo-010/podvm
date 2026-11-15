@@ -60,7 +60,7 @@ timeout 60 "$BIN" rm -f "$id" >/dev/null 2>&1
 timeout 120 "$BIN" run --rm --pids-limit 16 "$IMG" sh -c 'i=0; while [ $i -lt 40 ]; do sleep 3 & i=$((i+1)); done; wait' >/dev/null 2>"$OUT.2.err"
 rc=$?
 say "pids      rc $rc: $(grep -c -i 'fork' "$OUT.2.err") fork line(s)"
-grep -qi 'fork' "$OUT.2.err" || bad "clause 2"
+grep -qi 'fork' "$OUT.2.err" || { bad "clause 2"; tail -3 "$OUT.2.err" | tee -a "$OUT"; }
 
 timeout 120 "$BIN" run --rm --memory 32m "$IMG" sh -c 'x=$(head -c 200000000 /dev/zero | tr "\0" a); echo ${#x}' >/dev/null 2>"$OUT.3.err"
 rc=$?
@@ -71,7 +71,7 @@ timeout 120 "$BIN" run --rm --pids-limit 64 "$IMG" true >/dev/null 2>&1
 sleep 2
 left=$(leaves | wc -l)
 say "leaves    $left left"
-[ "$left" -eq 0 ] || bad "clause 4: $(leaves)"
+[ "$left" -eq 0 ] || { bad "clause 4: $(leaves)"; for l in $(leaves); do say "  $l: $(cat "$l/cgroup.procs" | tr '\n' ' ')"; done; }
 rm -f "$OUT".*.err
 [ "$fail" -eq 0 ] && say "PASS" || say "FAIL"
 exit "$fail"

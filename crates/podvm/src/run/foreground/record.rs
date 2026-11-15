@@ -139,6 +139,7 @@ pub(super) fn take_hold(
     hold: &mut Option<podvm_supervise::Hold>,
     err: &mut dyn std::io::Write,
 ) {
+    crate::run::cgroup::leave(); // TODO/cli.md T-1747: the leaf is the payload's
     match podvm_supervise::foreground(store, id, pid) {
         Ok(h) => {
             *hold = Some(h);

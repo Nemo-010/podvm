@@ -323,15 +323,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Run 43709734103: the three legs stalled or failed alike
+          # ("Windows Server installation has failed"), so the QEMU and
+          # the Hyper-V flags are not the cause. One leg, with the logs
+          # of Setup.
           - leg: ubuntu-qemu
             apt_qemu: "1"
             hyperv: "1"
-          - leg: store-qemu
-            apt_qemu: "0"
-            hyperv: "1"
-          - leg: no-hyperv
-            apt_qemu: "1"
-            hyperv: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -390,6 +388,7 @@ jobs:
           PODVM_452_NAMES: "2025"
           PODVM_WINDOWS_SHOTS: ${{ runner.temp }}/install-shots
           PODVM_WINDOWS_HYPERV: ${{ matrix.hyperv }}
+          PODVM_WINDOWS_KEEP_FAILED: /mnt/w/failed
         run: |
           mkdir -p "$HOME"
           rc=0
@@ -400,6 +399,33 @@ jobs:
             rc=1
           fi
           exit "$rc"
+
+      # The logs of Setup on the kept root disk of a failed install
+      # (setupact.log and setuperr.log of each Panther directory).
+      - name: the logs of Setup
+        if: failure()
+        run: |
+          set -u
+          mkdir -p "$RUNNER_TEMP/install-shots/panther"
+          [ -f /mnt/w/failed/root.qcow2 ] || { echo "no kept disk"; exit 0; }
+          sudo modprobe nbd max_part=8 || true
+          sudo qemu-nbd --read-only --connect=/dev/nbd0 /mnt/w/failed/root.qcow2
+          sleep 3
+          lsblk /dev/nbd0 || true
+          for p in /dev/nbd0p*; do
+            d=/mnt/p$(basename "$p")
+            sudo mkdir -p "$d"
+            sudo mount -t ntfs3 -o ro "$p" "$d" 2>/dev/null || continue
+            sudo find "$d" -maxdepth 6 -ipath '*panther*' \( -iname 'setup*.log' -o -iname '*.xml' \) 2>/dev/null |
+              while read -r f; do
+                n=$(echo "$f" | tr '/ ' '__')
+                sudo cp "$f" "$RUNNER_TEMP/install-shots/panther/$n"
+              done
+            sudo umount "$d"
+          done
+          sudo qemu-nbd --disconnect /dev/nbd0 || true
+          sudo chmod -R a+r "$RUNNER_TEMP/install-shots/panther"
+          ls -la "$RUNNER_TEMP/install-shots/panther"
 
       - name: keep the transcript
         if: always()

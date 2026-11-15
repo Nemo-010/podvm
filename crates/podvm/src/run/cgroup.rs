@@ -194,6 +194,18 @@ pub(super) fn apply(verb: &str) -> Result<(), i32> {
     Ok(())
 }
 
+/// Right after the payload is spawned: podvm leaves the leaf, so that its
+/// own threads and memory do not count against the limits of the payload
+/// (`pids.max` counts threads). The payload and each of its children stay.
+pub(crate) fn leave() {
+    let Some((_, home, pid)) = LEAF.lock().ok().and_then(|l| l.clone()) else {
+        return;
+    };
+    if pid == std::process::id() {
+        let _ = std::fs::write(home.join("cgroup.procs"), "0");
+    }
+}
+
 /// At podvm's exit: name an OOM kill, move back, and remove the leaf.
 extern "C" fn release() {
     let Some((leaf, home, pid)) = LEAF.lock().ok().and_then(|l| l.clone()) else {

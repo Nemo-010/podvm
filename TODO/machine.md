@@ -3804,6 +3804,8 @@ the driver reads `SETUP.TXT` back and names a missing agent. `podvm run
 windows:2025 ver` then boots the golden image and runs the command through
 the mailbox (T-1861). Experiment 452 checks it (clause 5).
 
+**Partial (2026-11-15, night).** Run 43709734103 (request 411) ran the install of `windows:2025` under KVM in three legs: the QEMU of Ubuntu (8.2), the QEMU of Ubuntu with no Hyper-V flags (`PODVM_WINDOWS_HYPERV=0`), and podvm's static QEMU 9.2 (it failed earlier, in the TCG refusal step, which needs a QEMU on PATH; fixed in `e69bd045`). Both install legs wrote 1.53 GiB to the disk in the first 5 minutes and none after; the screenshots show "Installing Windows Server, 56% complete" from minute 5, and the last screenshot of the leg with no Hyper-V flags shows the dialog "Windows Server installation has failed". So Setup fails at the apply of the image, and neither the QEMU nor the Hyper-V flags is the cause. `PODVM_WINDOWS_KEEP_FAILED=DIR` now keeps the root disk of a failed install (`windows/install.rs`, `keep_failed`), and the job mounts it read-only after a failure (`qemu-nbd`, `ntfs3`) and keeps `setupact.log` and `setuperr.log` of each Panther directory in its artifact. The job runs one leg now.
+
 # T-1868: A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe
 
 **Source:** the Windows guest review of 2026-11-14, section 5, item W10
