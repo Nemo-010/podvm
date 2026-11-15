@@ -50,7 +50,7 @@ pub fn within(root: &Path, candidate: &Path) -> Result<PathBuf> {
         .any(|c| matches!(c, std::path::Component::ParentDir))
     {
         return Err(Error::Store(format!(
-            "{} climbs out of the store with `..`",
+            "{} has `..`, which podvm refuses in a path of a container and of its store",
             candidate.display()
         )));
     }
@@ -81,8 +81,8 @@ pub fn within(root: &Path, candidate: &Path) -> Result<PathBuf> {
 
     if resolved != real_root && !resolved.starts_with(&real_root) {
         return Err(Error::Store(format!(
-            "{} resolves to {}, which is outside the store at {}. podvm \
-             refuses to delete outside its own subtree (TODO/image.md T-0204)",
+            "{} resolves to {}, which is outside the store at {}: podvm \
+             refuses a path outside its own subtree (TODO/image.md T-0204)",
             candidate.display(),
             resolved.display(),
             real_root.display()
@@ -134,7 +134,7 @@ mod tests {
     fn a_traversal_through_a_directory_that_does_not_exist_yet_is_refused() {
         let root = scratch("traversal");
         let e = within(&root, &root.join("not-yet/../../../etc/passwd")).unwrap_err();
-        assert!(format!("{e}").contains("climbs out"), "{e}");
+        assert!(format!("{e}").contains("has `..`"), "{e}");
         let _ = std::fs::remove_dir_all(&root);
     }
 

@@ -1762,7 +1762,7 @@ has a resolution of one second.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1801,6 +1801,19 @@ comment of `contain.rs` gives the reason); only the text changes.
 ## Prove
 
 `cargo test -p podvm --test cp_tree` exits 0, with tests for a file onto an existing directory in both directions, for directory modes 700 and 711 kept by `cp -r`, and for the word "copy" in a containment refusal of `cp`
+
+## Done
+
+**Done 2026-11-15.** A file onto an existing directory goes into it
+under its own name, and podvm checks the containment on the joined path
+(`lifecycle/wait_rm_cp.rs`). A failed copy names both paths. `cp -r`
+sets the mode of the source on each directory after its content, the
+deepest first (`lifecycle/copy_tree.rs`). A containment refusal of `cp`
+starts with "the copy is refused", and `podvm-image/src/contain.rs` says
+that podvm refuses `..` and a path outside its subtree, with no verb.
+`cargo test -p podvm --test cp_tree` exits 0: a file onto `/etc` and onto
+a host directory, modes 700 and 711 kept in and out by `cp -r`, and two
+refusals with the word "copy" and exit 125.
 
 
 # T-1848: No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list

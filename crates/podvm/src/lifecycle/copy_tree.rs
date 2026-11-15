@@ -100,6 +100,10 @@ pub(super) fn copy_tree(
     let mut files: Vec<(std::path::PathBuf, std::path::PathBuf)> = Vec::new();
     let mut links: Vec<(std::path::PathBuf, std::path::PathBuf)> = Vec::new();
     let mut dirs: Vec<std::path::PathBuf> = Vec::new();
+    // TODO/supervise.md T-1822: each directory and its source, for its
+    // mode after its content (a 0500 directory would refuse its files).
+    let mut modes: Vec<(std::path::PathBuf, std::path::PathBuf)> =
+        vec![(src.to_path_buf(), dst.to_path_buf())];
     let mut stack = vec![src.to_path_buf()];
     while let Some(dir) = stack.pop() {
         let entries = match std::fs::read_dir(&dir) {
@@ -152,7 +156,7 @@ pub(super) fn copy_tree(
                     &dst_path
                 };
                 if let Err(e) = gate(own) {
-                    eprintln!("podvm cp: {e}");
+                    eprintln!("podvm cp: the copy is refused: {e}");
                     return EXIT_RUNTIME_ERROR;
                 }
                 if let Err(msg) = clear_of_symlinks(dst_base, &dst_path) {
@@ -164,7 +168,7 @@ pub(super) fn copy_tree(
             }
             let gated = if out_of { &src_path } else { &dst_path };
             if let Err(e) = gate(gated) {
-                eprintln!("podvm cp: {e}");
+                eprintln!("podvm cp: the copy is refused: {e}");
                 return EXIT_RUNTIME_ERROR;
             }
             if let Err(msg) = clear_of_symlinks(dst_base, &dst_path) {
@@ -172,6 +176,7 @@ pub(super) fn copy_tree(
                 return EXIT_RUNTIME_ERROR;
             }
             if kind.is_dir() {
+                modes.push((src_path.clone(), dst_path.clone()));
                 dirs.push(dst_path);
                 stack.push(src_path);
                 continue;
@@ -249,6 +254,13 @@ pub(super) fn copy_tree(
     for (from, to) in &links {
         if replicate_link(from, to) != 0 {
             return EXIT_RUNTIME_ERROR;
+        }
+    }
+    // The deepest first, so that a closed parent cannot refuse its child.
+    modes.sort_by_key(|(_, to)| std::cmp::Reverse(to.components().count()));
+    for (from, to) in &modes {
+        if let Ok(m) = std::fs::symlink_metadata(from) {
+            let _ = std::fs::set_permissions(to, m.permissions());
         }
     }
     eprintln!(

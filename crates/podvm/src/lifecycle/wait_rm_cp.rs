@@ -407,7 +407,7 @@ pub(super) fn copy_one(
             Some(parent) => match podvm_image::contain::within(root, parent) {
                 Ok(_) => joined.clone(),
                 Err(e) => {
-                    eprintln!("podvm cp: {e}");
+                    eprintln!("podvm cp: the copy is refused: {e}");
                     return EXIT_RUNTIME_ERROR;
                 }
             },
@@ -420,16 +420,24 @@ pub(super) fn copy_one(
         match podvm_image::contain::within(root, &joined) {
             Ok(p) => p,
             Err(e) => {
-                eprintln!("podvm cp: {e}");
+                eprintln!("podvm cp: the copy is refused: {e}");
                 return EXIT_RUNTIME_ERROR;
             }
         }
     };
-    let (src, dst) = if out_of {
+    let (src, mut dst) = if out_of {
         (target, outside.to_path_buf())
     } else {
         (outside.to_path_buf(), target)
     };
+    // TODO/supervise.md T-1822: a file onto a directory goes into it under
+    // its own name, as docker does; the checks below see the joined path.
+    if !src.is_dir()
+        && dst.is_dir()
+        && let Some(name) = src.file_name()
+    {
+        dst = dst.join(name);
+    }
     // ⛔ Never write through a pre-existing symlink: the path is gated but
     // the write would land where the link points.
     if is_link(&dst) {
@@ -483,7 +491,7 @@ pub(super) fn copy_one(
             0
         }
         Err(e) => {
-            eprintln!("podvm cp: {}: {e}", src.display());
+            eprintln!("podvm cp: {} -> {}: {e}", src.display(), dst.display());
             EXIT_RUNTIME_ERROR
         }
     }
