@@ -282,3 +282,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #383 | [gh action] requested | closed (kvm 43672193303: 390, 412, 440, 392 and 450 pass under KVM; the new step of 443 failed on two defects of the experiment, fixed after) | T-1852, T-1864, T-1894 |
 | #384 | COORD-122: run_ladder of pod-enter gives the caller no pid before its wait (podvm T-1786) (to podcrates) | open | T-1786 |
 | #385 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` (AGENTS.md, section 9) |
+| #386 | COORD-123: a FAT image writer with directories and a size from the content, for `-v` of a Windows guest (podvm T-1872) (to podcrates) | open | T-1872 |

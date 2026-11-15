@@ -3961,6 +3961,11 @@ share (WebDAV in podvm, virtiofs or smb) with a write-back test. Do not
 promise live sync before that proof. `podvm cp` of T-1868 covers both
 directions with no share.
 
+The copy disk needs a FAT writer with directories and a size from the
+content: `pod_guest::fat16` is the fixed mailbox of 16 MiB, files in the
+root only. podvm asks podcrates for it in COORD-123 (issue 386,
+2026-11-15).
+
 ## Decision
 
 The copy comes first. The live share waits for the experiment.
