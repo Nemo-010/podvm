@@ -5561,8 +5561,8 @@ Ten runs of `cargo test --release --target x86_64-unknown-linux-gnu` in `crates/
 **Done 2026-11-15.** `crates/podvm-interpose/.cargo/config.toml` sets
 `RUST_TEST_THREADS=1` for each `cargo test` in the directory of the
 crate, which is its own workspace, so "the default thread count" of a
-caller there is one. `gate.yml` has the step "interposer tests", which
-runs `cargo test --release --target x86_64-unknown-linux-gnu` from that
-directory. On the cloud host the suite failed 7 of 98 tests before the
+caller there is one. `gate.yml` already had the step "interposer tests"
+in the job "workspace and interposer tests", with `--test-threads=1`, so
+the Problem's "CI does not run them" was wrong. On the cloud host the suite failed 7 of 98 tests before the
 change (`exec::tests::the_route_enters_each_arm_through_the_rootfs`
 among them); after it, ten runs each exit 0 with 98 of 98.

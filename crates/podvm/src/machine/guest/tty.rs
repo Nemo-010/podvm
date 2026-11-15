@@ -130,8 +130,15 @@ pub fn pump(sock: PathBuf, deadline: std::time::Instant) -> std::thread::JoinHan
                 Err(_) => return,
             }
         };
+        // TODO/machine.md T-1885: stdin waits for the marker of
+        // `guest-tty`; bytes written before it reach a console that no
+        // reader holds, and are lost.
+        let (open_tx, open_rx) = std::sync::mpsc::channel::<()>();
         if let Ok(mut w) = conn.try_clone() {
             std::thread::spawn(move || {
+                if open_rx.recv().is_err() {
+                    return;
+                }
                 let mut buf = [0u8; 4096];
                 let mut stdin = std::io::stdin();
                 let mut last: Option<u8> = None;
@@ -157,12 +164,46 @@ pub fn pump(sock: PathBuf, deadline: std::time::Instant) -> std::thread::JoinHan
         let mut r = conn;
         let mut buf = [0u8; 4096];
         let mut out = std::io::stdout();
+        let mut before: Option<Vec<u8>> = Some(Vec::new());
         while let Ok(n) = r.read(&mut buf) {
-            if n == 0 || out.write_all(&buf[..n]).and_then(|()| out.flush()).is_err() {
+            if n == 0 {
+                break;
+            }
+            let mut chunk = &buf[..n];
+            let held;
+            if let Some(pending) = before.as_mut() {
+                pending.extend_from_slice(chunk);
+                match find(pending, OPEN_MARKER) {
+                    Some(at) => {
+                        let mut rest = pending[..at].to_vec();
+                        rest.extend_from_slice(&pending[at + OPEN_MARKER.len()..]);
+                        held = rest;
+                        chunk = &held;
+                        before = None;
+                        let _ = open_tx.send(());
+                    }
+                    // Keep a tail that can start the marker; the rest goes out.
+                    None => {
+                        let keep = pending.len().min(OPEN_MARKER.len() - 1);
+                        let flush = pending.len() - keep;
+                        held = pending.drain(..flush).collect();
+                        chunk = &held;
+                    }
+                }
+            }
+            if out.write_all(chunk).and_then(|()| out.flush()).is_err() {
                 break;
             }
         }
     })
+}
+
+/// TODO/machine.md T-1885: what `guest-tty` writes on its terminal when it
+/// holds it, just before the command; the pump strips it.
+pub const OPEN_MARKER: &[u8] = b"\0podvm-tty-open\0";
+
+fn find(hay: &[u8], needle: &[u8]) -> Option<usize> {
+    hay.windows(needle.len()).position(|w| w == needle)
 }
 
 /// `podvm guest-tty [ROWSxCOLS] -- CMD...` in a guest: a session with
@@ -204,6 +245,8 @@ pub fn guest_main(args: &[String]) -> i32 {
             dup2(fd, t);
         }
     }
+    // TODO/machine.md T-1885: the host relays stdin from here on.
+    let _ = (&tty).write_all(OPEN_MARKER);
     use std::os::unix::process::CommandExt;
     let e = std::process::Command::new(prog).args(rest).exec();
     eprintln!("podvm guest-tty: {prog}: {e}");

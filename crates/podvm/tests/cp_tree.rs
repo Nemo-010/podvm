@@ -44,11 +44,19 @@ fn cp_onto_a_directory_keeps_modes_and_names_a_refused_copy() {
     std::fs::create_dir_all(base.join("r/etc")).unwrap();
     let _gone = Gone(base.clone());
     std::fs::write(base.join("r/etc/os-release"), "x\n").unwrap();
+    // The payload is this static test binary: it runs on each rung, also
+    // where chroot is denied (CI), and an image has no `/bin/true`.
+    std::fs::create_dir_all(base.join("r/bin")).unwrap();
+    std::fs::copy(std::env::current_exe().unwrap(), base.join("r/bin/hello")).unwrap();
     let mut b = tar::Builder::new(Vec::new());
     b.append_dir_all("etc", base.join("r/etc")).unwrap();
+    b.append_dir_all("bin", base.join("r/bin")).unwrap();
     std::fs::write(base.join("a.tar"), b.into_inner().unwrap()).unwrap();
     ok(&base, &["import", "a.tar", "t1822:1"]);
-    ok(&base, &["create", "--name", "c1", "t1822:1", "/bin/true"]);
+    ok(
+        &base,
+        &["create", "--name", "c1", "t1822:1", "/bin/hello", "--list"],
+    );
 
     // A file onto an existing directory, into the container and out of it.
     std::fs::write(base.join("f.txt"), "hi\n").unwrap();

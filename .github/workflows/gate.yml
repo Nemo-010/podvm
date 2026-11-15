@@ -195,14 +195,6 @@ jobs:
           RUSTFLAGS: -C target-feature=-crt-static
         run: cargo clippy --manifest-path crates/podvm-interpose/Cargo.toml --target x86_64-unknown-linux-gnu --all-targets -- -D warnings
 
-      # TODO/gate.md T-1860: the tests of the interposer, from its own
-      # directory, so that its `.cargo/config.toml` runs them one at a time.
-      - name: interposer tests
-        env:
-          RUSTFLAGS: -C target-feature=-crt-static
-        working-directory: crates/podvm-interpose
-        run: cargo test --release --target x86_64-unknown-linux-gnu
-
       # docs/conventions/prose.md: no em dashes, nothing outside the five
       # allowed markers, and a density ceiling, over every tracked text file.
       # ⚠ references/ is excluded: it is somebody else's prose, unmodified, and
