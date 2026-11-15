@@ -4102,6 +4102,8 @@ run and the read of `memory.events`.
 
 **Partial (2026-11-15, second rerun).** Run 43740331439 (`kvm.yml`, request 432, `283e3492`): clause 1 PASS; clause 2 PASS now (`--pids-limit 16`: exit 2 with the line of the failed fork); clause 3 FAIL: `run --rm --memory 32m` of a shell that holds 200 MB exited 0 with nothing on stderr, where run 43726504386 gave 137 and named the OOM kill. The cause is not known yet: the change of the parent does not touch a `--memory` run (its leaf goes to the parent in both runs). Experiment 459 now makes the payload name its cgroup and its size on stderr, and prints `/proc/swaps` on a failure. Remaining: the next run of the job.
 
+**Partial (2026-11-15, swap).** Run 43754060132 (request 433): clauses 1 and 2 PASS; clause 3 FAIL, now with the cause: the payload ran in the leaf (`0::/podvm-ci/podvm-2fb8e72367f2`) and held all 200 000 000 bytes under `memory.max` 32 MiB, as the runner has a swap file of 3 GiB (`/swapfile`) and podvm left `memory.swap.max` unbounded. Run 43726504386 passed it by chance of the runner. podvm now writes `memory.swap.max` with the value of `--memory`, as docker's default (`--memory-swap` twice `--memory`, so swap as large as the memory), where the kernel has the file. Remaining: the next run of the job.
+
 # T-1752: A versioned JSON Schema for the record of `run --report`, published in each release
 
 **Source:** PodUtils/podcrates#124 (the asks of podswarm to podvm, a message from a

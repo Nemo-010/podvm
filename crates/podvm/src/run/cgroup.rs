@@ -44,7 +44,7 @@ fn refuse(verb: &str, why: &str) -> i32 {
 /// The files of the leaf for the limits of `run` (flag, incus key, incus
 /// value, as `parse::limits::incus_limit` gives them).
 pub(crate) fn files(limits: &[(String, &'static str, String)]) -> Vec<(&'static str, String)> {
-    limits
+    let mut out: Vec<(&'static str, String)> = limits
         .iter()
         .filter_map(|(_, key, value)| match *key {
             "limits.memory" => Some(("memory.max", value.trim_end_matches('B').to_string())),
@@ -60,7 +60,16 @@ pub(crate) fn files(limits: &[(String, &'static str, String)]) -> Vec<(&'static 
             "limits.processes" => Some(("pids.max", value.clone())),
             _ => None,
         })
-        .collect()
+        .collect();
+    // docker's default: `--memory` with no `--memory-swap` allows as much
+    // swap as memory. With no swap limit, a payload over `memory.max` goes
+    // to swap and is not killed (run 43754060132: 200 MB held under 32 MiB,
+    // with a swap file of 3 GiB on the runner).
+    if let Some((_, m)) = out.iter().find(|(f, _)| *f == "memory.max") {
+        let m = m.clone();
+        out.push(("memory.swap.max", m));
+    }
+    out
 }
 
 /// Make the controllers of `needed` reach a child of `dir`: they are in its
@@ -192,6 +201,10 @@ pub(super) fn apply(verb: &str) -> Result<(), i32> {
     let leaf = path.join(format!("podvm-{}", id.get(..12).unwrap_or(&id)));
     let made = std::fs::create_dir(&leaf).and_then(|()| {
         for (file, value) in &files {
+            // A kernel with no swap accounting has no memory.swap.max.
+            if *file == "memory.swap.max" && !leaf.join(file).exists() {
+                continue;
+            }
             std::fs::write(leaf.join(file), value)?;
         }
         std::fs::write(leaf.join("cgroup.procs"), "0")
@@ -267,6 +280,7 @@ mod tests {
                 ("memory.max", "536870912".to_string()),
                 ("cpu.max", "200000 100000".to_string()),
                 ("pids.max", "64".to_string()),
+                ("memory.swap.max", "536870912".to_string()),
             ]
         );
         assert_eq!(

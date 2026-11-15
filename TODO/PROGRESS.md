@@ -7,7 +7,7 @@ start.
 
 ## State
 
-516 entries: 6 open, 15 partial, 6 blocked, 489 done.
+516 entries: 6 open, 14 partial, 6 blocked, 490 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -61,7 +61,8 @@ status with `podvm-count` in the same commit as the work.
    `v0.42.0`) and the completion of two layers (podcrates@T-567,
    `v0.43.0`); podvm wires them next.
 1b. The live run of 2026-11-15 (issues 396 to 402, PodUtils/podrunner#115):
-   [T-1907](probe.md) (waits on COORD-133).
+   [T-1911](probe.md) (`-u UID` in the user namespace; the range is
+   opt-in until each verb keeps the store rule).
 2. The external QA report of `v0.2.0-beta.14` (2026-11-14): the open
    entries that it gave. Each P0 entry is done. Take the P1
    entries, each with the guard of its class (the guard entries of

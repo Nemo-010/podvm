@@ -1865,7 +1865,7 @@ A probe that does not take a stronger rung says which leg stopped it.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -1888,6 +1888,8 @@ Ask podcrates for a leg that checks that the device runs a guest of the architec
 `podvm-aarch64 probe` in an arm64 container on an x86_64 host says `kvm: no` with the reason.
 
 ## Done
+
+**Done (2026-11-15).** Run 43754060132 (`kvm.yml`, request 433, `6539446a`), job `arch`: an aarch64 podvm cross-built from the tree, under `qemu-aarch64` 10.2.1 (Debian's `qemu-user`) on an x86_64 runner with `/dev/kvm` (`crw-rw-rw-`): `probe --rows` gives `open(/dev/kvm, O_RDWR) FAIL errno=25 ENOTTY`, and `PODVM_MACHINE_ACCEL=kvm run --podvm-tier=machine` exits 125 with "PODVM_MACHINE_ACCEL=kvm asks for KVM, and /dev/kvm does not open or runs no guest of this arch (T-1907): podvm does not fall back to TCG". PASS.
 
 **Partial (2026-11-15).** podcrates `v0.52.0` (podcrates@T-676, the answer to COORD-133) asks the device a question of the build's architecture after the open (`KVM_ARM_PREFERRED_TARGET` on arm64, `KVM_GET_SUPPORTED_CPUID` on x86_64), so the probe row `open(/dev/kvm, O_RDWR)` fails with "the device runs no guest of aarch64 (QEMU user mode?)". podvm's machine tier and Windows planner opened the device themselves; both now take the same leg (`machine::ssh::kvm_opens`), and `PODVM_MACHINE_ACCEL=kvm` names the reason. Remaining: the Prove, by the job `arch` of `kvm.yml` (an aarch64 podvm under `qemu-aarch64-static` on an x86_64 runner with `/dev/kvm`); the cloud host has no `/dev/kvm`.
 
