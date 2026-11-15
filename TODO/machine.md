@@ -3088,7 +3088,7 @@ cloud host under TCG (no `/dev/kvm` here): pass 24, fail 0, with the rows
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3121,6 +3121,21 @@ docs/incus.md says that a run deletes its instance; a failed run too.
 ## Prove
 
 `cargo test -p podvm --bin podvm incus_verbs` exits 0, with tests against the fake incus API of the tests: a failed start sends the DELETE, `ps` lists a labelled instance, `rm` of an ERROR instance names ERROR, and `system info` with `tier = bogus` exits 125
+
+## Done
+
+**Partial, 2026-11-15.** A failed start of `run -d` or `create` stops and
+deletes its instance, and a foreground run that cannot delete its
+instance names it with `incus delete --force NAME`
+(`incus/verbs.rs`, `discard`). `rm` names the state of the instance (an
+ERROR instance does not "run") and stops one that is not Stopped before
+the delete. `system info` refuses a `tier` value that `run` refuses (exit
+125; by hand: `tier = bogus` gives 125 and names the file). `cargo test
+-p podvm --bin podvm incus_verbs` exits 0, against a stand-in of the
+incus API: the DELETE is sent, the instance that stays is named, and
+`rm` of an ERROR instance names Error. The clause that remains: `ps`
+lists the instances of podvm when the configuration selects incus; it
+needs an incusd to check (none runs on the cloud host now).
 
 
 # T-1849: `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks

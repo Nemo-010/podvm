@@ -201,11 +201,12 @@ async fn run_async(job: &Job<'_>, sock: PathBuf) -> i32 {
         crate::machine::guest::init::nonce().unwrap_or_else(|_| format!("{}", std::process::id()));
     let inst = format!("podvm-{}", &nonce[..nonce.len().min(12)]);
     let code = run_in(&c, job, &image, &inst).await;
-    // As under --rm: the instance goes, whatever the command gave.
-    let _ = c
-        .stop(&inst, true, Some(std::time::Duration::from_secs(10)))
-        .await;
-    let _ = c.delete_instance(&inst).await;
+    // As under --rm: the instance goes, whatever the command gave; one that
+    // stays is named (TODO/machine.md T-1846).
+    let left = super::verbs::discard(&c, &inst).await;
+    if !left.is_empty() {
+        eprintln!("podvm {}: incus tier{left}", job.verb);
+    }
     code
 }
 

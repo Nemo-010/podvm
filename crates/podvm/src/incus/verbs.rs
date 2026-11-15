@@ -160,7 +160,9 @@ pub(super) async fn detached(c: &Client, job: &Job<'_>, image: &str, d: &Detach)
     if d.start
         && let Err(e) = c.start(&name).await
     {
-        return fail(e.to_string());
+        // TODO/machine.md T-1846: a failed start leaves no instance.
+        let left = discard(c, &name).await;
+        return fail(format!("{e}{left}"));
     }
     println!("{name}");
     0
@@ -260,7 +262,7 @@ async fn ps(c: &Client, all: bool) -> i32 {
     0
 }
 
-async fn one(c: &Client, verb: &str, name: &str, force: bool) -> Result<(), String> {
+pub(super) async fn one(c: &Client, verb: &str, name: &str, force: bool) -> Result<(), String> {
     let i = c.instance(name).await.map_err(|e| e.to_string())?;
     if !ours(&i) {
         return Err("not an instance of podvm (no user.podvm label)".into());
@@ -276,15 +278,19 @@ async fn one(c: &Client, verb: &str, name: &str, force: bool) -> Result<(), Stri
                 .map_err(|e| e.to_string())?;
         }
         "rm" => {
+            // TODO/machine.md T-1846: the state of the instance, as incus
+            // names it (an ERROR instance does not run).
             if running && !force {
-                return Err("the instance runs: stop it, or rm -f".into());
+                return Err("the instance is Running: stop it, or rm -f".into());
             }
-            if running {
-                c.stop(name, true, Some(std::time::Duration::from_secs(10)))
-                    .await
-                    .map_err(|e| e.to_string())?;
+            if i.status != "Stopped" {
+                let _ = c
+                    .stop(name, true, Some(std::time::Duration::from_secs(10)))
+                    .await;
             }
-            c.delete_instance(name).await.map_err(|e| e.to_string())?;
+            c.delete_instance(name)
+                .await
+                .map_err(|e| format!("the instance is {}: {e}", i.status))?;
         }
         "logs" => {
             let f = c
@@ -379,4 +385,18 @@ pub fn exec(name: &str, argv: &[String], env: &[String], cwd: Option<&str>) -> i
             }
         }
     })
+}
+
+/// TODO/machine.md T-1846: stop and delete an instance after a failure.
+/// Empty where it went; else the text that names the instance that stays.
+pub(super) async fn discard(c: &Client, name: &str) -> String {
+    let _ = c
+        .stop(name, true, Some(std::time::Duration::from_secs(10)))
+        .await;
+    match c.delete_instance(name).await {
+        Ok(_) => String::new(),
+        Err(e) => {
+            format!("; the instance {name} stays ({e}): `incus delete --force {name}` removes it")
+        }
+    }
 }

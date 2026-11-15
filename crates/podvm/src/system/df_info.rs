@@ -292,6 +292,12 @@ pub fn info(verb: &str, args: &[String]) -> i32 {
         eprintln!("podvm system info: {bad}");
         return EXIT_CLI_ERROR;
     }
+    // TODO/machine.md T-1846: the configuration that `run` refuses is
+    // refused here too, so `info` names no rung that `run` does not enter.
+    if let Err(e) = crate::incus::config::configured() {
+        eprintln!("podvm system info: {e}");
+        return EXIT_FLAG_ERROR;
+    }
 
     let fields = collect();
     match template {

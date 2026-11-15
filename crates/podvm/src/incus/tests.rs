@@ -120,7 +120,7 @@ fn the_unified_tarball_carries_the_metadata_and_the_intended_owners() {
 /// One request the stand-in got: the method, the path, and the body.
 type Seen = Arc<Mutex<Vec<(String, String, Vec<u8>)>>>;
 
-fn read_request(s: &mut std::os::unix::net::UnixStream) -> (String, String, Vec<u8>) {
+pub(super) fn read_request(s: &mut std::os::unix::net::UnixStream) -> (String, String, Vec<u8>) {
     let mut raw = Vec::new();
     let mut b = [0u8; 65536];
     let end = loop {

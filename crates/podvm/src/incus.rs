@@ -11,6 +11,8 @@ pub(crate) mod verbs;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod verbs_tests; // TODO/machine.md T-1846
 
 /// The verbs that `--podvm-tier=incus` serves on an instance that stays
 /// (TODO/machine.md T-1722): their exit, or `None` for another verb.

@@ -508,7 +508,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1843](image.md) | P2 | S | none | image | done | `extract --force` removes the extracted root before it takes the lock of the store |
 | [T-1844](interpose.md) | P2 | S | none | interpose | done | `interpose::place` writes the object through one fixed temporary name in the root |
 | [T-1845](cli.md) | P3 | S | none | cli | done | `profile show` writes a part of the document to stdout and then fails |
-| [T-1846](machine.md) | P2 | M | none | machine | open | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
+| [T-1846](machine.md) | P2 | M | none | machine | partial | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
 | [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
 | [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
 | [T-1849](machine.md) | P3 | S | none | machine | done | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 19 open, 12 partial, 2 blocked, 460 done.
+493 entries: 18 open, 13 partial, 2 blocked, 460 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 11 | 3 | 2 | 159 | 175 |
+| P2 | 10 | 4 | 2 | 159 | 175 |
 | P3 | 7 | 2 | 0 | 31 | 40 |
-| **All** | 19 | 12 | 2 | 460 | 493 |
+| **All** | 18 | 13 | 2 | 460 | 493 |
 
 ## Work order
 
