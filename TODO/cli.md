@@ -5799,7 +5799,7 @@ The flag and the variable have one meaning; the flag wins, as it sets the variab
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** blocked
+**Status:** partial
 
 ## Problem
 
@@ -5821,8 +5821,11 @@ podvm keeps the parity table as the one source of the flags; the crate renders i
 
 `podvm man --no-pager run` prints the bytes of `podvm run --help`, the release carries a `podvm.1` that `mandoc -Tlint` passes with no warning, and `podvm man --json` lists each implemented verb of the parity table.
 
-## Blocker
+## Done
 
+**Partial (2026-11-15).** podvm takes `pod-manual` of podcrates `v0.54.0` (COORD-113, podcrates@T-700 part 1). `crates/podvm/src/man/model.rs` fills its model from podvm's own sources and no second text: each verb that the parity table implements is a command, with its flags (one flag for `-a, --all`, one each for a row of several long flags; a refused row is `FlagKind::Refused`), its status against docker (`Native` is `implemented`, `None` is `refused`), the bytes of its `--help` as its usage, and the names `docker` and `podman` by argv0. `podvm man --json` and `podvm man --roff [VERB]` are its writers: 48 commands; `mandoc -Tlint -Wwarning` and `groff -man -ww -z` of the page give no line. A unit test runs `pod_manual::check::model` on the model with no finding (it found the verb `container prune` as one word of a path). The plain text of `podvm man` stays podvm's own. Remaining: the text through `pod-manual`'s writer and pager; the facts (the `PODVM_*` variables in groups, the exit codes) and the checks of the variables and the exit codes against the code; the rule of no work ids in the text (each usage string and note cites an entry); a `podvm.1` and `llms.txt` with the release, with a drift check.
+
+**Blocked (2026-11-15), cleared by `v0.54.0`.** 
 **Blocked (2026-11-15).** podcrates has not named the crate and its tag (PodUtils/podnet#584). Clears when a tag of podcrates carries the crate.
 
 **Blocked, amended (2026-11-15, later).** podcrates takes it as `pod-manual` (COORD-108, PodUtils/podcrates#181, podcrates@T-700), in the first tag after `pod-lab` part 1. The ruling "Discipline" of the owner (2026-11-15, as podcrates relays it) adds to the Prove: `podvm man --json`; a test in CI fails when the man page or `llms.txt` differs from the model, or when the code reads a `PODVM_*` variable or gives an exit code that has no fact in the table. Clears when that tag is out.

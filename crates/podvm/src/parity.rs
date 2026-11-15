@@ -138,6 +138,8 @@ pub const TABLE: &[Row] = &[
     Row { verb: "man", flag: Option::None, status: Native, note: "renders this manual from the binary's own usage strings and the parity table, paging through $PAGER unless --no-pager or a non-terminal stdout (TODO/cli.md T-1332)" },
     Row { verb: "man", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     Row { verb: "man", flag: Some("--no-pager"), status: Native, note: "print to stdout even on a terminal; without it a terminal pages through $PAGER" },
+    Row { verb: "man", flag: Some("--json"), status: Native, note: "the manual as one JSON object of the model of pod-manual: each command, its flags and its status against docker (TODO/cli.md T-1917)" },
+    Row { verb: "man", flag: Some("--roff"), status: Native, note: "the manual as one man(7) page, from the same model (TODO/cli.md T-1917)" },
     Row { verb: "notebook", flag: Option::None, status: Native, note: "podvm's own: cycles of a Jupyter or marimo notebook, each a new container with a read-only root, with only --persist kept (TODO/cli.md T-1660)" },
     Row { verb: "notebook", flag: Some("--persist, --cycles, --kill-after, --restart-kernel-after, --image"), status: Native, note: "the kept directory at /persist, the count of cycles, the bound of a cycle (exit 143), a new kernel after a cell, and the image" },
     Row { verb: "notebook", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },

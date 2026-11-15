@@ -66,6 +66,7 @@ Separate crate: `crates/podvm-interpose`.
 | `pod-incus` | `0.54.0` |
 | `pod-lab` | `0.54.0` |
 | `pod-link` | `0.54.0` |
+| `pod-manual` | `0.54.0` |
 | `pod-netlab` | `0.54.0` |
 | `pod-oci` | `0.54.0` |
 | `pod-proxy` | `0.54.0` |

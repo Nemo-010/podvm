@@ -14,15 +14,19 @@
 
 use std::io::{IsTerminal, Write};
 
+mod model;
+
 use crate::parity::{self, Row, Status};
 
 pub const MAN_USAGE: &str = "\
-usage: podvm man [--no-pager] [verb]
+usage: podvm man [--no-pager | --json | --roff] [verb]
 
   man            render the manual from the binary's own usage strings
                  and the parity table
   man <verb>     render only that verb's section
   --no-pager     print to stdout even on a terminal
+  --json         the manual as one JSON object (the model of pod-manual)
+  --roff         the manual as one man(7) page
 ";
 
 /// The verbs that get a command-reference section: every implemented table
@@ -180,10 +184,13 @@ fn run(args: &[String], help: &dyn Fn(&str) -> Option<String>) -> i32 {
         }
     };
     let mut no_pager = false;
+    let (mut json, mut roff) = (false, false);
     let mut want: Option<&str> = None;
     for a in &args {
         match a.as_str() {
             "--no-pager" => no_pager = true,
+            "--json" => json = true,
+            "--roff" => roff = true,
             "-h" | "--help" => {
                 print!("{MAN_USAGE}");
                 return 0;
@@ -215,6 +222,27 @@ fn run(args: &[String], help: &dyn Fn(&str) -> Option<String>) -> i32 {
                  the parity table (TOOL.md section 6.8)"
         );
         return podvm_image::error::EXIT_CLI_ERROR;
+    }
+    // TODO/cli.md T-1917: the writers of pod-manual over the same sources.
+    if json || roff {
+        let m = model::manual(help);
+        let section = want.map(|w| help_argv(w).join(" "));
+        let req = pod_manual::Request {
+            section,
+            no_pager: true,
+            roff,
+            json,
+        };
+        return match pod_manual::body(&m, &req) {
+            Ok(t) => {
+                print!("{t}");
+                0
+            }
+            Err(e) => {
+                eprintln!("podvm man: {e}");
+                podvm_image::error::EXIT_CLI_ERROR
+            }
+        };
     }
     let text = match render(want, &help) {
         Some(t) => t,

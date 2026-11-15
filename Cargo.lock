@@ -1212,6 +1212,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pod-manual"
+version = "0.54.0"
+source = "git+https://github.com/PodUtils/podcrates?tag=v0.54.0#32f7a723d09bd14d54af485594c38577f278cea8"
+dependencies = [
+ "libc",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "pod-netlab"
 version = "0.54.0"
 source = "git+https://github.com/PodUtils/podcrates?tag=v0.54.0#32f7a723d09bd14d54af485594c38577f278cea8"
@@ -1407,6 +1417,7 @@ dependencies = [
  "pod-incus",
  "pod-lab",
  "pod-link",
+ "pod-manual",
  "pod-netlab",
  "pod-proxy",
  "pod-services",
