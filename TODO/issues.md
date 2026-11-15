@@ -277,3 +277,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #378 | [gh action] requested | closed (gate 43660867122 failed: `tests/cp_tree.rs` created with `/bin/true`, which the image lacks where chroot is denied; fixed in 88019eed) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |
+| #381 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
