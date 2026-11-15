@@ -535,7 +535,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1870](machine.md) | P2 | L | none | machine | open | A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name` |
 | [T-1871](machine.md) | P1 | M | none | machine | partial | `podvm windows doctor` is thin |
 | [T-1872](machine.md) | P2 | M | none | machine | open | A Windows guest has no `-v`: no way to bring a folder in or out |
-| [T-1873](machine.md) | P2 | L | none | machine | open | `windows setup` sleeps the whole wait with no readiness check |
+| [T-1873](machine.md) | P2 | L | none | machine | partial | `windows setup` sleeps the whole wait with no readiness check |
 | [T-1874](machine.md) | P2 | L | none | machine | open | Each Windows run is a full boot: there is no warm start |
 | [T-1875](machine.md) | P2 | L | none | machine | open | podvm needs `qemu-system-x86_64`, `qemu-img` and OVMF on the host |
 | [T-1876](machine.md) | P2 | S | none | machine | done | Nothing checks the catalog pins for drift |
@@ -563,7 +563,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-494 entries: 15 open, 14 partial, 2 blocked, 463 done.
+494 entries: 14 open, 15 partial, 2 blocked, 463 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,9 +574,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 197 | 205 |
-| P2 | 9 | 5 | 2 | 159 | 175 |
+| P2 | 8 | 6 | 2 | 159 | 175 |
 | P3 | 5 | 2 | 0 | 33 | 40 |
-| **All** | 15 | 14 | 2 | 463 | 494 |
+| **All** | 14 | 15 | 2 | 463 | 494 |
 
 ## Work order
 

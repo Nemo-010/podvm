@@ -3958,7 +3958,7 @@ write lands on the host with the right owner. The proof runs on `kvm.yml` (T-168
 **Milestone:** none
 **Priority:** P2
 **Effort:** L
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3999,6 +3999,17 @@ target). (b) A new experiment shows that `AutoRun` fires or does not fire on the
 x64 image. If it fires, setup takes under 60 s with no boot, and then `ver` and
 exit 42 pass; the offline write has a unit test on an image from the hosted
 runner. The proof runs on `kvm.yml` (T-1682), because a cloud session has no `/dev/kvm`.
+
+## Done
+
+**Partial 2026-11-15.** Part (a): podcrates `v0.48.0` gives `Sign::After`
+and a screen sign that ignores a cursor (podcrates@T-633), and
+`podvm_windows::ready_for` passes a screen settle of 15 s before the fixed
+wait under KVM (T-1894). In `kvm.yml` run 43660534832, `windows setup` of
+Validation OS passed in 37 s, not in the 240 s of the fixed wait. Under
+TCG the fixed wait stays, as the console of Validation OS does not draw
+there in time (T-1864). The clause that remains: part (b), the x64
+measurement of `AutoRun` and then the offline write.
 
 
 # T-1874: Each Windows run is a full boot: there is no warm start
