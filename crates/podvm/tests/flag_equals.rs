@@ -9,6 +9,8 @@ use std::process::{Command, Stdio};
 fn podvm(args: &[&str], store: &std::path::Path) -> std::process::Output {
     Command::new(env!("CARGO_BIN_EXE_podvm"))
         .args(args)
+        // `--report=1` and `--cidfile=1` write in the working directory.
+        .current_dir(store)
         .env("PODVM_STORE", store)
         .env("HOME", store)
         .env("PODVM_SPARE_TREE", "0")
