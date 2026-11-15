@@ -282,12 +282,10 @@ pub fn ssh(args: &[String]) -> i32 {
             return EXIT_RUNTIME_ERROR;
         }
     }
-    let emulator = match on_path("qemu-system-x86_64") {
-        Some(p) => p,
-        None => {
-            eprintln!("podvm machine ssh: no qemu-system-x86_64 on PATH");
-            return EXIT_RUNTIME_ERROR;
-        }
+    // TODO/machine.md T-1875: the store copy where the host has no QEMU.
+    let emulator = match crate::windows::tools::emulator_for("machine ssh") {
+        Ok(p) => p,
+        Err(code) => return code,
     };
     let ssh_bin = match on_path("ssh") {
         Some(p) => p,

@@ -285,3 +285,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #386 | COORD-123: a FAT image writer with directories and a size from the content, for `-v` of a Windows guest (podvm T-1872) (to podcrates) | open | T-1872 |
 | #387 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` at 35d5b686 (AGENTS.md, section 9) |
 | #388 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
+| #389 | COORD-124: pod-services: list the host api.ghcr.pkgforge.dev (podvm T-1875) (to podcrates) | open | T-1875 |

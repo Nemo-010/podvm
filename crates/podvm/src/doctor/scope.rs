@@ -178,11 +178,16 @@ fn on_path(name: &str) -> Option<std::path::PathBuf> {
 
 /// User-mode networking of the machine tier: the emulator's `user` netdev.
 fn user_net(report: &mut Doctor) {
-    let Some(q) = on_path("qemu-system-x86_64") else {
+    // TODO/machine.md T-1875: the store copy counts where it is there; a
+    // run fetches it where the host has no QEMU.
+    let store = podvm_windows::tools::bin(&podvm_windows::tools::root(), "qemu-system-x86_64");
+    let Some(q) = on_path("qemu-system-x86_64").or_else(|| store.is_file().then_some(store)) else {
         report.missing(
             "scope.user-net",
-            "no qemu-system-x86_64 on PATH".into(),
-            "install a qemu-system-x86_64 built with libslirp (the guest network of TODO/machine.md T-1656)".into(),
+            "no qemu-system-x86_64 on PATH and no store copy yet".into(),
+            "the first run of the machine tier fetches the static QEMU of the store \
+             (TODO/machine.md T-1875), or install a qemu-system-x86_64 built with libslirp"
+                .into(),
         );
         return;
     };
