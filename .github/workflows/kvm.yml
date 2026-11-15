@@ -257,16 +257,35 @@ jobs:
   # ISO into a golden image under KVM (experiment 452). The clause of a
   # host with TCG only runs first, while the job has no /dev/kvm. One
   # guest at a time: the job runs after the ValidationOS guest.
+  #
+  # Run 43689812413 stopped at "56% complete" for 2 h with no write to the
+  # disk. Three legs, each on its own runner with one guest, tell the
+  # suspects apart: the QEMU of Ubuntu (8.2), podvm's pinned static QEMU
+  # (9.2, from the store), and the QEMU of Ubuntu with no Hyper-V flags.
   install:
-    name: Windows install from a setup ISO under KVM (experiment 452)
+    name: Windows install under KVM (experiment 452, ${{ matrix.leg }})
     needs: windows
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - leg: ubuntu-qemu
+            apt_qemu: "1"
+            hyperv: "1"
+          - leg: store-qemu
+            apt_qemu: "0"
+            hyperv: "1"
+          - leg: no-hyperv
+            apt_qemu: "1"
+            hyperv: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: qemu and OVMF
+        if: matrix.apt_qemu == '1'
         run: |
           sudo apt-get -qq update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-x86 qemu-utils ovmf >/dev/null
@@ -317,6 +336,7 @@ jobs:
           HOME: /mnt/w/home
           PODVM_452_NAMES: "2025"
           PODVM_WINDOWS_SHOTS: ${{ runner.temp }}/install-shots
+          PODVM_WINDOWS_HYPERV: ${{ matrix.hyperv }}
         run: |
           mkdir -p "$HOME"
           rc=0
@@ -332,7 +352,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: kvm-install-transcript
+          name: kvm-install-transcript-${{ matrix.leg }}
           path: |
             experiments/results/windows-install.txt
             experiments/results/windows-install-*.err
