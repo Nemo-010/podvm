@@ -1909,6 +1909,8 @@ A user namespace gives the caller the mount and chroot rights inside it. `unshar
 
 Take the tag of podcrates that answers COORD-132, select the rung where its new leg works, and run the namespace experiments as uid 1000 on such a host.
 
+Or podvm opens the namespaces itself, before the rung is selected. Measured 2026-11-15 on the cloud host (kernel 6.18, uid 1000, podvm at fbc0e9c4): under `unshare -Ur`, `system info` gives `namespace`, and `run --rm alpine:3.20` enters it (`id` gives uid 0, `apk --version` runs), with "the namespace rung runs with no /proc: mounting proc on /proc failed with errno 1"; under `unshare -Urpf` the payload has `/proc` and `uid_map` reads `0 1000 1`; under `unshare -Urpfu` with `hostname unit1`, `uname -n` gives `unit1`. So a foreground `run` can call `unshare(CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWUTS)` at the start of `main` (one thread), write `setgroups` and the two maps, and fork the rest as pid 1. ⛔ First audit each pid that a record keeps: in the PID namespace `getpid` and `Child::id` give namespace pids, and `stop` or `kill` from outside would signal a host process of that number. `run -d`, `create` and `exec` stay outside until they enter the namespaces of the container (`setns`).
+
 ## Decision
 
 The ownership view follows the map; the interposer view (T-0711) keeps each id that the map does not hold.
