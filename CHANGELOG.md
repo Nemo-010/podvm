@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.21 (2026-11-15)
+
 ### Fixed: a `:ro` volume holds for a static image where chroot is denied, 2026-11-15
 
 Record: T-1901 (PodUtils/podrunner#111).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.21.
 
 - `podvm run -d -v SRC:DST:ro` of a static image (the native-static rung)
   was refused with exit 125. The handler of the rung now answers EROFS for
@@ -21,7 +23,7 @@ Deployed: none yet.
 ### Added: the guests of the machine tier need no QEMU on the host, 2026-11-15
 
 Record: T-1875.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.21.
 
 - A host with no QEMU needs no install for Windows and DOS guests and for
   the Linux guest of `--podvm-tier=machine`: podvm
@@ -30,8 +32,8 @@ Deployed: none yet.
 
 ### Added: `podvm run -d windows:dos`, with `ps`, `stop`, `start`, `rm` and `logs -f`, 2026-11-15
 
-Record: T-1870 (partial).
-Deployed: none yet.
+Record: T-1870 (partial), T-1869 (partial), T-1899 (partial).
+Deployed: version 0.2.0-beta.21.
 
 - `podvm run -d --name NAME windows:dos` (also `windows:validationos`
   and an installed setup ISO) starts a detached guest; `podvm ps` lists it
