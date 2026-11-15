@@ -126,7 +126,8 @@ The project is 0BSD. Carried material keeps its own terms
    `git status`, `git log --oneline -5`.
 4. Read the last CI runs and the open issues. A red run that the record
    does not know is the first task.
-5. Start the watcher of the organization (section 9) under the Monitor
+5. Start the watchers of the organization and of the Actions runs
+   (section 9) under the Monitor
    tool.
 6. Run `sh scripts/cloud-setup.sh` (zig and the toolchain), and put
    `$HOME/.local/podvm/zig-x86_64-linux-0.16.0` on `PATH`. Build the record
@@ -158,6 +159,19 @@ watches them.
    and for each issue of another repository of PodUtils whose title holds
    `(to podvm)` or `(to all)`, or that has the label `podvm`. It keeps a
    copy of each message in `.work/agent/issues/`.
+
+   Keep the watcher of the Actions runs beside it, under a second
+   Monitor (PodUtils/podssh#270, COORD-083 of podssh). It prints one line
+   when a run of this repository starts, ends (with its failed jobs) or
+   runs again, so a session that waits on a `[gh action] requested` sees
+   the run without the comment of the owner's agent. It needs no token.
+
+   ```sh
+   curl -qfsSL -o .work/agent/watch-runs.py \
+     "https://raw.githubusercontent.com/PodUtils/podssh/cc0caa27c6adaab05ed00c41a0362fc837e4b2ec/scripts/agent/watch-runs.py"
+   python3 -I .work/agent/watch-runs.py --self-test
+   python3 -I .work/agent/watch-runs.py PodUtils/podvm .work/agent/runs.json 120
+   ```
 2. To write to another session, open an issue in **this** repository
    titled `COORD-NNN: subject (to OTHER)`, with OTHER one of podcrates,
    podssh, podnet, podrunner or `all`; NNN is the next free number of this
