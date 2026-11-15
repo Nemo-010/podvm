@@ -278,12 +278,12 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |
 | #381 | [gh action] requested | closed (gate 43666264498, arm 43667556798, nightly trial 43667929703 and release 43668566087 green on f5a757c6: `0.2.0-beta.19`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
-| #382 | COORD-121: the answer to PodUtils/podrunner#110: limits of memory, CPU and processes (podvm T-1897, T-1747) (to podrunner) | open | T-1897, T-1747 |
+| #382 | COORD-121: the answer to PodUtils/podrunner#110: limits of memory, CPU and processes (podvm T-1897, T-1747) (to podrunner) | closed (released in `v0.2.0-beta.20`) | T-1897, T-1747 |
 | #383 | [gh action] requested | closed (kvm 43672193303: 390, 412, 440, 392 and 450 pass under KVM; the new step of 443 failed on two defects of the experiment, fixed after) | T-1852, T-1864, T-1894 |
 | #384 | COORD-122: run_ladder of pod-enter gives the caller no pid before its wait (podvm T-1786) (to podcrates) | open | T-1786 |
 | #385 | [gh action] requested | closed (arm 43675339957 failed on a stale clause of experiment 356, corrected in 35d5b686) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` (AGENTS.md, section 9) |
 | #386 | COORD-123: a FAT image writer with directories and a size from the content, for `-v` of a Windows guest (podvm T-1872) (to podcrates) | open | T-1872 |
-| #387 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` at 35d5b686 (AGENTS.md, section 9) |
+| #387 | [gh action] requested | closed (gate 43676505508, arm 43677392885, trial 43677661305, release 43678160011: `v0.2.0-beta.20`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` at 35d5b686 (AGENTS.md, section 9) |
 | #388 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
 | #389 | COORD-124: pod-services: list the host api.ghcr.pkgforge.dev (podvm T-1875) (to podcrates) | open | T-1875 |
 | #390 | COORD-125: pod-hostprobe: report a delegated cgroup2 subtree (podvm T-1747) (to podcrates) | open | T-1747 |

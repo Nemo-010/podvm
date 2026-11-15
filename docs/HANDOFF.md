@@ -1,12 +1,11 @@
 # Handoff
 
-The state on 2026-11-15, later. The release `0.2.0-beta.20` waits for
-request 387 (gate and arm green on `35d5b686`; the nightly trial and the
-release follow). beta.20 carries the limits of the incus tier (T-1897,
-PodUtils/podrunner#110), `podvm pull windows:2025` (the install of a
-setup ISO, T-1867, not yet run under KVM: request 388) and `run
-windows:validationos`. `main` adds the store copy of QEMU (T-1875,
-CHANGELOG "Unreleased").
+The state on 2026-11-15, later. `0.2.0-beta.20` is released (issue 387:
+gate, arm, nightly trial and release green on `35d5b686`). It carries the
+limits of the incus tier (T-1897, PodUtils/podrunner#110), `podvm pull
+windows:2025` (the install of a setup ISO, T-1867, not yet run under KVM:
+request 388) and `run windows:validationos`. `main` adds the store copy
+of QEMU (T-1875) and T-1852 (CHANGELOG "Unreleased").
 A fresh
 session with no memory reads this file first, then `AGENTS.md`,
 `TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
@@ -46,8 +45,7 @@ PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
 * COORD-117 (#374): podvm took podcrates `v0.48.0`.
 * COORD-120 (#380): podvm took `v0.49.0`; a Validation OS run under KVM
   timed out on one cold boot of two (T-1864); it did not recur.
-* COORD-121 (#382), COORD-122 (#384): the limits for podrunner, and the
-  hook of the run ladder for T-1786.
+* COORD-122 (#384): the hook of the run ladder for T-1786.
 * COORD-123 (#386): a FAT writer with directories for `-v` of a Windows
   guest (T-1872).
 * COORD-124 (#389): `pod-services` lists `api.ghcr.pkgforge.dev` (T-1875);
@@ -59,7 +57,7 @@ each one.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8).
-2. The next release follows a batch of fixes, in the form of issue 381.
+2. The next release follows a batch of fixes, in the form of issue 387.
 3. The Windows proof is on KVM. Request 388 runs `kvm.yml` with the new
    job `install` (experiment 452: `pull windows:2025` and `run
    windows:2025 ver`). Read its transcript, record the first install

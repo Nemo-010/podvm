@@ -271,12 +271,12 @@
 379 issue closed
 380 issue open
 381 issue closed
-382 issue open
+382 issue closed
 383 issue closed
 384 issue open
 385 issue closed
 386 issue open
-387 issue open
+387 issue closed
 388 issue open
 389 issue open
 390 issue open
