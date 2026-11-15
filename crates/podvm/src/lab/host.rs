@@ -175,14 +175,25 @@ pub fn enter(profiles: &[&str]) -> Result<(), String> {
     Ok(())
 }
 
+/// `getsockname` and `getpeername` of each architecture that podvm builds
+/// (the kernel's tables; aarch64, riscv64 and loongarch64 share the
+/// generic one).
 #[cfg(target_arch = "x86_64")]
-const SYS_GETSOCKNAME: i64 = 51;
-#[cfg(target_arch = "x86_64")]
-const SYS_GETPEERNAME: i64 = 52;
-#[cfg(target_arch = "aarch64")]
-const SYS_GETSOCKNAME: i64 = 204;
-#[cfg(target_arch = "aarch64")]
-const SYS_GETPEERNAME: i64 = 205;
+const SOCKNAME: (i64, i64) = (51, 52);
+#[cfg(any(
+    target_arch = "aarch64",
+    target_arch = "riscv64",
+    target_arch = "loongarch64"
+))]
+const SOCKNAME: (i64, i64) = (204, 205);
+#[cfg(target_arch = "x86")]
+const SOCKNAME: (i64, i64) = (367, 368);
+#[cfg(target_arch = "arm")]
+const SOCKNAME: (i64, i64) = (286, 287);
+#[cfg(target_arch = "powerpc64")]
+const SOCKNAME: (i64, i64) = (331, 332);
+const SYS_GETSOCKNAME: i64 = SOCKNAME.0;
+const SYS_GETPEERNAME: i64 = SOCKNAME.1;
 
 const EPERM: u16 = 1;
 const EACCES: u16 = 13;

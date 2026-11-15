@@ -322,6 +322,6 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
 | #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |
 | #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | open | T-1917 |
-| #426 | [gh action] requested | open | the release of 0.2.0-beta.24 from b6f8958e (call C22) |
+| #426 | [gh action] requested | closed (run 43735766607 failed) | the release of 0.2.0-beta.24 from b6f8958e (call C22); the trial failed on the cross targets |
 | #427 | COORD-142: the answer to PodUtils/podcrates#182: podvm has no installer yet (to podcrates) | open | T-1918 |
 | #428 | COORD-143: the answer to PodUtils/podcrates#183: how podvm maps an issue to its entries (to podcrates) | open | T-1919 |

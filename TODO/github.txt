@@ -315,6 +315,6 @@
 423 issue open
 424 issue open
 425 issue open
-426 issue open
+426 issue closed
 427 issue open
 428 issue open
