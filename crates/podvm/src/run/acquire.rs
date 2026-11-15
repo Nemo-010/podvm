@@ -179,6 +179,7 @@ pub(super) fn hostname_env(
 ) -> Result<(), i32> {
     env.retain(|e| !e.starts_with("PODVM_HOSTNAME="));
     crate::userns::bind_devices(rootfs); // TODO/probe.md T-1909
+    crate::userns::owners::apply(rootfs); // TODO/probe.md T-1911
     let Some(name) = o.hostname.clone() else {
         return Ok(());
     };

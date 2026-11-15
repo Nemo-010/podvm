@@ -70,6 +70,7 @@ unsafe extern "C" {
 
 mod host;
 mod join;
+pub mod owners;
 mod range;
 mod sweep;
 pub use host::{bind_devices, host_pid};
@@ -260,6 +261,9 @@ fn with_range(p: &range::Plan, uid: u32, gid: u32, flags: i32) -> bool {
     // SAFETY: w is open; the helper sees EOF where nothing was written.
     unsafe { close(w) };
     let mapped = wait_for(helper) == 0;
+    if opened && mapped {
+        owners::TOP.store(p.top(), std::sync::atomic::Ordering::Relaxed);
+    }
     opened && (mapped || one_line(uid, gid))
 }
 

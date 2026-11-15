@@ -91,6 +91,13 @@ fn host_plan() -> Option<Plan> {
     })
 }
 
+impl Plan {
+    /// The highest id that the maps hold (0 is the caller).
+    pub fn top(&self) -> u64 {
+        self.uids.count.min(self.gids.count)
+    }
+}
+
 /// The arguments of `newuidmap PID ...`: the caller on 0, the range from 1.
 pub fn map_args(pid: i32, own: u32, r: Range) -> Vec<String> {
     let max = r.count.min(u64::from(u32::MAX) - 1);
