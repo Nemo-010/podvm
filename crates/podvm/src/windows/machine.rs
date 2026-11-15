@@ -28,7 +28,13 @@ const STOP_GRACE: Duration = Duration::from_secs(10);
 fn plan_of(r: &Record, dir: &Path, accel: Accel) -> Plan {
     let (code, _) = super::plan::firmware();
     let options = match r.flavor.as_str() {
-        "desktop" => podvm_windows::options::desktop(accel, Vec::new()),
+        "desktop" => podvm_windows::options::desktop(
+            accel,
+            r.forwards
+                .split(',')
+                .filter_map(crate::run::publish::forward_of)
+                .collect(),
+        ),
         _ => podvm_windows::options::mailbox(),
     };
     Plan {
@@ -101,6 +107,7 @@ pub(crate) fn run_detached(
     image: &str,
     mem: Option<u64>,
     lifetime: Option<u64>,
+    publish: &[String],
 ) -> i32 {
     let root = machines::root();
     let name = match name {
@@ -120,6 +127,17 @@ pub(crate) fn run_detached(
             "podvm {verb}: the name {name:?} is in use; `podvm rm {name}` removes the old one"
         );
         return EXIT_RUNTIME_ERROR;
+    }
+    // The kind of the name decides the network, before any fetch.
+    let desktop = podvm_windows::catalog::name_of(image)
+        .and_then(|n| podvm_windows::catalog::resolve(n).ok())
+        .is_some_and(|e| e.kind == Kind::Iso);
+    if !publish.is_empty() && !desktop {
+        eprintln!(
+            "podvm {verb}: -p needs a guest with a network: {image} has none; a setup ISO \
+             of the catalog (windows:2025, 11, 10) has one (TODO/machine.md T-1869)"
+        );
+        return EXIT_FLAG_ERROR;
     }
     let (base, flavor) = match base_of(verb, image) {
         Ok(b) => b,
@@ -145,6 +163,7 @@ pub(crate) fn run_detached(
         memory_mib: mem
             .map(|m| m / (1 << 20))
             .unwrap_or(if flavor == "dos" { 512 } else { 4096 }),
+        forwards: publish.join(","),
         ..Default::default()
     };
     if let Err(why) = make(&r, &dir, accel) {
@@ -359,15 +378,25 @@ pub(crate) fn rm_if(want: &str, force: bool) -> Option<i32> {
 }
 
 /// `run -d windows:NAME`, where the run is detached and names the catalog.
+/// Each other run with `-p` is refused by name (TODO/machine.md T-1869).
 pub(crate) fn detach_if(verb: &str, o: &crate::run::Opts) -> Option<i32> {
-    (verb == "run" && o.detach && super::named(o.image.as_deref())).then(|| {
-        run_detached(
+    if verb == "run" && o.detach && super::named(o.image.as_deref()) {
+        return Some(run_detached(
             verb,
             o.name.as_deref(),
             o.image.as_deref().unwrap_or_default(),
             o.mem,
             o.timeout,
-        )
+            &o.publish,
+        ));
+    }
+    (!o.publish.is_empty()).then(|| {
+        eprintln!(
+            "podvm {verb}: -p publishes a port of a detached Windows guest only (run -d -p \
+             HOST:GUEST windows:NAME); this payload shares the network of this machine, so a \
+             port it opens is already a port of this machine (TODO/machine.md T-1869)"
+        );
+        EXIT_FLAG_ERROR
     })
 }
 

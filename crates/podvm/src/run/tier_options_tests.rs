@@ -90,6 +90,7 @@ fn every_field_of_opts_is_classified(o: Opts) {
         confine: _,           // TABLE: --podvm-confine
         ports: _,             // incus refuses (incus_refuses)
         allow: _,             // the broker
+        publish: _,           // a detached Windows guest only (T-1869)
         devices: _,           // incus refuses
         unsafe_host_paths: _, // the rootfs rungs
         volumes: _,           // TABLE: -v

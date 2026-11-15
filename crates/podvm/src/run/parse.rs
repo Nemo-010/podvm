@@ -143,6 +143,7 @@ fn parse_flags_with(
                     }
                 },
                 "--podvm-cpus" => o.cpus = Some(cpus(verb, a)?),
+                "--publish" => o.publish.push(publish::parse(verb, a)?),
                 "--memory" | "--cpus" | "--pids-limit" => {
                     let (key, val) = limits::incus_limit(verb, flag, a)?;
                     o.limits.push((flag.to_string(), key, val)); // T-1897
@@ -235,6 +236,7 @@ fn parse_flags_with(
             "--cpus" => expecting = Some("--cpus"),
             "--pids-limit" => expecting = Some("--pids-limit"),
             "--log-driver" => expecting = Some("--log-driver"),
+            "-p" | "--publish" => expecting = Some("--publish"), // T-1869
             // ⚠ Stub by the table, and each takes its value as docker's
             // does (TODO/gate.md T-1853): podvm captures stdout and stderr
             // together, and docker's --expose only documents ports.
@@ -471,6 +473,7 @@ use values::*;
 
 pub(crate) mod limits;
 mod opts; // TODO/machine.md T-1897
+pub(crate) mod publish; // TODO/machine.md T-1869
 pub(crate) use opts::Opts;
 
 /// TODO/cli.md T-1829: no image: the usage line and the cause on stderr,

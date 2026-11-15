@@ -68,6 +68,8 @@ pub(crate) struct Opts {
     pub(crate) confine: Option<podvm_enter::confine::Ask>,
     pub(crate) ports: Vec<u16>,
     pub(crate) allow: Vec<String>,
+    /// `-p`: the forwards of a detached Windows guest (TODO/machine.md T-1869).
+    pub(crate) publish: Vec<String>,
     /// `--device`. Carried raw here and parsed now: a malformed shape is a
     /// flag error, before anything is fetched. TODO/enter.md T-0501.
     pub(crate) devices: Vec<String>,
@@ -147,6 +149,7 @@ impl Opts {
             confine: None,
             ports: Vec::new(),
             allow: Vec::new(),
+            publish: Vec::new(),
             devices: Vec::new(),
             unsafe_host_paths: false,
             volumes: Vec::new(),

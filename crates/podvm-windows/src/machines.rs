@@ -40,6 +40,8 @@ pub struct Record {
     pub emulator_start: u64,
     /// Empty while the machine runs; else how it ended.
     pub ended: String,
+    /// The forwards of `-p`, as `PROTO:IP:HOST:GUEST`, separated by `,`.
+    pub forwards: String,
 }
 
 /// The directory of all machines: `PODVM_MACHINES_DIR` where it is set,
@@ -125,7 +127,7 @@ impl Record {
 
     /// The JSON of the record: one object, each value a string.
     pub fn to_json(&self) -> String {
-        let pairs: [(&str, String); 12] = [
+        let pairs: [(&str, String); 13] = [
             ("name", self.name.clone()),
             ("image", self.image.clone()),
             ("base", self.base.clone()),
@@ -138,6 +140,7 @@ impl Record {
             ("emulator_pid", self.emulator_pid.to_string()),
             ("emulator_start", self.emulator_start.to_string()),
             ("ended", self.ended.clone()),
+            ("forwards", self.forwards.clone()),
         ];
         let body: Vec<String> = pairs
             .iter()
@@ -171,6 +174,7 @@ impl Record {
             emulator_pid: n("emulator_pid") as u32,
             emulator_start: n("emulator_start"),
             ended: s("ended"),
+            forwards: s("forwards"),
         })
     }
 
@@ -282,6 +286,7 @@ mod tests {
             emulator_pid: 42,
             emulator_start: 901,
             ended: "stopped by \"podvm stop\" C:\\".into(),
+            forwards: "tcp:127.0.0.1:33890:3389".into(),
         };
         assert_eq!(Record::from_json(&r.to_json()), Some(r));
         assert_eq!(Record::from_json("{\"name\":\"../x\"}"), None);

@@ -3858,9 +3858,19 @@ screen dump (PPM) of a running machine of T-1870 through QMP `screendump`
 720x400 dump of the FreeDOS screen of a `run -d windows:dos` machine, and
 refused a machine that was removed (exit 125). The install of T-1867
 writes a dump into `PODVM_WINDOWS_SHOTS` at each progress line and at the
-deadline, and the job `install` of `kvm.yml` keeps them. The clauses that
-remain: `-p` (the parity row refuses it today), `podvm port`, the RDP
-check, VNC, `creds`, and the policy of 10.0.2.2.
+deadline, and the job `install` of `kvm.yml` keeps them.
+
+`run -d -p [IP:]HOST:GUEST[/tcp|/udp] windows:NAME` (or `-p GUEST` for a
+free port of the host) records the forwards on the machine, and its keeper
+gives them to the user-mode NIC of the desktop options as `hostfwd`, on
+127.0.0.1 where no address is written (`crates/podvm/src/run/parse/publish.rs`).
+The parity row of `-p` is Degraded: a DOS or Validation OS machine refuses
+`-p` before any fetch (it has no network), and each other run refuses it by
+name (exit 125). `cargo test -p podvm windows_ports` exits 0 with three
+tests (the loopback default and the round trip, the bad values, the
+`hostfwd` line of the plan). The clauses that remain: `podvm port`, the
+RDP confirm after `run -d -p 3389:3389 windows:2025` under KVM, `--podvm-net
+none`, VNC, `creds`, and the policy of 10.0.2.2.
 
 
 # T-1870: A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name`

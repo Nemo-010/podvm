@@ -89,6 +89,7 @@ pub const CLUSTER_VALUES: &[(&str, char)] = &[
     ("run", 'u'),
     ("run", 'v'),
     ("run", 'm'), // TODO/machine.md T-1897
+    ("run", 'p'), // TODO/machine.md T-1869
     ("exec", 'e'),
     ("exec", 'w'),
     ("exec", 'u'),
@@ -244,7 +245,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "run", flag: Some("-d, --detach"), status: Native, note: "starts a detached launcher and prints the container id, returning when the payload is running" },
     Row { verb: "run", flag: Some("--name"), status: Native, note: "names the container. A name already in use is refused rather than making the second one unreachable. A foreground run leaves a record under it: `ps -a` lists it as Exited with `logs` reading its output (TODO/supervise.md T-1421)" },
     Row { verb: "run", flag: Some("-v, --volume"), status: Degraded, note: "HOST:GUEST[:rw|:ro], repeatable: a path rewrite through PODVM_MAPS on the userland rung's loader family, never a mount or a copy. A write lands in HOST, as with a bind mount; a static program or a raw syscall instruction sees the image's path; /proc/mounts does not list it. On run --podvm-tier=machine a 9p mount of the host directory, :ro read-only (TODO/machine.md T-1723); on --podvm-tier=runsc a bind mount (T-1729); on --podvm-tier=incus a disk device of the instance (T-1722). Refused by name: on the chroot rung, the memfd family, a forced PODVM_MODE, create and exec on the machine tier; a named or anonymous volume. :ro fails a write with EROFS through the read-only layer of the interposer (T-1655). A working directory or a first program in a volume resolves through the same table. The banner names a noexec source, and --strict refuses (TODO/enter.md T-1653, T-1655)" },
-    Row { verb: "run", flag: Some("-p, --publish"), status: NoneStatus, note: "the payload shares this machine's network namespace, so a published port is already this machine's port" },
+    Row { verb: "run", flag: Some("-p, --publish"), status: Degraded, note: "a detached Windows guest only (run -d -p [IP:]HOST:GUEST windows:NAME): a forward of its user-mode NIC, on 127.0.0.1 where no address is written; each other run refuses it, as its payload shares this machine's network namespace, so a published port is already this machine's port (TODO/machine.md T-1869)" },
     Row { verb: "run", flag: Some("--network, --net"), status: Degraded, note: "broker only: an egress broker of the run (pod-broker) that allows the hosts of --allow on the ports of --ports and dials through the host's proxy; it needs a holding mechanism (--podvm-tier=syscall or machine), and each other rung refuses it. Each other value is refused: there is no network namespace to select (TODO/net.md T-1665)" },
     Row { verb: "run", flag: Some("--ports"), status: Native, note: "podvm's own, with --network broker: the ports that the broker allows, 443 by default (TODO/net.md T-1665)" },
     Row { verb: "run", flag: Some("--allow"), status: Native, note: "podvm's own, with --network broker: a host (or *.NAME) that the broker allows; repeatable or a comma list (TODO/net.md T-1665)" },

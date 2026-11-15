@@ -31,6 +31,9 @@ Deployed: none yet.
   its lifetime (`--timeout`, else 24 h), and no emulator stays after
   `stop`, `rm -f` or the lifetime. Before this, `run -d windows:dos` asked
   Docker Hub for an image and failed.
+- `podvm run -d -p 33890:3389 windows:2025` publishes a port of the guest
+  on 127.0.0.1 (an address in the value changes it), and `podvm windows
+  screenshot NAME FILE` writes a screen dump of a running guest.
 
 ## 0.2.0-beta.20 (2026-11-15)
 
