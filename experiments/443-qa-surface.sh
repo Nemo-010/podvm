@@ -591,7 +591,9 @@ fi
 
 # ---------------------------------------------------------------- machine
 if on machine; then
-note "== 8. machine tier (TCG only; no KVM)"
+note "== 8. machine tier (KVM where /dev/kvm opens, else TCG)"
+# The volume of `machine.vol`, also when this section runs alone.
+mkdir -p "$W/vol" && printf 'invol\n' >"$W/vol/in.txt"
 if command -v qemu-system-x86_64 >/dev/null 2>&1; then
 	note "qemu        $(qemu-system-x86_64 --version | head -1)"
 	note "kvm         $( [ -e /dev/kvm ] && echo present || echo absent )"
@@ -601,7 +603,7 @@ if command -v qemu-system-x86_64 >/dev/null 2>&1; then
 	TO=600 t machine.report ns "exit_code 7, refused null, rung and image (T-1803)" '[ $rc -eq 7 ] && python3 -I -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"exit_code\"]==7 and d[\"refused\"] is None and d[\"rung\"]==\"machine\" and d[\"image\"], d" $W/mrep.json' "rm -f \$W/mrep.json; \$PB run --rm --podvm-tier=machine --report \$W/mrep.json \$A sh -c 'exit 7'"
 	TO=60 t machine.report-timeout ns "timed_out true (T-1803)" 'python3 -I -c "import json,sys; d=json.load(open(sys.argv[1])); assert d[\"timed_out\"] is True and d[\"exit_code\"]==137, d" $W/mrept.json' "rm -f \$W/mrept.json; \$PB run --rm --podvm-tier=machine --timeout 2 --report \$W/mrept.json \$A sleep 30"
 	TO=600 t machine.eq-form ns "--podvm-net=none parses as the space form (T-1811)" '[ $rc -eq 0 ]' '$PB run --rm --podvm-tier=machine --podvm-net=none $A true'
-	TO=60 t machine.timeout ns "rc 137 in under 4 s, no emulator left (T-1809, T-1884)" '[ $rc -eq 137 ] && [ $ms -lt 4000 ] && ! pgrep -x qemu-system-x86_64 >/dev/null' '$PB run --rm --podvm-tier=machine --timeout 2 $A sleep 30'
+	TO=60 t machine.timeout ns "rc 137 in under 4 s, no emulator left (T-1809, T-1884)" '[ $rc -eq 137 ] && [ $ms -lt 4000 ] && ! pgrep -f qemu-system-x86_64 >/dev/null' '$PB run --rm --podvm-tier=machine --timeout 2 $A sleep 30'
 	# TODO/machine.md T-1823: the answers of the rootfs rungs, and no "exit marker".
 	TO=600 t machine.workdir-made ns "prints /no/such/dir, rc 0 (T-1823)" '[ $rc -eq 0 ] && [ "$out" = /no/such/dir ]' '$PB run --rm --podvm-tier=machine -w /no/such/dir $A pwd'
 	TO=600 t machine.workdir-file ns "rc 125, names the file (T-1823)" '[ $rc -eq 125 ] && has "$err" -e "/etc/hostname is not a directory" && ! has "$err" -e "exit marker"' '$PB run --rm --podvm-tier=machine -w /etc/hostname $A pwd'

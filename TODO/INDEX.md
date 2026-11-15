@@ -526,7 +526,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1861](machine.md) | P1 | M | none | machine | partial | `podvm run windows:NAME` has no image name, no catalog and no `pull`, `images` or `rmi` |
 | [T-1862](machine.md) | P1 | M | none | machine | done | The download has no resume, no free-disk check and no `RLIMIT_FSIZE` check |
 | [T-1863](machine.md) | P1 | M | none | machine | done | `windows:validationos` has no fetch by range, and the extent of the VHDX is a fixed sector |
-| [T-1864](machine.md) | P1 | S | none | machine | partial | The agent of a Windows guest runs the command with `call`, so a payload that ends in `exit` times out |
+| [T-1864](machine.md) | P1 | S | none | machine | done | The agent of a Windows guest runs the command with `call`, so a payload that ends in `exit` times out |
 | [T-1865](machine.md) | P1 | M | none | machine | done | The plan of a Windows guest has no NIC, no CD-ROM, no USB media, no VNC socket and no serial channel |
 | [T-1866](machine.md) | P1 | M | none | machine | done | There is no generator of the unattended answer file or of the USB FAT media |
 | [T-1867](machine.md) | P1 | L | none | machine | open | `podvm pull windows:11` cannot install a full Windows guest |
@@ -556,14 +556,14 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1891](extract.md) | P1 | S | none | extract | done | A tree with a directory of mode 0555 cannot be removed by a user who is not root |
 | [T-1892](enter.md) | P3 | S | none | enter | done | Two exec tables reach the payload: podvm's guest paths and the crate's host paths |
 | [T-1893](machine.md) | P1 | S | none | machine | done | The provision of a Windows guest leaves the emulator running when the typing fails |
-| [T-1894](machine.md) | P1 | S | none | machine | partial | The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails |
+| [T-1894](machine.md) | P1 | S | none | machine | done | The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails |
 | [T-1895](image.md) | P1 | S | none | image | done | A reference by an index digest finds a tag record and a digest record of one manifest, and `save` calls them two images |
 | [T-1896](enter.md) | P1 | S | none | enter | done | `run -d` of a static image where chroot is denied refuses: the native-static rung has no detached driver |
 | [T-1897](machine.md) | P1 | M | none | machine | done | The incus tier and the native tiers hold no limit of memory, CPU or processes for a detached run |
 
 ## Counts
 
-494 entries: 13 open, 16 partial, 2 blocked, 463 done.
+494 entries: 13 open, 14 partial, 2 blocked, 465 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,10 +573,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 1 | 7 | 0 | 197 | 205 |
+| P1 | 1 | 5 | 0 | 199 | 205 |
 | P2 | 8 | 6 | 2 | 159 | 175 |
 | P3 | 4 | 3 | 0 | 33 | 40 |
-| **All** | 13 | 16 | 2 | 463 | 494 |
+| **All** | 13 | 14 | 2 | 465 | 494 |
 
 ## Work order
 

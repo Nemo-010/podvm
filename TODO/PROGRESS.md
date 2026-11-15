@@ -7,7 +7,7 @@ start.
 
 ## State
 
-494 entries: 13 open, 16 partial, 2 blocked, 463 done.
+494 entries: 13 open, 14 partial, 2 blocked, 465 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -67,8 +67,8 @@ status with `podvm-count` in the same commit as the work.
 2a. The Windows guest plan of the review of 2026-11-14: T-1861 to T-1878
    (`podvm run windows:NAME`). The owner accepts the vendor terms
    (`docs/decisions.md`, "Windows media"). Take the P1 entries first:
-   [T-1861](machine.md),
-   [T-1864](machine.md), [T-1867](machine.md) (the first KVM proof, on `kvm.yml`) and
+   [T-1861](machine.md), [T-1867](machine.md) (a full Windows install,
+   proved on `kvm.yml`, where Validation OS passes since run 43672193303) and
    [T-1871](machine.md); then the P2 entries and T-1878 (P3). podcrates
    `v0.45.0` carries the parts of the crates that they asked for
    (podcrates@T-590 to podcrates@T-595, podcrates@T-610; issues 350 and

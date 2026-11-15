@@ -3444,7 +3444,7 @@ names.
 **Milestone:** none
 **Priority:** P1
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -3479,7 +3479,20 @@ on the ValidationOS image under TCG on the cloud host, and it returns the code
 of the payload and not a timeout. `cmd /c exit 42` still gives 42. The result
 goes under `experiments/results/`.
 
+## Correction
+
+**Corrected 2026-11-15.** The cloud host cannot hold the Prove: under TCG
+the console of Validation OS does not draw within 15 minutes (the screen
+dumps of the Partial below), so no command reaches the agent there. The
+proof is the same experiment under KVM, in `kvm.yml`.
+
 ## Done
+
+**Done 2026-11-15.** Experiment 450 passes under KVM in `kvm.yml` run
+43672193303 (request 383), at podcrates `v0.49.0`: `exit 42` gives 42,
+`cmd /c exit 42` gives 42, and `echo out & exit 7` prints `out` and gives
+7; none is a timeout, and no emulator stays. The two timeouts of run
+43660534832 did not come back (issue 380 keeps the question open).
 
 **Partial 2026-11-14.** podcrates `v0.45.0` runs the command in a child
 `cmd /c` (podcrates@T-592). Experiment 450 (`450-windows-agent-exit.sh`)
@@ -4533,7 +4546,7 @@ qemu-system` finds no emulator after it.
 **Milestone:** none
 **Priority:** P1
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4568,6 +4581,11 @@ cannot see the guest.
 `kvm.yml` passes experiment 392 and experiment 450 under KVM
 
 ## Done
+
+**Done 2026-11-15.** `kvm.yml` run 43672193303 at `d37ca215` (request
+383), with podcrates `v0.49.0`: experiment 392 and experiment 450 pass
+under KVM, and no emulator stays. The setup of Validation OS types after
+the screen settles, and the three runs of 450 give their codes.
 
 **Partial, 2026-11-15.** podcrates `v0.48.0` carries podcrates@T-633:
 `Sign::After` and a screen sign that ignores a cursor box. podvm takes
