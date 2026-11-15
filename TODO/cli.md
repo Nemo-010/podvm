@@ -5820,3 +5820,69 @@ podvm keeps the parity table as the one source of the flags; the crate renders i
 **Blocked (2026-11-15).** podcrates has not named the crate and its tag (PodUtils/podnet#584). Clears when a tag of podcrates carries the crate.
 
 **Blocked, amended (2026-11-15, later).** podcrates takes it as `pod-manual` (COORD-108, PodUtils/podcrates#181, podcrates@T-700), in the first tag after `pod-lab` part 1. The ruling "Discipline" of the owner (2026-11-15, as podcrates relays it) adds to the Prove: `podvm man --json`; a test in CI fails when the man page or `llms.txt` differs from the model, or when the code reads a `PODVM_*` variable or gives an exit code that has no fact in the table. Clears when that tag is out.
+
+# T-1918: podvm has no installer: the user downloads and checks the binary by hand
+
+**Source:** PodUtils/podcrates#182 (COORD-109 of podcrates, the ruling "Installer"), COORD-142 (PodUtils/podvm#427)
+**Category:** cli
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** blocked
+
+## Problem
+
+The owner ruled on 2026-11-15 that each project publishes one POSIX installer that is hermetic, idempotent and fast, and that runs on each host class of `pod-lab`. podvm has none: the README gives five lines of `curl`, `sha256sum` and `install`.
+
+## Premise
+
+podcrates gives the shared core (podcrates@T-702): the detection of the OS and the architecture, the download, the check against the sums of the release, the atomic move, the PATH line, `--prefix`, `--version`, `--dry-run` and an offline install.
+
+## Approach
+
+Take the core at its tag; podvm keeps its name, its assets and its setup steps (the optional `docker` and `podman` links, then `podvm version --verbose` and `podvm probe`). Publish the installer as an asset of each release, and run it in the release gate.
+
+## Decision
+
+The installer asks before a link would shadow a `docker` or a `podman` on `PATH`.
+
+## Prove
+
+On a host with no root, `sh install.sh` puts podvm under its prefix in seconds, a second run changes nothing and says so, and `dash`, `busybox sh` and `bash --posix` each run it.
+
+## Blocker
+
+**Blocked (2026-11-15).** The core of podcrates@T-702. Clears when a tag of podcrates carries it.
+
+# T-1919: The state of an issue is written by hand
+
+**Source:** PodUtils/podcrates#183 (COORD-110 of podcrates, the ruling "Issues"), COORD-143 (PodUtils/podvm#428)
+**Category:** cli
+**Milestone:** none
+**Priority:** P2
+**Effort:** M
+**Status:** blocked
+
+## Problem
+
+The owner ruled on 2026-11-15 that the state of each issue comes from the record by a tool. In podvm a session writes the rows of `TODO/issues.md`, the lines of `TODO/github.txt` and the `state:` lines of a body by hand, so an issue can stay open after its entries are done.
+
+## Premise
+
+podcrates gives a reusable workflow and the check in `pod-todo` (podcrates@T-703): an issue is open exactly when one of its entries is not done, and a block of its body holds the state.
+
+## Approach
+
+Take the workflow at its tag, with a kind for each issue (`report`, `coord`, `request`; a request has no entry), and move the map of `TODO/issues.md` into the form that `pod-todo` reads.
+
+## Decision
+
+A dry run prints each change before the workflow first closes or reopens an issue.
+
+## Prove
+
+`./target/x86_64-unknown-linux-musl/release/podvm-gate` fails on a row of `TODO/issues.md` whose state differs from GitHub, and after a push that marks the last entry of an open issue done, the workflow closes the issue with the tag in its comment.
+
+## Blocker
+
+**Blocked (2026-11-15).** The workflow and the check of podcrates@T-703. Clears when a tag of podcrates carries them.
