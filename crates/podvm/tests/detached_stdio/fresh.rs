@@ -27,10 +27,38 @@ impl std::ops::Deref for Fresh {
 
 impl Drop for Fresh {
     fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.0);
+        remove_tree(&self.0);
     }
 }
 
 pub(crate) fn cleanup(store: &Path) {
-    let _ = std::fs::remove_dir_all(store);
+    remove_tree(store);
+}
+
+/// TODO/gate.md T-1859: remove a test tree as a user who is not root. The
+/// extraction keeps the mode of a directory of the image (0555 and the
+/// like, podcrates `v0.44.0`), and such a directory refuses the removal of
+/// its entries; each directory gets mode 0700 first. A second try after a
+/// pause covers a launcher that writes its record at the end of a payload.
+pub(crate) fn remove_tree(root: &std::path::Path) {
+    use std::os::unix::fs::PermissionsExt;
+    for _ in 0..2 {
+        let mut stack = vec![root.to_path_buf()];
+        while let Some(p) = stack.pop() {
+            let Ok(m) = std::fs::symlink_metadata(&p) else {
+                continue;
+            };
+            if m.is_dir() {
+                let _ = std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o700));
+                if let Ok(rd) = std::fs::read_dir(&p) {
+                    stack.extend(rd.flatten().map(|e| e.path()));
+                }
+            }
+        }
+        let _ = std::fs::remove_dir_all(root);
+        if !root.exists() {
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
 }

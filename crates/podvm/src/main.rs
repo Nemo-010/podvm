@@ -38,6 +38,7 @@ mod sandprobe;
 mod system;
 mod tier;
 mod version;
+mod width; // TODO/supervise.md T-1858
 mod windows;
 
 use std::io::Write;

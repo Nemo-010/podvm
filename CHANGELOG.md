@@ -89,6 +89,19 @@ Deployed: version 0.2.0-beta.19.
 - `load` refuses an unknown `schemaVersion`, and the `images` table
   shows the platform where two records share a tag.
 
+### Fixed: the answers of the machine tier, `profile show` and the `ps` table, 2026-11-15
+
+Record: T-1823, T-1849, T-1845, T-1858.
+Deployed: version 0.2.0-beta.19.
+
+- The machine tier makes a missing `-w` directory, refuses a file there
+  by name, and refuses a missing entrypoint before the boot with 127; no
+  answer reads "no exit marker" any more. Its help names
+  `qemu-system-x86_64` and says what `--podvm-mem` sizes.
+- `profile show` writes nothing on stdout when it refuses.
+- `ps` and the other tables pad by the columns of the terminal, so a
+  CJK command keeps its row in line.
+
 ### Fixed: piped input to a machine run with `-t`, 2026-11-15
 
 Record: T-1885.

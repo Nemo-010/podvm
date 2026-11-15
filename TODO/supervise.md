@@ -1917,7 +1917,7 @@ between uids.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1947,3 +1947,13 @@ docker pads by display width. The fix is cosmetic, so it is P3.
 ## Prove
 
 `cargo test -p podvm --bin podvm display_width` exits 0, with a test that a `ps` row with U+65E5 and a row with ASCII put the CREATED column at the same display column
+
+## Done
+
+**Done 2026-11-15.** `crates/podvm/src/width.rs` gives the display width
+of text (East Asian Wide and Fullwidth and the emoji blocks take two
+columns, combining marks and zero-width characters none) and a cut by
+columns. The shared table of `ps`, `images` and the other verbs pads by
+it, and `command_of` cuts the COMMAND column by it. `cargo test -p podvm
+--bin podvm display_width` exits 0. On the cloud host `ps -a` puts the
+CREATED column of `echo 日日 日日日` at the column of an ASCII row.

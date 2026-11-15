@@ -268,5 +268,5 @@
 376 issue open
 377 issue closed
 378 issue closed
-379 issue open
+379 issue closed
 380 issue open

@@ -275,5 +275,5 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | open | T-1896 |
 | #377 | [gh action] requested | closed (kvm 43660534832: 390, 412 and 440 pass; `windows setup` passed in 37 s; 450 gave 42 once and a timeout twice, issue 380) | T-1864, T-1867, T-1894 |
 | #378 | [gh action] requested | closed (gate 43660867122 failed: `tests/cp_tree.rs` created with `/bin/true`, which the image lacks where chroot is denied; fixed in 88019eed) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
-| #379 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
+| #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |

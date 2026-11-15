@@ -404,7 +404,8 @@ pub(crate) fn table(rows: &[Vec<String>]) -> String {
     let mut widths = vec![0usize; columns];
     for row in rows {
         for (i, cell) in row.iter().enumerate() {
-            widths[i] = widths[i].max(cell.chars().count());
+            // TODO/supervise.md T-1858: columns of the terminal.
+            widths[i] = widths[i].max(crate::width::str_width(cell));
         }
     }
     let mut out = String::new();
@@ -414,7 +415,7 @@ pub(crate) fn table(rows: &[Vec<String>]) -> String {
                 out.push_str(cell);
             } else {
                 out.push_str(cell);
-                out.push_str(&" ".repeat(widths[i] - cell.chars().count() + 3));
+                out.push_str(&" ".repeat(widths[i] - crate::width::str_width(cell) + 3));
             }
         }
         out.push('\n');

@@ -4,12 +4,8 @@ pub(super) fn command_of(c: &Container) -> String {
     // TODO/supervise.md T-1800: the width counts characters, and the cut
     // falls between two of them. A byte index cut a multibyte character in
     // two, and the release build aborted on the panic.
-    let joined = c.argv.join(" ");
-    if joined.chars().count() > 20 {
-        format!("{}...", joined.chars().take(17).collect::<String>())
-    } else {
-        joined
-    }
+    // TODO/supervise.md T-1858: the cut counts the columns of the terminal.
+    crate::width::cut(&c.argv.join(" "), 20)
 }
 
 pub(super) fn ps_field_names() -> Vec<&'static str> {

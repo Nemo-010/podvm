@@ -102,8 +102,29 @@ struct Gone(std::path::PathBuf);
 
 impl Drop for Gone {
     fn drop(&mut self) {
-        let _ = fs::remove_dir_all(&self.0);
+        remove_tree(&self.0);
     }
+}
+
+/// TODO/gate.md T-1859: remove the tree as a user who is not root. The
+/// extraction keeps the mode of a directory of the image (0555 and the
+/// like, podcrates `v0.44.0`), and such a directory refuses the removal of
+/// its entries; each directory gets mode 0700 first.
+fn remove_tree(root: &Path) {
+    use std::os::unix::fs::PermissionsExt;
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(p) = stack.pop() {
+        let Ok(m) = fs::symlink_metadata(&p) else {
+            continue;
+        };
+        if m.is_dir() {
+            let _ = fs::set_permissions(&p, fs::Permissions::from_mode(0o700));
+            if let Ok(rd) = fs::read_dir(&p) {
+                stack.extend(rd.flatten().map(|e| e.path()));
+            }
+        }
+    }
+    let _ = fs::remove_dir_all(root);
 }
 
 fn rm_link(path: &Path) {
@@ -135,7 +156,7 @@ fn completion_writes_stay_in_the_rootfs_and_follow_an_inside_link() {
             "SKIP completion reach: could not pull {image}: {}",
             text(&pull.stderr).trim()
         );
-        let _ = fs::remove_dir_all(&work);
+        remove_tree(&work);
         return;
     }
     let extract = run_podvm(&["extract", &image], &store, Duration::from_secs(900));
@@ -196,7 +217,7 @@ fn completion_writes_stay_in_the_rootfs_and_follow_an_inside_link() {
             err.trim()
         );
         let _ = run_podvm(&["rm", "-f", "reach"], &store, Duration::from_secs(60));
-        let _ = fs::remove_dir_all(&work);
+        remove_tree(&work);
         return;
     }
     assert!(

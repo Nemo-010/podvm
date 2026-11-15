@@ -42,13 +42,16 @@ fn command_of_cuts_between_characters() {
     ];
     for argv in &cases {
         let out = command_of(&with_argv(argv));
-        assert!(out.chars().count() <= 20, "{out}");
+        assert!(crate::width::str_width(&out) <= 20, "{out}");
     }
     for ch in ['\u{e9}', '\u{65e5}', '\u{1f600}'] {
         for at in 15..=20 {
             let arg = format!("{}{ch}{}", "A".repeat(at), "B".repeat(10));
             let out = command_of(&with_argv(&[&arg]));
-            assert_eq!(out.chars().count(), 20, "{arg} gave {out}");
+            // TODO/supervise.md T-1858: the cut counts the columns of the
+            // terminal, and a wide character that does not fit stays out.
+            let w = crate::width::str_width(&out);
+            assert!((19..=20).contains(&w), "{arg} gave {out} ({w} columns)");
             assert!(out.ends_with("..."), "{out}");
         }
     }
