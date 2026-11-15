@@ -34,10 +34,10 @@ pub fn kernel_sha256() -> &'static str {
         .text("vmlinuz-virt-sha256")
         .expect("alpine-netboot has the fact vmlinuz-virt-sha256")
 }
-const MEMBER: &str = "boot/vmlinuz-virt";
+pub(super) const MEMBER: &str = "boot/vmlinuz-virt";
 /// The archive is about 90 MB; a larger answer is not the pin.
-const MAX_ARCHIVE: u64 = 512 << 20;
-const LIMITS: Limits = Limits {
+pub(super) const MAX_ARCHIVE: u64 = 512 << 20;
+pub(super) const LIMITS: Limits = Limits {
     head: std::time::Duration::from_secs(60),
     idle: std::time::Duration::from_secs(120),
 };
@@ -61,7 +61,7 @@ pub fn modules() -> [(&'static str, &'static str); 3] {
 const INITRAMFS: &str = "boot/initramfs-virt";
 /// TODO/machine.md T-1723: the 9p modules are only in the modloop, a
 /// squashfs image of the same archive, pinned by its SHA-256.
-const MODLOOP: &str = "boot/modloop-virt";
+pub(super) const MODLOOP: &str = "boot/modloop-virt";
 
 /// The SHA-256 of the modloop, a fact of `alpine-netboot`.
 pub fn modloop_sha256() -> &'static str {

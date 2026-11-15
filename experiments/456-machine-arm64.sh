@@ -6,9 +6,10 @@
 # TODO/machine.md T-1890. The emulator is the static qemu-system-aarch64
 # 9.2.0 of pkgforge (`ppkg.qemu`) in a relocatable layout with the
 # `efi-virtio.rom` of QEMU v9.2.0; the kernel is `boot/vmlinuz-virt` of
-# alpine-netboot-3.22.6-aarch64.tar.gz (streamed out of the archive), named
-# by PODVM_MACHINE_KERNEL_ARM64 until pod-services pins it (COORD-128).
-# Each file is checked against its sha256. One guest at a time, bounded.
+# alpine-netboot-3.22.6-aarch64.tar.gz, which podvm fetches itself on the
+# first run and checks against the pin of `alpine-netboot-aarch64` of
+# pod-services (podcrates v0.51.0, COORD-128). Each file is checked
+# against its sha256. One guest at a time, bounded.
 #
 # Pinned inputs:
 #   podvm   PODVM_456_BIN (default the release build of the workspace)
@@ -19,7 +20,8 @@
 #   2. `sh -c 'echo out; echo err >&2; exit 3'` gives `out` on stdout,
 #      `err` on stderr and exit 3;
 #   3. PODVM_MACHINE_ACCEL=kvm is refused by name (exit 125);
-#   4. no emulator stays.
+#   4. no emulator stays;
+#   5. the store holds the pinned kernel (machine/arm64/vmlinuz-dd37c446...).
 
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -31,7 +33,6 @@ QEMU_URL='https://api.ghcr.pkgforge.dev/pkgforge/bincache/qemu/ppkg/qemu-system-
 QEMU_SHA=1ed86579cf74ecbe4d118b098d96d3e127beebde048b3d8e5bc907781403531b
 ROM_URL=https://raw.githubusercontent.com/qemu/qemu/v9.2.0/pc-bios/efi-virtio.rom
 ROM_SHA=26be36901db7f8181c306cc62bd74891d8646528965a78e40cceadba5dd7c8e7
-NETBOOT=https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/aarch64/alpine-netboot-3.22.6-aarch64.tar.gz
 KERNEL_SHA=dd37c4460f933ec909ff022c34944ff7e1a5300aff99750e3bdc02cd4074c332
 rm -rf "$WORK"
 mkdir -p "$WORK/q/bin" "$WORK/q/share/qemu"
@@ -49,10 +50,9 @@ pinned "$WORK/q/bin/qemu-system-aarch64" "$QEMU_SHA"
 chmod +x "$WORK/q/bin/qemu-system-aarch64"
 curl -qfsSL -o "$WORK/q/share/qemu/efi-virtio.rom" "$ROM_URL" || { say "COULD NOT RUN: the ROM"; exit 2; }
 pinned "$WORK/q/share/qemu/efi-virtio.rom" "$ROM_SHA"
-curl -qfsSL "$NETBOOT" | tar -xzO boot/vmlinuz-virt >"$WORK/vmlinuz-virt" || { say "COULD NOT RUN: the kernel"; exit 2; }
-pinned "$WORK/vmlinuz-virt" "$KERNEL_SHA"
 say "emulator  $("$WORK/q/bin/qemu-system-aarch64" --version | head -1)"
-export PATH="$WORK/q/bin:$PATH" PODVM_MACHINE_KERNEL_ARM64="$WORK/vmlinuz-virt"
+export PATH="$WORK/q/bin:$PATH" HOME="$WORK/home" PODVM_STORE="$WORK/store"
+unset PODVM_MACHINE_KERNEL_ARM64
 timeout 600 "$BIN" pull -q --platform linux/arm64 "$IMG" >/dev/null 2>&1
 
 t0=$(date +%s)
@@ -76,6 +76,9 @@ if pgrep -f "qemu-system-aarch64" >/dev/null; then
 	bad "clause 4: an emulator stayed"
 	pkill -9 -f qemu-system-aarch64
 fi
+k=$(ls "$WORK/store/machine/arm64/" 2>/dev/null | grep -c "^vmlinuz-${KERNEL_SHA%"${KERNEL_SHA#????????????????}"}$")
+say "kernel    the store holds $k pinned kernel(s)"
+[ "$k" -eq 1 ] || bad "clause 5"
 rm -rf "$WORK"
 [ "$fail" -eq 0 ] && say "PASS" || say "FAIL"
 exit "$fail"

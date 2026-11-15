@@ -24,6 +24,7 @@ pub(crate) mod engine;
 pub(crate) mod exec; // TODO/machine.md T-1750
 pub(crate) mod init;
 pub(crate) mod kernel;
+pub(crate) mod kernel_arm64; // TODO/machine.md T-1890
 pub(crate) mod net;
 pub(crate) mod sealed;
 pub(crate) mod squashfs;

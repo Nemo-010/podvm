@@ -116,13 +116,10 @@ pub fn kernel(store_root: &Path, arch: Arch) -> Result<Assets, String> {
     match arch {
         Arch::Amd64 => super::kernel::ensure(store_root),
         Arch::Arm64 => {
+            // T-1890: the pin of `alpine-netboot-aarch64` (podcrates
+            // v0.51.0), or a kernel file of the caller.
             let Some(p) = std::env::var_os(KERNEL_ARM64).map(PathBuf::from) else {
-                return Err(format!(
-                    "the kernel of a linux/arm64 guest has no pin in pod-services yet \
-                     (COORD-128); {KERNEL_ARM64} names an aarch64 kernel file, for example \
-                     boot/vmlinuz-virt of alpine-netboot-3.22.6-aarch64.tar.gz \
-                     (TODO/machine.md T-1890)"
-                ));
+                return super::kernel_arm64::ensure(store_root);
             };
             if !p.is_file() {
                 return Err(format!(

@@ -4745,6 +4745,7 @@ emulator stayed. The x86_64 guest keeps its stderr on `ttyS1` (checked:
 `e2` on stderr, exit 4). `cargo test -p podvm --bin podvm` exits 0 (450
 tests, with the two of `arch.rs`).
 
+**Done, amended (2026-11-15, later).** podvm takes podcrates `v0.51.0`, whose `pod-services` has `alpine-netboot-aarch64` (COORD-128). With no `PODVM_MACHINE_KERNEL_ARM64`, an arm64 guest fetches the archive once, checks `boot/vmlinuz-virt` and `boot/modloop-virt` against the facts of the service, and keeps the kernel and the 9p modules under `machine/arm64/` of the store (`crates/podvm/src/machine/guest/kernel_arm64.rs`); the variable stays as an override. The guest still has no podvm binary of its own architecture, so the 9p modules wait in the store. Experiment 456 with no kernel variable: PASS (`uname -m` aarch64 in 15 s with the first fetch, the streams and exit 3, KVM refused, one pinned kernel in the store, no emulator stayed).
 
 # T-1893: The provision of a Windows guest leaves the emulator running when the typing fails
 
