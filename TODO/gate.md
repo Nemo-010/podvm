@@ -5196,6 +5196,18 @@ emulator left. Remaining: the row of the setuid bit after extraction
 (T-1813 is done: podcrates `v0.44.0` keeps the bits), and the machine
 section in `kvm.yml` before each release.
 
+**Partial 2026-11-15.** The row of the setuid bit is in experiment 443:
+`img.setuid.ns` and `img.setuid.ul` extract debian:bookworm-slim and find
+`/usr/bin/newgrp` at 4755 (T-1813). The row `img.load-run-quiet` found a
+regression: since T-1781 `rmi` removes the extraction, so the first run
+after `load` extracted again and printed `<layer>: Extracted (...)` on a
+quiet run; the line now prints with `--verbose` only, or with a failed
+extraction (`run/acquire.rs`, `extract_now`). `kvm.yml` runs the machine
+section of 443 under KVM before each release (step "experiment 443, the
+machine section, under KVM"). On the cloud host the full pass gives:
+`sh experiments/443-qa-surface.sh` exits 0 with pass 638, fail 0, info
+13, and no emulator stays (`experiments/results/qa-surface.txt`). The clause that remains: the step of `kvm.yml` passes under KVM
+(run request 383).
 
 # T-1853: No check proves that each parity row with a value takes `--flag=value`, and that each verb takes `-h` and `--help`
 
