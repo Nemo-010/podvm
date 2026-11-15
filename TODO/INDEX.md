@@ -512,7 +512,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
 | [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
 | [T-1849](machine.md) | P3 | S | none | machine | done | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
-| [T-1850](cli.md) | P3 | M | none | cli | open | `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull` |
+| [T-1850](cli.md) | P3 | M | none | cli | partial | `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull` |
 | [T-1851](supervise.md) | P3 | S | none | supervise | done | A store that root and a user share refuses the next run of the user with a bare `Permission denied` |
 | [T-1852](gate.md) | P1 | M | none | gate | partial | The QA pass of experiment 443 has no row for the 22 defects that the external gate found |
 | [T-1853](gate.md) | P2 | S | none | gate | done | No check proves that each parity row with a value takes `--flag=value`, and that each verb takes `-h` and `--help` |
@@ -563,7 +563,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-494 entries: 14 open, 15 partial, 2 blocked, 463 done.
+494 entries: 13 open, 16 partial, 2 blocked, 463 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -575,8 +575,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 197 | 205 |
 | P2 | 8 | 6 | 2 | 159 | 175 |
-| P3 | 5 | 2 | 0 | 33 | 40 |
-| **All** | 14 | 15 | 2 | 463 | 494 |
+| P3 | 4 | 3 | 0 | 33 | 40 |
+| **All** | 13 | 16 | 2 | 463 | 494 |
 
 ## Work order
 

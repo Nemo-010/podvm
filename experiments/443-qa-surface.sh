@@ -524,6 +524,22 @@ for r in ns ul; do
 		done
 	done
 done
+# TODO/cli.md T-1850: `exec IMAGE true` beside `run --rm`, and the wall
+# time of the pull of one small image into a fresh store.
+for r in ns ul; do
+	if [ "$r" = ul ]; then X="$FXCMD"; else X=""; fi
+	ts=""
+	for k in 1 2 3 4 5; do
+		s=$(date +%s%N); timeout 300 $X "$PB" exec "$A" true >/dev/null 2>&1; e=$(date +%s%N)
+		ts="$ts $(( (e - s) / 1000000 ))"
+	done
+	note "perf.exec | exec IMAGE true | $r | - | median=$(printf '%s\n' $ts | median)ms all=[$ts] | INFO"
+done
+ps_store="$W/pull-store-$$"
+rm -rf "$ps_store"
+s=$(date +%s%N); PODVM_STORE="$ps_store" timeout 300 "$PB" pull -q "$B" >/dev/null 2>&1; e=$(date +%s%N)
+note "perf.pull | pull -q IMAGE into a fresh store | ns | - | ms=$(( (e - s) / 1000000 )) | INFO"
+rm -rf "$ps_store"
 # The phases of one ubuntu run on ns, from the timestamps of strace.
 if command -v strace >/dev/null 2>&1; then
 	for extra in "" "--no-source-fixup"; do

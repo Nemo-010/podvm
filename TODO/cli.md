@@ -5681,7 +5681,7 @@ document with its `# run flags:` line.
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -5711,3 +5711,16 @@ A measurement first; a change only where a phase is measured.
 ## Prove
 
 `sh experiments/443-qa-surface.sh` exits 0, with a perf row for `exec IMG true` and one for `pull` that print the time of each phase
+
+## Done
+
+**Partial 2026-11-15.** The largest phase of `exec` was the probe: `exec`
+ran the full probe on each call, where `run` reads the cache of T-1746.
+Both paths of `exec` now take the cached findings
+(`run::probe_cache::findings`). On the cloud host, a median of 5 `exec
+alpine:3.20 true` went from 77 ms to 14 ms (a median `run --rm` is 27
+ms), and `exec` still runs on the userland fixture. Experiment 443 has
+the INFO rows `perf.exec` (ns and ul) and `perf.pull` (the wall time of a
+pull of busybox:musl into a fresh store, 2.5 s here). The clause that
+remains: the phases of a pull (token, manifest, blob), which podvm does
+not time yet.

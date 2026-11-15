@@ -6,7 +6,7 @@ use podvm_image::probe_cache::{resolve, Source};
 
 /// The findings, and, where `PODVM_DEBUG` is set, one line that says where
 /// they came from.
-pub(super) fn findings(verb: &str, store: &podvm_image::Store) -> podvm_probe::Findings {
+pub(crate) fn findings(verb: &str, store: &podvm_image::Store) -> podvm_probe::Findings {
     let say = |l: &str| {
         if std::env::var_os("PODVM_DEBUG").is_some() {
             eprintln!("podvm {verb}: the probe {l} (TODO/probe.md T-1746)");

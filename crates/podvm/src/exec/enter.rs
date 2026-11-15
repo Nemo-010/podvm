@@ -108,7 +108,8 @@ pub(super) fn enter(
         Err(code) => return code,
     };
     let working_dir = o.workdir.clone().unwrap_or_else(|| "/".to_string());
-    let findings = podvm_probe::run();
+    // TODO/cli.md T-1850: the cached probe of `run` (T-1746).
+    let findings = crate::run::probe_cache::findings("exec", store);
     // ⭐ TODO/enter.md T-1410. The image record behind the container, read
     // for the architecture the entry decision needs: a refusal here names
     // the lookup, because without it no rung can be decided safely.

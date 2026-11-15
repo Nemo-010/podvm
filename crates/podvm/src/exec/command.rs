@@ -157,7 +157,9 @@ pub fn exec(args: &[String]) -> i32 {
     }
     env.retain(|e| e.split('=').next().unwrap_or("") != podvm_supervise::table::MEMO_FD_VAR);
     env.push(podvm_supervise::table::memo_fd_env());
-    let findings = podvm_probe::run();
+    // TODO/cli.md T-1850: the cached probe of `run` (T-1746); a full probe
+    // on each `exec` took about 50 ms of its 77 ms.
+    let findings = crate::run::probe_cache::findings("exec", &store);
     // ⭐ TODO/enter.md T-1410. The image path shares the entry decision
     // with `run` and with the container path above: where chroot is
     // denied the loader and memfd families drive. A refusal names the
