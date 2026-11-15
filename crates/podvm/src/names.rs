@@ -314,6 +314,7 @@ pub fn start() {
 }
 
 pub mod stdout;
+pub mod store; // TODO/cli.md T-1913
 
 #[cfg(test)]
 mod tests {

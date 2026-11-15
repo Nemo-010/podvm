@@ -5748,3 +5748,38 @@ remains: the phases of a pull (token, manifest, blob), which podvm does
 not time yet.
 
 **Done, amended (2026-11-15, night).** podcrates `v0.52.0` gives `Client::tokens` and `Client::with_tokens` (COORD-129, issue 395): each blob worker of a pull now starts with the tokens of the client that got the manifest, so a blob asks the registry for no token of its own (`podvm-image/src/pull/run.rs`). Three pulls of `mirror.gcr.io/library/python:3.12-slim` into a fresh store on the cloud host: blobs 2743, 2599 and 2360 ms (median 2599 ms, against the 2903 ms measured before; an estimate, with the noise of the network), manifest and token 939 to 1180 ms.
+
+
+# T-1913: The store of a verb has no flag, only `PODVM_STORE`
+
+**Source:** PodUtils/podrunner#168 (COORD-056 of podrunner, ask 1)
+**Category:** cli
+**Milestone:** none
+**Priority:** P3
+**Effort:** S
+**Status:** done
+
+## Problem
+
+`podvm load` and `podvm images` take the store from `PODVM_STORE` only, else the XDG data directory, so `podvm images` does not show what a user loaded into another store unless the variable is set.
+
+## Premise
+
+Each verb opens the store through `podvm_image::Store`, which reads `PODVM_STORE` first.
+
+## Approach
+
+A global `--store DIR`, before the verb or right after it, that sets `PODVM_STORE` for the process before any verb parses its arguments; a word further on belongs to the verb or the payload.
+
+## Decision
+
+The flag and the variable have one meaning; the flag wins, as it sets the variable.
+
+## Prove
+
+`cargo test -p podvm --bin podvm store` exits 0, with the test `the_store_flag_stands_before_or_right_after_the_verb`
+
+## Done
+
+**Done (2026-11-15).** `crates/podvm/src/names/store.rs` (`take`, first in `main`). On the cloud host: `podvm --store S pull alpine:3.20`, then `podvm images --store S` lists it, `podvm images` with no flag does not, `PODVM_STORE=S podvm images` does; `podvm --store=S run --rm alpine:3.20 echo --store kept` prints `--store kept`; `podvm images --store` with no value exits 125 by name. The test passes.
+

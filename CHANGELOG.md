@@ -8,6 +8,14 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `--store DIR`, 2026-11-15
+
+Record: T-1913 (PodUtils/podrunner#168).
+Deployed: none yet.
+
+- `podvm --store DIR VERB` (or `podvm VERB --store DIR`) uses DIR as the
+  store, with the meaning of `PODVM_STORE`.
+
 ### Changed: podvm takes podcrates `v0.52.0`, 2026-11-15
 
 Record: T-1908, T-1912.
