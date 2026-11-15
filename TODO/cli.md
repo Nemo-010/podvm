@@ -5818,3 +5818,5 @@ podvm keeps the parity table as the one source of the flags; the crate renders i
 ## Blocker
 
 **Blocked (2026-11-15).** podcrates has not named the crate and its tag (PodUtils/podnet#584). Clears when a tag of podcrates carries the crate.
+
+**Blocked, amended (2026-11-15, later).** podcrates takes it as `pod-manual` (COORD-108, PodUtils/podcrates#181, podcrates@T-700), in the first tag after `pod-lab` part 1. The ruling "Discipline" of the owner (2026-11-15, as podcrates relays it) adds to the Prove: `podvm man --json`; a test in CI fails when the man page or `llms.txt` differs from the model, or when the code reads a `PODVM_*` variable or gives an exit code that has no fact in the table. Clears when that tag is out.

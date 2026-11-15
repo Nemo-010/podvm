@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       only:
-        description: "One job to run (guest, windows, cgroup or install); empty runs each"
+        description: "One job to run (guest, windows, cgroup, arch or install); empty runs each"
         required: false
         default: ""
 
@@ -303,6 +303,69 @@ jobs:
           name: cgroup-limits
           path: experiments/results/cgroup-limits.txt
           if-no-files-found: warn
+
+  # TODO/probe.md T-1907: under QEMU user mode the open of /dev/kvm and its
+  # ioctls reach the x86_64 device, which runs no aarch64 guest. An aarch64
+  # podvm on this x86_64 runner with /dev/kvm must say no, with the reason.
+  arch:
+    if: inputs.only == '' || inputs.only == 'arch'
+    name: aarch64 podvm under QEMU user mode on an x86_64 KVM host (T-1907)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: give the job /dev/kvm
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo udevadm settle || true
+          [ -e /dev/kvm ] && sudo chmod 0666 /dev/kvm
+          if [ -w /dev/kvm ] && [ -r /dev/kvm ]; then
+            ls -l /dev/kvm
+          else
+            echo "no usable /dev/kvm on this runner: COULD NOT RUN"
+            exit 2
+          fi
+
+      - name: qemu user mode
+        run: |
+          sudo apt-get -qq update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-user-static >/dev/null
+          qemu-aarch64-static --version | head -1
+
+      - name: bootstrap
+        run: ./scripts/common/bootstrap-env.sh rust cc zig tools
+
+      - name: build podvm (aarch64, cross)
+        run: |
+          rustup target add aarch64-unknown-linux-gnu aarch64-unknown-linux-musl
+          cargo build --release -p podvm-gate --bin podvm-interpose-build
+          mkdir -p target/release
+          cp target/x86_64-unknown-linux-musl/release/podvm-interpose-build target/release/
+          TARGETS="aarch64-unknown-linux-gnu aarch64-unknown-linux-gnu+glibc2.34 aarch64-unknown-linux-musl" ./target/release/podvm-interpose-build
+          cargo build --release --target aarch64-unknown-linux-musl -p podvm
+
+      - name: the probe says no KVM, with the reason
+        run: |
+          set -u
+          B=target/aarch64-unknown-linux-musl/release/podvm
+          rows=$(qemu-aarch64-static "$B" probe --rows 2>&1) || true
+          printf '%s\n' "$rows" | grep -i kvm || true
+          if printf '%s\n' "$rows" | grep -F 'open(/dev/kvm, O_RDWR)' | grep -qw PASS; then
+            echo "FAIL: the aarch64 probe says yes for the x86_64 device"
+            exit 1
+          fi
+          printf '%s\n' "$rows" | grep -F 'open(/dev/kvm, O_RDWR)' | grep -q 'FAIL' || { echo "FAIL: no kvm row"; exit 1; }
+          rc=0
+          out=$(PODVM_MACHINE_ACCEL=kvm timeout 300 qemu-aarch64-static "$B" run --rm --podvm-tier=machine \
+            public.ecr.aws/docker/library/alpine:3.20 true 2>&1) || rc=$?
+          printf '%s\n' "$out" | tail -5
+          echo "exit=$rc"
+          printf '%s\n' "$out" | grep -q 'does not fall back to TCG' || { echo "FAIL: the machine tier took the device"; exit 1; }
+          echo PASS
 
   # TODO/machine.md T-1867: `podvm pull windows:2025` installs the setup
   # ISO into a golden image under KVM (experiment 452). The clause of a

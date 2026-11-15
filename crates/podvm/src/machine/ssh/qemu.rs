@@ -298,7 +298,7 @@ pub fn ssh(args: &[String]) -> i32 {
         Ok(p) => p,
         Err(c) => return c,
     };
-    let accel = if kvm_present(KVM_NODE) {
+    let accel = if super::kvm_opens() {
         Accel::Kvm
     } else {
         Accel::Tcg

@@ -569,7 +569,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1904](image.md) | P3 | S | none | image | done | `podvm load` names a local image `docker.io/library/runner` |
 | [T-1905](packaging.md) | P2 | S | none | packaging | done | The release has no attestation in GitHub's store |
 | [T-1906](machine.md) | P1 | S | none | machine | done | The store keeps `machine/run-PID-*` after each guest of the machine tier |
-| [T-1907](probe.md) | P3 | S | none | probe | open | Under QEMU user mode, `probe` says `kvm: yes` for the device of the host |
+| [T-1907](probe.md) | P3 | S | none | probe | partial | Under QEMU user mode, `probe` says `kvm: yes` for the device of the host |
 | [T-1908](enter.md) | P1 | M | none | enter | done | A payload has the host name of the host: no `--hostname` |
 | [T-1909](probe.md) | P2 | M | none | probe | done | The namespace rung does not enter through a user namespace |
 | [T-1910](enter.md) | P2 | M | none | enter | done | `exec` and `cp` do not join a run that podvm put in a user namespace |
@@ -583,7 +583,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-514 entries: 8 open, 12 partial, 5 blocked, 489 done.
+514 entries: 7 open, 13 partial, 5 blocked, 489 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -595,8 +595,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 207 | 211 |
 | P2 | 4 | 5 | 4 | 168 | 181 |
-| P3 | 4 | 3 | 1 | 40 | 48 |
-| **All** | 8 | 12 | 5 | 489 | 514 |
+| P3 | 3 | 4 | 1 | 40 | 48 |
+| **All** | 7 | 13 | 5 | 489 | 514 |
 
 ## Work order
 

@@ -176,7 +176,7 @@ pub fn accel(want: Option<&str>, kvm_opens: bool) -> Result<Accel, String> {
     match want {
         Some("kvm") if kvm_opens => Ok(Accel::Kvm),
         Some("kvm") => Err("PODVM_MACHINE_ACCEL=kvm asks for KVM, and /dev/kvm does not open \
-                            for this user: podvm does not fall back to TCG (TODO/machine.md T-1656)"
+                            or runs no guest of this arch (T-1907): podvm does not fall back to TCG (TODO/machine.md T-1656)"
             .to_string()),
         Some("tcg") => Ok(Accel::Tcg),
         Some(other) => Err(format!("PODVM_MACHINE_ACCEL={other}: the values are kvm and tcg")),

@@ -164,11 +164,8 @@ pub(crate) fn accelerator() -> Result<Accel, i32> {
     // TODO/machine.md T-1871: `PODVM_MACHINE_ACCEL` as for the Linux guest
     // (call C16): `kvm` with no usable /dev/kvm refuses by name, and never
     // falls back to TCG without a word.
-    let kvm_opens = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open("/dev/kvm")
-        .is_ok();
+    // TODO/probe.md T-1907: a device that runs a guest of this architecture.
+    let kvm_opens = crate::machine::ssh::kvm_opens();
     if let Ok(want) = std::env::var("PODVM_MACHINE_ACCEL") {
         return asked(&want, kvm_opens).map_err(|why| {
             eprintln!("podvm windows: {why}");

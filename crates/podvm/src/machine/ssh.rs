@@ -194,8 +194,17 @@ pub use qemu::*;
 #[cfg(test)]
 mod tests;
 
-/// Does `/dev/kvm` open for this user? TODO/machine.md T-1656 shares the
-/// rule of the `ssh` member.
+/// Does `/dev/kvm` open for this user, and run a guest of this build's
+/// architecture? TODO/machine.md T-1656 shares the rule of the `ssh` member.
+///
+/// ⛔ Not a bare open: under QEMU user mode the open and the ioctls go to
+/// the device of the host, which runs no guest of this architecture
+/// (TODO/probe.md T-1907). The leg of `pod-hostprobe` asks the device.
 pub(crate) fn kvm_opens() -> bool {
-    qemu::kvm_present(KVM_NODE)
+    use podvm_probe::probes::{find, Kind};
+    use podvm_probe::verdict::Verdict;
+    match find("open(/dev/kvm, O_RDWR)").map(|p| &p.kind) {
+        Some(Kind::Child { body, .. }) => matches!(body().verdict, Verdict::Ok),
+        _ => qemu::kvm_present(KVM_NODE),
+    }
 }
