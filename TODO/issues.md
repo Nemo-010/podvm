@@ -284,7 +284,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #385 | [gh action] requested | closed (arm 43675339957 failed on a stale clause of experiment 356, corrected in 35d5b686) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` (AGENTS.md, section 9) |
 | #386 | COORD-123: a FAT image writer with directories and a size from the content, for `-v` of a Windows guest (podvm T-1872) (to podcrates) | open | T-1872 |
 | #387 | [gh action] requested | closed (gate 43676505508, arm 43677392885, trial 43677661305, release 43678160011: `v0.2.0-beta.20`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.20` at 35d5b686 (AGENTS.md, section 9) |
-| #388 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
+| #388 | [gh action] requested | closed (run 43676508681) | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
 | #389 | COORD-124: pod-services: list the host api.ghcr.pkgforge.dev (podvm T-1875) (to podcrates) | open | T-1875 |
 | #390 | COORD-125: pod-hostprobe: report a delegated cgroup2 subtree (podvm T-1747) (to podcrates) | open | T-1747 |
 | #391 | COORD-126: the answer to PodUtils/podrunner#111: a :ro volume on the detached run of a static image where chroot is denied (podvm T-1901) (to podrunner) | closed (released in `v0.2.0-beta.21`) | T-1901 |
@@ -293,9 +293,13 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #394 | COORD-128: pod-services: the aarch64 netboot of Alpine 3.22.6 for an arm64 guest (podvm T-1890) (to podcrates) | open | T-1890 |
 | #395 | COORD-129: pod-oci: one registry token for the parallel blob fetches of a pull (podvm T-1850) (to podcrates) | open | T-1850 |
 | #396 | --podvm-confine stops name resolution in the payload, while TCP to an address works | closed (T-1902) | T-1902 |
-| #397 | podvm probe takes userland on a host with user namespaces and KVM | open | T-1903, T-1909 |
+| #397 | podvm probe takes userland on a host with user namespaces and KVM | closed (T-1903) | T-1903, T-1909 |
 | #398 | podvm load names an image docker.io/library/runner | closed (T-1904) | T-1904 |
 | #399 | The release has no attestation in GitHub's store, and its .sigstore cannot be read by gh attestation verify | open | T-1905 |
 | #400 | The store keeps machine/run-PID-* after each guest of the machine tier | closed (T-1906) | T-1906 |
 | #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | open | T-1907 |
 | #402 | A podvm payload has the host name of the host | open | T-1908 |
+| #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | open | T-1908 |
+| #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
+| #405 | [gh action] requested | open | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
+| #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | open | T-1909 |
