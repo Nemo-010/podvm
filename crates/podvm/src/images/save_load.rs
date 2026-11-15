@@ -1,9 +1,11 @@
 use super::*;
 
 pub const SAVE_USAGE: &str = "\
-usage: podvm save [--output FILE] <image>
+usage: podvm save [--output FILE] [--platform P] <image>
 
   -o, --output F  write the tarball to F instead of stdout.
+  --platform P    the record of platform P (OS/ARCH[/VARIANT]) where the
+                  image has more than one (TODO/image.md T-1841).
 
   Write one image as an OCI-layout tarball: oci-layout, index.json and
   the blobs the record names, each verified on the way out. The tarball
@@ -39,16 +41,26 @@ usage: podvm import <rootfs.tar> [REPOSITORY[:TAG]]
 pub(super) struct SaveArgs {
     pub(super) output: Option<String>,
     pub(super) want: String,
+    /// TODO/image.md T-1841: the record of this platform, where the
+    /// reference has more than one.
+    pub(super) platform: Option<String>,
 }
 
 pub(super) fn parse_save(args: &[String]) -> std::result::Result<SaveArgs, i32> {
     let mut output = None;
     let mut want: Option<String> = None;
+    let mut platform: Option<String> = None;
     let mut expect_output = false;
+    let mut expect_platform = false;
     for a in args {
         if expect_output {
             output = Some(a.clone());
             expect_output = false;
+            continue;
+        }
+        if expect_platform {
+            platform = Some(a.clone());
+            expect_platform = false;
             continue;
         }
         match a.as_str() {
@@ -57,6 +69,10 @@ pub(super) fn parse_save(args: &[String]) -> std::result::Result<SaveArgs, i32> 
                 return Err(0);
             }
             "-o" | "--output" => expect_output = true,
+            "--platform" => expect_platform = true,
+            other if other.starts_with("--platform=") => {
+                platform = Some(other["--platform=".len()..].to_string())
+            }
             other if other.starts_with("--output=") => {
                 output = Some(other["--output=".len()..].to_string())
             }
@@ -75,11 +91,19 @@ pub(super) fn parse_save(args: &[String]) -> std::result::Result<SaveArgs, i32> 
         eprintln!("podvm save: --output needs a file");
         return Err(EXIT_FLAG_ERROR);
     }
+    if expect_platform {
+        eprintln!("podvm save: --platform needs OS/ARCH[/VARIANT]");
+        return Err(EXIT_FLAG_ERROR);
+    }
     let Some(want) = want else {
         eprint!("{SAVE_USAGE}");
         return Err(EXIT_CLI_ERROR);
     };
-    Ok(SaveArgs { output, want })
+    Ok(SaveArgs {
+        output,
+        want,
+        platform,
+    })
 }
 
 /// What `load` was asked for.
@@ -170,6 +194,16 @@ pub fn save(verb: &str, args: &[String]) -> i32 {
         Ok(o) => o,
         Err(c) => return c,
     };
+    // TODO/image.md T-1841: a platform resolves before the store opens.
+    let platform = match o
+        .platform
+        .as_deref()
+        .map(|p| podvm_image::platform::wanted(Some(p)))
+    {
+        None => None,
+        Some(Ok(p)) => Some(p),
+        Some(Err(e)) => return fail(e),
+    };
     let store = match podvm_image::open_store() {
         Ok(s) => s,
         Err(e) => return fail(e),
@@ -184,7 +218,7 @@ pub fn save(verb: &str, args: &[String]) -> i32 {
                 return EXIT_RUNTIME_ERROR;
             }
         };
-        match podvm_image::layout::save(&store, &o.want, &mut file) {
+        match podvm_image::layout::save_for(&store, &o.want, platform.as_ref(), &mut file) {
             Ok(done) => {
                 eprintln!(
                     "podvm save: saved {} as {} blobs ({} bytes), digest {}",
@@ -206,7 +240,7 @@ pub fn save(verb: &str, args: &[String]) -> i32 {
         }
     } else {
         let mut out = std::io::stdout().lock();
-        match podvm_image::layout::save(&store, &o.want, &mut out) {
+        match podvm_image::layout::save_for(&store, &o.want, platform.as_ref(), &mut out) {
             Ok(done) => {
                 eprintln!(
                     "podvm save: saved {} as {} blobs ({} bytes), digest {}",

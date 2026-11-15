@@ -4143,7 +4143,7 @@ prints `null`.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4178,6 +4178,18 @@ store.
 
 `cargo test -p podvm-image pull_all_names` exits 0, with a test that `pull -a` of a Docker Hub repository records the canonical name of the caller and not the endpoint host, and `cargo test -p podvm --bin podvm save_platform` exits 0 with a test that `save --platform linux/arm64` selects that record
 
+## Done
+
+**Done 2026-11-15.** `save` takes `--platform P` and saves the record of
+that platform (`layout::save_for`, `find_one_for`), with a parity row;
+`pull -a` names each tag with the name of the registry that a caller
+writes, `docker.io/...` for Docker Hub, not the endpoint host
+(`pull/run.rs`, `all_tag_ref`). `cargo test -p podvm-image
+pull_all_names` and `cargo test -p podvm --bin podvm save_platform` exit
+0. By hand: `save --platform linux/arm64` of
+`mirror.gcr.io/library/alpine:3.20`, which has an amd64 and an arm64
+record, writes the arm64 manifest (3.9 MiB, `45e09956...`); with no
+flag, the amd64 one of the host.
 
 # T-1842: `save` and `import` exit 125 for an input error that their error type maps to 1, and a bad insecure-registry host is taken
 

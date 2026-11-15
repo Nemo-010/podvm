@@ -314,6 +314,19 @@ pub fn pull(
     })
 }
 
+/// TODO/image.md T-1841: the reference of one tag of `pull -a`, with the
+/// name of the registry that a caller writes (`docker.io`), not the host
+/// of its API endpoint (`registry-1.docker.io`): the store keeps one name
+/// for one image.
+pub fn all_tag_ref(endpoint: &str, repository: &str, tag: &str) -> String {
+    let host = if endpoint == "registry-1.docker.io" {
+        "docker.io"
+    } else {
+        endpoint
+    };
+    format!("{host}/{repository}:{tag}")
+}
+
 /// Pull every offered tag of a repository: `pull -a` (TODO/cli.md T-1331).
 ///
 /// The offer is the registry's tags listing; each tag pulls through
@@ -344,7 +357,7 @@ pub fn pull_all(
     let mut pulled = Vec::with_capacity(tags.len());
     let mut skipped = 0usize;
     for tag in &tags {
-        let want = format!("{endpoint}/{repository}:{tag}");
+        let want = all_tag_ref(endpoint, repository, tag);
         match pull(store, &want, platform, policy, out) {
             Ok(p) => pulled.push(p),
             Err(Error::NoPlatform { want, offered }) => {
@@ -364,4 +377,21 @@ pub fn pull_all(
         )));
     }
     Ok(pulled)
+}
+
+#[cfg(test)]
+mod all_names_tests {
+    /// TODO/image.md T-1841: a tag of `pull -a` of Docker Hub is named
+    /// `docker.io/...`, the name a caller writes, not the endpoint host.
+    #[test]
+    fn pull_all_names_use_the_name_of_the_caller() {
+        assert_eq!(
+            super::all_tag_ref("registry-1.docker.io", "library/hello-world", "latest"),
+            "docker.io/library/hello-world:latest"
+        );
+        assert_eq!(
+            super::all_tag_ref("ghcr.io", "owner/tool", "v1"),
+            "ghcr.io/owner/tool:v1"
+        );
+    }
 }

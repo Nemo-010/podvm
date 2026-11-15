@@ -69,3 +69,25 @@ fn images_table_inspect_gives_config_labels() {
     assert_eq!(labels_json(&s, &without), serde_json::Value::Null);
     let _ = std::fs::remove_dir_all(s.root());
 }
+
+/// TODO/image.md T-1841: `save --platform` parses, and it selects the
+/// record of that platform among two of one reference.
+#[test]
+fn save_platform_selects_that_record() {
+    let s = store("save");
+    let none = serde_json::json!({"config": {}});
+    s.put_record(record(&s, "3.20", "linux/amd64", &none))
+        .unwrap();
+    s.put_record(record(&s, "3.20", "linux/arm64", &none))
+        .unwrap();
+    let args: Vec<String> = ["--platform", "linux/arm64", "-o", "x.tar", "alpine:3.20"]
+        .iter()
+        .map(|a| a.to_string())
+        .collect();
+    let o = super::save_load::parse_save(&args).unwrap();
+    assert_eq!(o.platform.as_deref(), Some("linux/arm64"));
+    let p = podvm_image::platform::wanted(o.platform.as_deref()).unwrap();
+    let r = s.find_one_for(&o.want, Some(&p)).unwrap();
+    assert_eq!(r.platform, "linux/arm64");
+    let _ = std::fs::remove_dir_all(s.root());
+}

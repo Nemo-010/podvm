@@ -194,6 +194,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "logout", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     Row { verb: "save", flag: Option::None, status: Native, note: "writes one image as an OCI-layout tarball, to stdout or -o (TODO/image.md T-1320)" },
     Row { verb: "save", flag: Some("-o, --output"), status: Native, note: "write the tarball to a file instead of stdout (TODO/image.md T-1320)" },
+    Row { verb: "save", flag: Some("--platform"), status: Native, note: "OS/ARCH[/VARIANT]: the record of that platform where the image has more than one (TODO/image.md T-1841)" },
     Row { verb: "save", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     Row { verb: "load", flag: Option::None, status: Native, note: "reads an OCI-layout tarball into the store with every blob verified on the way in (TODO/image.md T-1320)" },
     Row { verb: "load", flag: Some("-i, --input"), status: Native, note: "read the tarball from a file instead of stdin (TODO/image.md T-1320)" },

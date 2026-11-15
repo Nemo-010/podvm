@@ -34,7 +34,18 @@ use pod_oci::layout::{allowed_entry, MEDIA_UNTAR, OCI_LAYOUT, REF_ANNOTATION};
 /// store's read API is memory-based, and save reuses it rather than
 /// growing a second read path around verification.
 pub fn save(store: &Store, want: &str, out: &mut dyn Write) -> Result<Saved> {
-    let record = store.find_one(want)?;
+    save_for(store, want, None, out)
+}
+
+/// [`save`] of the record of `platform`, where the reference has more
+/// than one (TODO/image.md T-1841).
+pub fn save_for(
+    store: &Store,
+    want: &str,
+    platform: Option<&crate::platform::Platform>,
+    out: &mut dyn Write,
+) -> Result<Saved> {
+    let record = store.find_one_for(want, platform)?;
     let manifest_digest = Digest::parse(&record.manifest_digest)?;
     let manifest_bytes = store.read_blob(&manifest_digest)?;
     let manifest: oci::Manifest = serde_json::from_slice(&manifest_bytes)
