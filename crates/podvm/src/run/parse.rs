@@ -8,8 +8,7 @@ pub(super) fn parse(verb: &str, args: &[String]) -> std::result::Result<Opts, i3
     let mut o = parse_flags_with(verb, args, false)?;
     let Some(name) = o.profile.clone() else {
         if o.image.is_none() {
-            eprint!("{}", usage(verb));
-            return Err(EXIT_CLI_ERROR);
+            return Err(no_image(verb));
         }
         if !o.sets.is_empty() {
             eprintln!("podvm {verb}: -s needs --profile NAME: it sets one key of a profile");
@@ -430,12 +429,14 @@ fn parse_flags_with(
         i += 1;
     }
     if let Some(flag) = expecting {
-        eprintln!("podvm {verb}: {flag} needs a value");
+        // TODO/cli.md T-1829: the spelling the caller wrote (`--env`, not
+        // `-e`): the flag with no value is the last word.
+        let said = args.last().map(String::as_str).unwrap_or(flag);
+        eprintln!("podvm {verb}: {said} needs a value");
         return Err(EXIT_FLAG_ERROR);
     }
     if need_image && o.image.is_none() {
-        eprint!("{}", usage(verb));
-        return Err(EXIT_CLI_ERROR);
+        return Err(no_image(verb));
     }
     // ⭐ TODO/enter.md T-1653: the table checks of the pairs, up front. The
     // rootfs is not known yet, so `/` stands for it: the root pair is
@@ -463,3 +464,12 @@ use values::*;
 
 mod opts;
 pub(super) use opts::Opts;
+
+/// TODO/cli.md T-1829: no image: the usage line and the cause on stderr,
+/// not the whole help (11 kB), and docker's exit 1.
+fn no_image(verb: &str) -> i32 {
+    let u = usage(verb);
+    eprintln!("{}", u.lines().find(|l| !l.trim().is_empty()).unwrap_or(""));
+    eprintln!("podvm {verb}: an image is needed; `podvm {verb} --help` prints each option");
+    EXIT_CLI_ERROR
+}

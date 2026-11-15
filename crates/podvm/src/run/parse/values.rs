@@ -110,6 +110,18 @@ pub(super) fn security_opt(verb: &str, a: &str) -> Result<bool, i32> {
     match a {
         "no-new-privileges" | "no-new-privileges:true" | "no-new-privileges=true" => Ok(true),
         "no-new-privileges:false" | "no-new-privileges=false" => Ok(false),
+        // TODO/cli.md T-1829: the option is known; its value is not.
+        other
+            if other.starts_with("no-new-privileges=")
+                || other.starts_with("no-new-privileges:") =>
+        {
+            eprintln!(
+                "podvm {verb}: --security-opt {other:?}: no-new-privileges takes true or \
+                 false, and {:?} is neither (TODO/cli.md T-1829)",
+                &other["no-new-privileges=".len()..]
+            );
+            Err(EXIT_FLAG_ERROR)
+        }
         other => {
             eprintln!(
                 "podvm {verb}: --security-opt {other:?} is refused: podvm takes \

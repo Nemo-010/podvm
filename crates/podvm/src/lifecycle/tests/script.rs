@@ -235,3 +235,17 @@ fn a_relative_program_resolves_against_the_working_directory() {
     assert_eq!(code, 127);
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// TODO/cli.md T-1829: a program that the image lacks leads the refusal of
+/// the no-chroot entry; the chroot sentence follows it.
+#[test]
+fn refusal_text_leads_with_the_missing_program() {
+    let m = crate::lifecycle::script::no_chroot_message(
+        "run",
+        "/no/such resolves to nothing runnable: /no/such names no file in the image",
+        false,
+        None,
+    );
+    assert!(m.starts_with("podvm run: /no/such"), "{m}");
+    assert!(m.find("names no file") < m.find("chroot(2)"), "{m}");
+}

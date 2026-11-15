@@ -198,11 +198,20 @@ pub(super) fn no_chroot_message(
     routed: bool,
     retry: Option<&str>,
 ) -> String {
-    let mut s = format!(
-        "podvm {verb}: chroot(2) is denied on this machine, and no no-chroot \
-         family runs this payload: {note}. The probe's chroot leg reports the \
-         denial (see `podvm probe`) (TODO/enter.md T-1317)"
-    );
+    // TODO/cli.md T-1829: a program that the image lacks is the cause on
+    // each rung, so it leads; the chroot sentence follows.
+    let mut s = if note.contains("names no file in the image") {
+        format!(
+            "podvm {verb}: {note}. (chroot(2) is denied on this machine, so the \
+             userland rung read the image; see `podvm probe`) (TODO/enter.md T-1317)"
+        )
+    } else {
+        format!(
+            "podvm {verb}: chroot(2) is denied on this machine, and no no-chroot \
+             family runs this payload: {note}. The probe's chroot leg reports the \
+             denial (see `podvm probe`) (TODO/enter.md T-1317)"
+        )
+    };
     if let Some(word) = retry.filter(|_| routed) {
         s.push_str(". ");
         s.push_str(&entrypoint_retry(word));

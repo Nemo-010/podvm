@@ -79,9 +79,17 @@ pub fn expand(verb: &str, args: &[String]) -> Result<Vec<String>, String> {
     let mut prev_dash = !bounded;
     let mut out = Vec::with_capacity(args.len());
     let mut i = 0;
+    // TODO/cli.md T-1829: the word after a valued long flag is its value,
+    // never a bundle of short flags (`logs --tail -1`).
+    let mut value_next = false;
     while i < args.len() {
         let a = &args[i];
         i += 1;
+        if std::mem::take(&mut value_next) {
+            out.push(a.clone());
+            prev_dash = false;
+            continue;
+        }
         let bytes = a.as_bytes();
         if bytes.len() > 2
             && bytes[0] == b'-'
@@ -130,6 +138,10 @@ pub fn expand(verb: &str, args: &[String]) -> Result<Vec<String>, String> {
             continue;
         }
         if a.starts_with('-') && a.len() > 1 {
+            value_next = a.starts_with("--")
+                && !a.contains('=')
+                && !BOOLEAN_LONGS.contains(&a.as_str())
+                && flag(under, a).is_some();
             out.push(a.clone());
             prev_dash = true;
             continue;

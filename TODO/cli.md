@@ -5182,7 +5182,7 @@ expects the quotes. By hand with `mirror.gcr.io/library/alpine:3.20`:
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5220,6 +5220,27 @@ matches docker 26.1.5.
 ## Prove
 
 `cargo test -p podvm --bin podvm refusal_text` exits 0, with a test for each of the seven texts above
+
+## Correction
+
+**Corrected 2026-11-15.** Six of the seven texts come from the binary,
+so their test is the integration test `tests/refusal_text.rs`; the text
+of the entrypoint on the userland rung needs chroot denied, so its test
+is the unit test `lifecycle::tests::script::refusal_text_leads_with_the_missing_program`.
+
+## Done
+
+**Done 2026-11-15.** `run` with no image prints the usage line and "an
+image is needed" with exit 1 (`run/parse.rs`, `no_image`). A flag with no
+value names the spelling of the caller (`--env needs a value`). A missing
+program of the userland rung leads its refusal, before the chroot
+sentence (`lifecycle/script.rs`). `no-new-privileges=X` says that X is not
+true or false. A confine rule with `=` in its value names `;` as the
+separator (`podvm-enter/src/confine.rs`), and a path that the image lacks
+is named by its guest path (T-1888). `logs --tail -1` says that `--tail`
+takes a non-negative count: `parity::expand` and `admit_all` take the word
+after a valued long flag as its value. `cargo test -p podvm --bin podvm
+refusal_text` and `cargo test -p podvm --test refusal_text` exit 0.
 
 
 # T-1830: A `--tmpfs` run leaves its map in the record, so a later `exec` cannot see the path

@@ -107,12 +107,22 @@ pub fn admit(verb: &str, arg: &str, usage: &str) -> Result<(), i32> {
 /// does not list before any match arm runs, so an arm for a flag with no
 /// row is unreachable. A value that starts with `-` must use the `=` form.
 pub fn admit_all(verb: &str, args: &[String], usage: &str) -> Option<i32> {
+    // TODO/cli.md T-1829: the word after a valued long flag is its value
+    // (`logs --tail -1`), not a flag to admit.
+    let mut value_next = false;
     for a in args {
+        if std::mem::take(&mut value_next) {
+            continue;
+        }
         if a.starts_with('-')
             && let Err(c) = admit(verb, a, usage)
         {
             return Some(c);
         }
+        value_next = a.starts_with("--")
+            && !a.contains('=')
+            && !super::filter::BOOLEAN_LONGS.contains(&a.as_str())
+            && flag(verb, a).is_some();
     }
     None
 }
