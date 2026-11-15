@@ -67,6 +67,10 @@ pub const SPECIALIZE: &str = "PODVM-WINDOWS-SPECIALIZE";
 /// before its other commands.
 pub const LOGON: &str = "PODVM-WINDOWS-LOGON";
 
+/// TODO/machine.md T-1867: the line of the first logon that finds the
+/// mailbox on a drive letter and runs the installer of the agent on it.
+pub const AGENT_SETUP: &str = r#"cmd /c "for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\WQMARK.TXT %d:\WA.CMD""#;
+
 /// The name of the file that Setup reads at the root of a removable drive.
 pub const FILE: &str = "autounattend.xml";
 
@@ -132,6 +136,11 @@ pub fn xml(a: &Answer) -> String {
         "powercfg /change standby-timeout-ac 0",
         "powercfg /change monitor-timeout-ac 0",
         &format!("cmd /c echo {READY}> COM1"),
+        // TODO/machine.md T-1867: the installer of the mailbox agent
+        // (`pod_guest::agent::SETUP_CMD`) registers the agent and shuts
+        // the guest down; the shutdown below is for a guest with no
+        // mailbox.
+        AGENT_SETUP,
         "shutdown /s /t 5",
     ]
     .iter()

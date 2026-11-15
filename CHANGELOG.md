@@ -10,6 +10,23 @@ They describe their recorded revision, not the current build.
 
 ## 0.2.0-beta.20 (2026-11-15)
 
+### Added: `podvm pull windows:2025` installs Windows from its setup ISO, 2026-11-15
+
+Record: T-1867 (partial), T-1861 (partial), T-1871 (partial).
+Deployed: version 0.2.0-beta.20.
+
+- `podvm pull windows:2025` (also `11` and `10`) fetches the setup ISO,
+  installs it unattended under KVM, prints each phase with the elapsed
+  time, and writes a golden image with no backing file. The password of
+  the user `podvm` goes into a file of mode 0600 beside it. Under TCG the
+  install is refused unless `PODVM_MACHINE_ACCEL=tcg` asks for it. The
+  first install under KVM is not measured yet.
+- `podvm run windows:2025 CMD` and `podvm run windows:validationos CMD`
+  run the command in the guest and give its exit code. The first run of
+  Validation OS provisions it one time.
+- `podvm windows` takes `PODVM_MACHINE_ACCEL` and names the group `kvm`
+  when `/dev/kvm` does not open.
+
 ### Fixed: `exec` takes the cached probe, and one exec table reaches a confined payload, 2026-11-15
 
 Record: T-1850 (partial), T-1892, T-1823, T-1849, T-1845, T-1858, T-1837, T-1846 (partial).

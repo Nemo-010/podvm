@@ -166,7 +166,9 @@ fn prepare(
     .map(|s| s.to_string())
     .collect();
     podvm_windows::emulator::run_steps(&create).map_err(|why| fail(verb, name, why))?;
-    let mailbox = podvm_windows::Fat16::with_oem("PODVM").map_err(|why| fail(verb, name, why))?;
+    // TODO/machine.md T-1867: the first logon installs the mailbox agent
+    // from this volume, so that `podvm run windows:NAME` runs commands.
+    let mailbox = agent_mailbox().map_err(|why| fail(verb, name, why))?;
     std::fs::write(&plan.mailbox, mailbox.image()).map_err(|why| fail(verb, name, why))?;
     let password = answer::password().map_err(|why| fail(verb, name, why))?;
     let dir = plan.root.parent().unwrap_or(Path::new(".")).to_path_buf();
@@ -238,6 +240,12 @@ fn boot_and_convert(
         );
     }
     drop(guest);
+    if !agent_installed(plan) {
+        eprintln!(
+            "podvm {verb}: windows:{name}: the first logon did not install the mailbox agent, \
+             so `podvm run windows:{name}` cannot run commands in this image (TODO/machine.md T-1867)"
+        );
+    }
     let part = golden.with_extension("part");
     let _ = std::fs::remove_file(&part);
     podvm_windows::emulator::run_steps(&podvm_windows::convert_argv(&qemu_img, &plan.root, &part))
@@ -252,6 +260,26 @@ fn boot_and_convert(
         );
     }
     Ok(())
+}
+
+/// The mailbox of an install: the marker, the agent and its installer,
+/// as for the provisioning boot of Validation OS.
+fn agent_mailbox() -> podvm_windows::Result<podvm_windows::Fat16> {
+    use podvm_windows::agent;
+    let s = podvm_windows::settings();
+    let mut m = podvm_windows::Fat16::with_oem(&s.oem)?;
+    m.put(agent::MARKER, &s.marker)?;
+    m.put(agent::AGENT_NAME, agent::AGENT_CMD.as_bytes())?;
+    m.put(agent::SETUP_NAME, agent::SETUP_CMD.as_bytes())?;
+    Ok(m)
+}
+
+/// True when the installer of the agent wrote its report to the mailbox.
+fn agent_installed(plan: &Plan) -> bool {
+    std::fs::read(&plan.mailbox)
+        .ok()
+        .and_then(podvm_windows::Fat16::from_image)
+        .is_some_and(|m| m.get(podvm_windows::agent::SETUP).is_some())
 }
 
 /// The last lines of the error stream of the emulator, as `; the

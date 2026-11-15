@@ -19,9 +19,11 @@
 #   1. `podvm pull windows:NAME` exits 0 and prints the golden image;
 #   2. `qemu-img info` names no backing file of the golden image;
 #   3. the sha256 of the ISO in the store is the pin of the catalog;
-#   4. no emulator stays.
+#   4. no emulator stays;
+#   5. `podvm run windows:NAME ver` exits 0 and prints the version of
+#      Windows: the first logon installed the mailbox agent.
 # With PODVM_452_REFUSAL=1, the clause of a host with TCG only:
-#   5. `podvm pull windows:2025` exits 125 at once, names `--accel tcg`,
+#   6. `podvm pull windows:2025` exits 125 at once, names `--accel tcg`,
 #      and fetches nothing.
 
 set -u
@@ -40,8 +42,8 @@ if [ "${PODVM_452_REFUSAL:-0}" = 1 ]; then
 	err=$(env -u PODVM_MACHINE_ACCEL timeout 120 "$BIN" pull windows:2025 2>&1 >/dev/null)
 	rc=$?
 	say "refusal  rc $rc in $(( $(date +%s) - t0 )) s: $err"
-	[ "$rc" -eq 125 ] && printf '%s' "$err" | grep -q -- "--accel tcg" || bad "clause 5: no refusal that names --accel tcg"
-	[ -e "$STORE/win2025-eval.iso" ] && bad "clause 5: the refusal fetched the ISO"
+	[ "$rc" -eq 125 ] && printf '%s' "$err" | grep -q -- "--accel tcg" || bad "clause 6: no refusal that names --accel tcg"
+	[ -e "$STORE/win2025-eval.iso" ] && bad "clause 6: the refusal fetched the ISO"
 	exit "$fail"
 fi
 
@@ -71,6 +73,13 @@ for name in $NAMES; do
 		got=$(sha256sum "$iso" | cut -d' ' -f1)
 		say "$name     iso sha256 $got"
 		[ "$got" = "$pin" ] || bad "clause 3 ($name): the ISO changed (pin $pin)"
+	fi
+	if [ "$rc" -eq 0 ]; then
+		t0=$(date +%s)
+		ver=$(timeout 15m "$BIN" run "windows:$name" ver 2>"$ROOT/experiments/results/windows-install-$name-run.err")
+		vrc=$?
+		say "$name     run ver rc $vrc in $(( $(date +%s) - t0 )) s: $(printf '%s' "$ver" | tr -d '\r' | grep -i version | head -1)"
+		[ "$vrc" -eq 0 ] && printf '%s' "$ver" | grep -qi "version" || { bad "clause 5 ($name)"; tail -5 "$ROOT/experiments/results/windows-install-$name-run.err" | tee -a "$OUT"; }
 	fi
 	if pgrep -a qemu-system >/dev/null; then
 		bad "clause 4 ($name): an emulator stayed"

@@ -495,7 +495,9 @@ fi
 step fx-refuse "$NOTFOUND" $FX "$PB" run --rm "$ALPINE" /nonexistent-probe-target
 grep -q "names no file in the image" "$WORK/out-fx-refuse.txt" || { echo "refusal did not name the missing payload" >>"$REPORT"; fail=1; }
 grep -q "chroot(2) is denied" "$WORK/out-fx-refuse.txt" || { echo "refusal did not name chroot" >>"$REPORT"; fail=1; }
-grep -qi "no-chroot family" "$WORK/out-fx-refuse.txt" || { echo "refusal did not name the family" >>"$REPORT"; fail=1; }
+# TODO/cli.md T-1829: a program that the image lacks leads the refusal, and
+# the chroot sentence names the rung that read the image.
+grep -qi "userland rung read the image" "$WORK/out-fx-refuse.txt" || { echo "refusal did not name the rung" >>"$REPORT"; fail=1; }
 if [ -f "$WORK/rootfs-before.txt" ]; then
 	find "$ROOTFS" -type f -exec sha256sum {} + | sort >"$WORK/rootfs-after.txt" 2>/dev/null
 	if cmp -s "$WORK/rootfs-before.txt" "$WORK/rootfs-after.txt"; then

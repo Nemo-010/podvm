@@ -200,7 +200,7 @@ pub(crate) fn files_of(e: &Entry) -> Vec<PathBuf> {
         Kind::DosZip => v.push(podvm_windows::dos::base_cache()),
         Kind::ValidationOs => {
             let vhdx = dir.join(e.file.replace(".iso", ".vhdx"));
-            v.push(PathBuf::from(format!("{}.podvm.qcow2", vhdx.display())));
+            v.push(super::setup::provisioned_path(&vhdx));
             v.push(vhdx);
         }
         Kind::Iso => {

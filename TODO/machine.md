@@ -3239,6 +3239,16 @@ T-1867 allows it. Language is a later flag with the default en-US.
 
 ## Done
 
+**Partial 2026-11-15.** `podvm run windows:validationos CMD` runs: the
+VHDX comes out of the ISO (T-1863), the first run provisions it one time
+with each line on stderr, and the command runs through the mailbox
+(`windows/named.rs`). `run windows:2025` (and each setup ISO) runs the
+command in the golden image of `podvm pull` (T-1867), and names `podvm
+pull` where none is installed (exit 125). `rmi windows:validationos` now
+removes the provisioned image: `files_of` named
+`X.vhdx.podvm.qcow2`, and the setup writes `X.podvm.qcow2`. The clause
+that remains: the run of a setup ISO under KVM (T-1867).
+
 **Partial 2026-11-14, later again.** `podvm images` lists each Windows
 name that the store holds (`windows`, the name, the pin as IMAGE ID, the
 bytes of its files), and `podvm rmi windows:NAME` removes its files
@@ -3742,6 +3752,13 @@ stayed. `kvm.yml` has the job `install` (experiment 452: the refusal
 under TCG before the job gets /dev/kvm, then the install). The clauses
 that remain: the run of the job under KVM, the first real install time
 (a dash until then), and `windows:11`.
+
+The install also puts the mailbox agent into the golden image: the
+mailbox of the install holds the agent and its installer, and the first
+logon runs the installer after the `READY` marker (`answer::AGENT_SETUP`);
+the driver reads `SETUP.TXT` back and names a missing agent. `podvm run
+windows:2025 ver` then boots the golden image and runs the command through
+the mailbox (T-1861). Experiment 452 checks it (clause 5).
 
 # T-1868: A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe
 

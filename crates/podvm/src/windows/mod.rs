@@ -38,6 +38,7 @@ mod doctor;
 mod doctor_more; // TODO/machine.md T-1871
 mod dos;
 mod install; // TODO/machine.md T-1867
+mod named; // TODO/machine.md T-1861, T-1867
 mod origin;
 mod plan;
 pub(crate) mod pull; // TODO/machine.md T-1861
@@ -147,7 +148,7 @@ pub(crate) fn run_windows(
     // refusal belongs to the disk door alone.
     // TODO/machine.md T-1861: a name of the catalog, `windows:NAME`.
     if let Some(name) = podvm_windows::catalog::name_of(image) {
-        return run_named(verb, mem, name, argv, qemu_extra);
+        return named::run_named(verb, mem, name, argv, qemu_extra);
     }
     if image.is_empty() || !is_disk_request(image) {
         return dos::dos_run(verb, mem, None, qemu_extra, None, &argv.join(" "));
@@ -171,55 +172,16 @@ pub(crate) fn run_windows(
     run::run(verb, &a)
 }
 
-/// A caller-supplied timeout in seconds, with the default where none was
-/// named. Zero is unreachable through the CLI (`args` refuses it); a zero
-/// here means the default rather than forever, because no run waits
-/// unbounded.
-/// `run windows:NAME` (TODO/machine.md T-1861): `dos` fetches its pinned
-/// base and boots; each other name is fetched and verified, and refused by
-/// name where the step that turns its download into a disk is not built.
-fn run_named(
-    verb: &str,
-    mem: Option<u64>,
-    name: &str,
-    argv: &[String],
-    qemu_extra: &[String],
-) -> i32 {
-    let e = match podvm_windows::catalog::resolve(name) {
-        Ok(e) => e,
-        Err(why) => {
-            eprintln!("podvm {verb}: {why}");
-            return podvm_image::error::EXIT_CLI_ERROR;
-        }
-    };
-    match e.kind {
-        podvm_windows::catalog::Kind::DosZip => {
-            dos::dos_run(verb, mem, None, qemu_extra, None, &argv.join(" "))
-        }
-        podvm_windows::catalog::Kind::ValidationOs | podvm_windows::catalog::Kind::Iso => {
-            let step = if e.kind == podvm_windows::catalog::Kind::Iso {
-                "the run of an installed guest (TODO/machine.md T-1868)"
-            } else {
-                "the read of its VHDX out of the ISO (TODO/machine.md T-1863)"
-            };
-            eprintln!(
-                "podvm {verb}: windows:{}: {} is in the catalog, and this build does not do {step} \
-                 yet; its pinned download goes to {}",
-                e.name,
-                e.what,
-                podvm_windows::catalog::store_dir().join(e.file).display()
-            );
-            podvm_image::error::EXIT_RUNTIME_ERROR
-        }
-    }
-}
-
 /// True where `image` is a name of the catalog (`windows:NAME`), which takes
 /// the door of the Windows driver with no tier and no platform (T-1861).
 pub(crate) fn named(image: Option<&str>) -> bool {
     image.is_some_and(|i| podvm_windows::catalog::name_of(i).is_some())
 }
 
+/// A caller-supplied timeout in seconds, with the default where none was
+/// named. Zero is unreachable through the CLI (`args` refuses it); a zero
+/// here means the default rather than forever, because no run waits
+/// unbounded.
 pub(crate) fn request_timeout(want: Option<u64>, default_secs: u64) -> Duration {
     Duration::from_secs(want.filter(|&n| n > 0).unwrap_or(default_secs))
 }
