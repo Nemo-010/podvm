@@ -295,7 +295,7 @@
 403 issue closed
 404 issue open
 405 issue closed
-406 issue open
+406 issue closed
 407 issue open
 408 issue closed
 409 issue closed
@@ -303,7 +303,7 @@
 411 issue closed
 412 issue closed
 413 issue closed
-414 issue open
+414 issue closed
 415 issue closed
 416 issue closed
 417 issue closed
@@ -311,7 +311,7 @@
 419 issue closed
 420 issue closed
 421 issue open
-422 issue open
+422 issue closed
 423 issue open
 424 issue open
 425 issue open

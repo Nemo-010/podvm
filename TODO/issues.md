@@ -302,7 +302,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | closed (not needed: T-1908, T-1909) | T-1908 |
 | #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
 | #405 | [gh action] requested | closed (run 43689812413) | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
-| #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | open | T-1909 |
+| #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | closed | T-1909 |
 | #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | open | T-1907 |
 | #408 | [gh action] requested | closed (stopped at the gate: the snapshot) | T-1905: the release of 0.2.0-beta.22 at 7e45abc4 |
 | #409 | [gh action] requested | closed (stopped at the gate: plant 27f) | T-1905: the release of 0.2.0-beta.22 at 7189f0e6 |
@@ -310,7 +310,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #411 | [gh action] requested | closed (run 43709734103) | T-1867: a request of `kvm.yml` with the install in three legs |
 | #412 | [gh action] requested | closed (gate, arm, trial green; the release tag got 403) | the release of 0.2.0-beta.23 at 86574c96 |
 | #413 | COORD-134: podvm took podcrates v0.51.0 (to podcrates) | closed (PodUtils/podcrates#176 closed) | T-1890, T-1747, T-1868 |
-| #414 | COORD-135: pod-enter: the device nodes of the host on the namespace rung through a user namespace (to podcrates) | open | T-1912 |
+| #414 | COORD-135: pod-enter: the device nodes of the host on the namespace rung through a user namespace (to podcrates) | closed | T-1912 |
 | #415 | [gh action] requested | closed (run 43716914244) | T-1747: the job cgroup of kvm.yml (experiment 459) |
 | #416 | [gh action] requested | closed (403 again; call C22) | the rerun of the release run 43716584904 of 0.2.0-beta.23 |
 | #417 | COORD-136: the answer to PodUtils/podrunner#168: --store and the attestations (to podrunner) | closed (answered) | T-1913, T-1905 |
@@ -318,7 +318,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #419 | [gh action] requested | closed (run 43726557269) | T-1867: the job install of kvm.yml with the logs of Setup |
 | #420 | [gh action] requested | closed (run 43730876201) | the release of 0.2.0-beta.23 at 437bd12d |
 | #421 | COORD-137: the answer to PodUtils/podrunner#177: descriptor 17 (to podrunner) | open | T-1914 |
-| #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | open | T-1914 |
+| #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | closed | T-1914 |
 | #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
 | #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |
 | #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | open | T-1917 |
