@@ -294,7 +294,11 @@ pub fn read_only_env(
     if !read_only && ro_guests.is_empty() {
         return Ok(());
     }
-    if !matches!(userland.map(|u| u.family), Some(Family::Loader)) {
+    // TODO/enter.md T-1901 (PodUtils/podrunner#111): the handler of the
+    // native-static rung holds a `:ro` volume; `--read-only` of the rootfs
+    // stays the interposer's.
+    let native = native_static(userland) && !read_only;
+    if !native && !matches!(userland.map(|u| u.family), Some(Family::Loader)) {
         eprintln!(
             "podvm {verb}: --read-only and :ro need the read-only layer of the \
              interposer, which only the userland loader family has; this entry \
@@ -323,8 +327,10 @@ pub fn container_read_only(
     let Some(table) = record_env.iter().find(|e| e.starts_with("PODVM_RO=")) else {
         return Ok(());
     };
-    if !matches!(userland.map(|u| u.family), Some(Family::Loader))
-        || userland.is_some_and(|u| u.dispatch_exe.is_some())
+    let native = native_static(userland) && !table.split(',').any(|e| e.ends_with("ro:/"));
+    if !native
+        && (!matches!(userland.map(|u| u.family), Some(Family::Loader))
+            || userland.is_some_and(|u| u.dispatch_exe.is_some()))
     {
         eprintln!(
             "podvm {verb}: the container has a :ro volume or --read-only, which needs \
@@ -335,6 +341,12 @@ pub fn container_read_only(
     }
     env.push(table.clone());
     Ok(())
+}
+
+/// TODO/enter.md T-1901: the native-static rung, whose handler of Syscall
+/// User Dispatch holds a `:ro` volume (the emulate and syscall tiers do not).
+fn native_static(userland: Option<&Userland>) -> bool {
+    userland.is_some_and(|u| u.dispatch_exe.is_some() && u.emulator.is_none() && !u.syscall)
 }
 
 /// The one spelling of a guest path: no trailing `/`, except for `/`

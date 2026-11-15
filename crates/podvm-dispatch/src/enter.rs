@@ -116,6 +116,13 @@ fn volumes(envp: &[OsString]) -> Result<(), String> {
         n += 1;
     }
     state::NVOLS.store(n, Ordering::Release);
+    // TODO/enter.md T-1901: the `:ro` volumes of `PODVM_RO`.
+    if let Some(ro) = envp
+        .iter()
+        .find_map(|e| e.as_bytes().strip_prefix(b"PODVM_RO="))
+    {
+        crate::ro::mark(ro);
+    }
     Ok(())
 }
 

@@ -4015,3 +4015,71 @@ the deny-chroot fixture with `mirror.gcr.io/library/busybox:1.37.0-musl`:
 the image; `stop -t 2` of a detached `sleep 60` gives `Exited (143)`, and
 `pgrep` finds no `sleep`.
 
+
+# T-1901: A `:ro` volume is refused on the native-static rung, so a static job container of the runner fails where chroot is denied
+
+**Source:** PodUtils/podrunner#111 (COORD-051 of podrunner, podrunner@T-158, 2026-11-15)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** done
+
+## Problem
+
+The official runner mounts its externals at `/__e` with `:ro`. `podvm run
+-d -v SRC:/__e:ro busybox:1.37.0-musl ...` where chroot is denied refused
+with exit 125 ("--read-only and :ro need the read-only layer of the
+interposer"), as only the loader family read `PODVM_RO`. A static image
+takes the native-static rung (T-1652), whose payload makes raw system
+calls past the interposer.
+
+## Premise
+
+The handler of the native-static rung sees each system call of the payload
+(Syscall User Dispatch) and maps each volume to a host directory
+descriptor (T-1724). It can refuse a write into a `:ro` volume before the
+call runs, as a read-only bind mount does.
+
+## Approach
+
+The handler marks the volumes that `PODVM_RO` names `ro:`, and a call that
+writes through a path in one, or through a descriptor of a file in one,
+answers `EROFS`. podvm stops refusing a `:ro` volume on that rung;
+`--read-only` of the rootfs stays the interposer's (podrunner does not need
+it). The noise of the destroy (ask 3) is the background removal of the
+trash of podvm racing the `chmod -R` of podrunner; `PODVM_SPARE_TREE=0`
+makes the removal synchronous.
+
+## Decision
+
+A write through a mapping of a file that was opened before is no system
+call and passes, as on a bind mount that turns read-only later.
+
+## Prove
+
+`cargo test -p podvm --test ro_native` exits 0 where chroot is denied (CI,
+or uid 1000 on the cloud host), with a write that fails with errno 30, a
+read that works and a host file that stays.
+
+## Done
+
+**Done 2026-11-15.** `crates/podvm-dispatch/src/ro.rs`: the handler marks
+the `ro:` volumes of `PODVM_RO` (`state::Vol::ro`), and its gate answers
+`EROFS` for `open`/`openat` with a write flag, `creat`, `mkdir`, `mknod`,
+`unlink`, `rmdir`, `rename`, `link` (both names: a hard link is a writable
+name), `symlink`, `chmod`, `chown`, `truncate`, the times and the xattrs,
+by path, and for `ftruncate`, `fchmod`, `fchown`, `fsetxattr`,
+`fremovexattr` and `fallocate` by descriptor (`/proc/self/fd/N`). The
+volume with the longest guest prefix decides, so a writable volume in a
+read-only one stays writable. `lifecycle/volume.rs` takes `:ro` on the
+native-static rung for `run`, `run -d` and `exec`. On the cloud host
+under the deny-chroot fixture, a static busybox got `Read-only file
+system` for a write, `touch`, `rm`, `mkdir`, `chmod` and `ln`, wrote to
+`/tmp`, and the host file stayed `orig`; `run -d -v SRC:/__e:ro` of
+`busybox:1.37.0-musl` read `/__e/f` and its write failed the same way.
+`cargo test -p podvm --test ro_native` exits 0 as uid 1000 (the
+native-static rung: errno 30, the read works, the host file stays) and
+says SKIP as root (the chroot rung). The rung of a run is already the
+field `rung` of `--report` (ask 2).
+

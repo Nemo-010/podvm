@@ -296,6 +296,9 @@ fn call(n: i64, a: [i64; 6], g: *mut i64) -> i64 {
     if let Some(r) = guard_fd(n, a) {
         return r;
     }
+    if let Some(r) = crate::ro::gate(n, a) {
+        return r; // TODO/enter.md T-1901: a `:ro` volume
+    }
     if let Some(r) = crate::tier::call(n, a) {
         return r;
     }

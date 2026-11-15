@@ -563,10 +563,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1898](machine.md) | P3 | L | none | machine | open | A Windows guest has no terminal and no streamed output: `run -it windows:11 -- powershell` and `logs -f` of the console |
 | [T-1899](machine.md) | P3 | L | none | machine | partial | A Windows guest has no viewer of its screen in a browser |
 | [T-1900](machine.md) | P3 | L | none | machine | open | A Windows guest follows the host architecture, so an arm64 host has no Windows guest |
+| [T-1901](enter.md) | P1 | M | none | enter | done | A `:ro` volume is refused on the native-static rung, so a static job container of the runner fails where chroot is denied |
 
 ## Counts
 
-497 entries: 10 open, 17 partial, 2 blocked, 468 done.
+498 entries: 10 open, 17 partial, 2 blocked, 469 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -576,10 +577,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 0 | 5 | 0 | 200 | 205 |
+| P1 | 0 | 5 | 0 | 201 | 206 |
 | P2 | 5 | 8 | 2 | 160 | 175 |
 | P3 | 5 | 4 | 0 | 34 | 43 |
-| **All** | 10 | 17 | 2 | 468 | 497 |
+| **All** | 10 | 17 | 2 | 469 | 498 |
 
 ## Work order
 

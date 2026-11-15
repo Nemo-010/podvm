@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a `:ro` volume holds for a static image where chroot is denied, 2026-11-15
+
+Record: T-1901 (PodUtils/podrunner#111).
+Deployed: none yet.
+
+- `podvm run -d -v SRC:DST:ro` of a static image (the native-static rung)
+  was refused with exit 125. The handler of the rung now answers EROFS for
+  each write into the volume, also from a static program; a read works.
+  `--read-only` of the rootfs stays on the loader family only.
+
 ### Added: the guests of the machine tier need no QEMU on the host, 2026-11-15
 
 Record: T-1875.

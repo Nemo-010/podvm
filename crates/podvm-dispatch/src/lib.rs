@@ -36,6 +36,8 @@ mod pool;
 #[cfg(target_arch = "x86_64")]
 mod procself;
 #[cfg(target_arch = "x86_64")]
+mod ro; // TODO/enter.md T-1901
+#[cfg(target_arch = "x86_64")]
 mod signals;
 #[cfg(target_arch = "x86_64")]
 mod state;
