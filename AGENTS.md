@@ -168,7 +168,7 @@ watches them.
 
    ```sh
    curl -qfsSL -o .work/agent/watch-runs.py \
-     "https://raw.githubusercontent.com/PodUtils/podssh/cc0caa27c6adaab05ed00c41a0362fc837e4b2ec/scripts/agent/watch-runs.py"
+     "https://raw.githubusercontent.com/PodUtils/podssh/7870c2bd50004882878817a448ef7aaa5fcaf06d/scripts/agent/watch-runs.py"
    python3 -I .work/agent/watch-runs.py --self-test
    python3 -I .work/agent/watch-runs.py PodUtils/podvm .work/agent/runs.json 120
    ```
