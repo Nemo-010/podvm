@@ -81,3 +81,48 @@ pub(crate) fn ps_rows(all: bool) -> Vec<Vec<String>> {
         })
         .collect()
 }
+
+/// `podvm port NAME [PORT[/PROTO]]` (TODO/machine.md T-1869): the forwards
+/// of a machine, as docker prints them (`3389/tcp -> 127.0.0.1:33890`). A
+/// name of no machine keeps the refusal of the parity table: a container
+/// shares the network of this machine and publishes nothing.
+pub(crate) fn port(args: &[String]) -> i32 {
+    let Some(name) = args.first().filter(|a| !a.starts_with('-')) else {
+        eprintln!("usage: podvm port NAME [PORT[/PROTO]]");
+        return EXIT_FLAG_ERROR;
+    };
+    let Some(r) = find(name) else {
+        eprintln!(
+            "podvm: port: podvm publishes no ports of a container: the payload shares this \
+             machine's network namespace; a detached Windows guest publishes with -p"
+        );
+        return EXIT_RUNTIME_ERROR;
+    };
+    let want = args.get(1).map(|p| {
+        if p.contains('/') {
+            p.clone()
+        } else {
+            format!("{p}/tcp")
+        }
+    });
+    let mut any = false;
+    for f in r
+        .forwards
+        .split(',')
+        .filter_map(crate::run::publish::forward_of)
+    {
+        let key = format!("{}/{}", f.guest_port, f.proto.word());
+        if want.as_ref().is_none_or(|w| *w == key) {
+            println!("{key} -> {}:{}", f.host, f.host_port);
+            any = true;
+        }
+    }
+    if !any && want.is_some() {
+        eprintln!(
+            "podvm port: {name} publishes no port {}",
+            want.unwrap_or_default()
+        );
+        return EXIT_RUNTIME_ERROR;
+    }
+    0
+}

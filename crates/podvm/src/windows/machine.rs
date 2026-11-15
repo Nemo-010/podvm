@@ -466,4 +466,4 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
 
 // TODO/machine.md T-1869, T-1870: the verbs that read a machine.
 mod view;
-pub(crate) use view::{logs, ps_rows, screenshot};
+pub(crate) use view::{logs, port, ps_rows, screenshot};

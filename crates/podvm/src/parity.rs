@@ -181,7 +181,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "unpause", flag: Option::None, status: NoneStatus, note: "the counterpart of a verb podvm does not have" },
     Row { verb: "stats", flag: Option::None, status: NoneStatus, note: "resource accounting needs a cgroup this runtime does not grant" },
     Row { verb: "diff", flag: Option::None, status: NoneStatus, note: "podvm extracts into one directory and keeps no upper layer to difference against" },
-    Row { verb: "port", flag: Option::None, status: NoneStatus, note: "podvm publishes no ports: the payload shares this machine's network namespace" },
+    Row { verb: "port", flag: Option::None, status: Degraded, note: "the forwards of a detached Windows guest (run -d -p); a container publishes no ports, as its payload shares this machine's network namespace (TODO/machine.md T-1869)" },
     Row { verb: "rename", flag: Option::None, status: NoneStatus, note: "not implemented: `rm` and a fresh `create` under the other name is what podvm offers" },
     Row { verb: "update", flag: Option::None, status: NoneStatus, note: "there are no resource limits to update" },
     // Building and moving images.

@@ -3868,8 +3868,10 @@ The parity row of `-p` is Degraded: a DOS or Validation OS machine refuses
 `-p` before any fetch (it has no network), and each other run refuses it by
 name (exit 125). `cargo test -p podvm windows_ports` exits 0 with three
 tests (the loopback default and the round trip, the bad values, the
-`hostfwd` line of the plan). The clauses that remain: `podvm port`, the
-RDP confirm after `run -d -p 3389:3389 windows:2025` under KVM, `--podvm-net
+`hostfwd` line of the plan). `podvm port NAME [PORT[/PROTO]]` prints the
+forwards of a machine as docker does (`3389/tcp -> 127.0.0.1:33890`), and
+exits 125 for a port that the machine does not publish or for a name of no
+machine. The clauses that remain: the RDP confirm after `run -d -p 3389:3389 windows:2025` under KVM, `--podvm-net
 none`, VNC, `creds`, and the policy of 10.0.2.2.
 
 

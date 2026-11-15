@@ -41,10 +41,9 @@ mod version;
 mod width; // TODO/supervise.md T-1858
 mod windows;
 
-use std::io::Write;
-
 use podvm_probe::report;
 use podvm_probe::select::{Selection, Strictness};
+use std::io::Write;
 
 // ⛔ **THE CODES ARE `podvm_image::error`'S, AND THEY ARE NOT RE-DECLARED
 // HERE.** This file carried its own `const EXIT_RUNTIME_ERROR` and its own
@@ -176,6 +175,7 @@ fn main() -> std::process::ExitCode {
         Some("restart") => exit(lifecycle::restart(rest)),
         Some("logs") => exit(lifecycle::logs(rest)),
         Some("ps") => exit(lifecycle::ps(rest)),
+        Some("port") => exit(windows::machine::port(rest)), // T-1869
         Some("start") => exit(lifecycle::start(rest)),
         Some("create") => exit(lifecycle::create(rest)),
         Some("container") => exit(lifecycle::container_group(rest)), // T-1848
