@@ -170,7 +170,7 @@ pub fn sweep(store: &Store) -> usize {
         if live {
             continue;
         }
-        if open_dirs(&p).is_ok() && pod_extract::remove_tree(&p).is_ok() {
+        if crate::live::remove_any(&p).is_ok() {
             n += 1;
         }
         crate::live::FillLock::forget(&p);
@@ -203,8 +203,7 @@ pub fn remove(store: &Store, rootfs: &str) -> io::Result<bool> {
             // A directory of the image without the owner's write bit (0555
             // is common) refuses the removal of its entries to a user that
             // is not root (CI run 391).
-            open_dirs(&dir)?;
-            pod_extract::remove_tree(&dir).map_err(|e| io::Error::other(e.to_string()))
+            crate::live::remove_any(&dir)
         }
         None => Ok(false),
     }
@@ -222,7 +221,7 @@ const DIR_HANDLE: i32 = 0o10_000_000 | 0o100_000 | 0o40_000; // aarch64, the gen
 /// `O_NOFOLLOW`, so a link that the payload put in the tree is never
 /// followed out of it, also when it takes the place of a directory during
 /// the walk.
-fn open_dirs(dir: &Path) -> io::Result<()> {
+pub(crate) fn open_dirs(dir: &Path) -> io::Result<()> {
     let h = match fs::OpenOptions::new()
         .read(true)
         .custom_flags(DIR_HANDLE)
@@ -469,7 +468,7 @@ pub fn empty_trash(store: &Store) -> usize {
     for e in rd.flatten() {
         let named = e.file_name().to_str().is_some_and(|s| s.starts_with(TRASH));
         let p = e.path();
-        if named && open_dirs(&p).is_ok() && pod_extract::remove_tree(&p).is_ok() {
+        if named && crate::live::remove_any(&p).is_ok() {
             n += 1;
         }
     }

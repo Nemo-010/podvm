@@ -90,6 +90,32 @@ pub fn unbind_devices(dir: &Path) {
     }
 }
 
+/// TODO/probe.md T-1911: the removal of a tree in a user namespace with
+/// the subordinate range of the caller, which podvm registers. A run with
+/// that range leaves directories of subordinate ids, whose entries the
+/// caller cannot remove from outside.
+pub static RANGE_REMOVER: std::sync::OnceLock<fn(&std::path::Path) -> bool> =
+    std::sync::OnceLock::new();
+
+/// Remove the tree `dir` (the owner's bits added to each directory first);
+/// where that fails, through [`RANGE_REMOVER`].
+pub fn remove_any(dir: &std::path::Path) -> std::io::Result<bool> {
+    match remove_plain(dir) {
+        Ok(b) => Ok(b),
+        Err(e) => match RANGE_REMOVER.get() {
+            Some(f) if f(dir) => Ok(true),
+            _ => Err(e),
+        },
+    }
+}
+
+/// Remove the tree `dir`, the owner's bits added to each directory first.
+pub fn remove_plain(dir: &std::path::Path) -> std::io::Result<bool> {
+    crate::tree::open_dirs(dir).and_then(|()| {
+        pod_extract::remove_tree(dir).map_err(|e| std::io::Error::other(e.to_string()))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

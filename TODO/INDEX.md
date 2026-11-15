@@ -573,7 +573,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1908](enter.md) | P1 | M | none | enter | done | A payload has the host name of the host: no `--hostname` |
 | [T-1909](probe.md) | P2 | M | none | probe | done | The namespace rung does not enter through a user namespace |
 | [T-1910](enter.md) | P2 | M | none | enter | done | `exec` and `cp` do not join a run that podvm put in a user namespace |
-| [T-1911](probe.md) | P3 | M | none | probe | open | In the user namespace of a run, `-u UID` is faked: the map holds the caller only |
+| [T-1911](probe.md) | P3 | M | none | probe | partial | In the user namespace of a run, `-u UID` is faked: the map holds the caller only |
 | [T-1912](probe.md) | P2 | S | none | probe | blocked | `run -d` and `create` of an unprivileged caller do not use the user namespace of pod-enter |
 | [T-1913](cli.md) | P3 | S | none | cli | done | The store of a verb has no flag, only `PODVM_STORE` |
 | [T-1914](enter.md) | P1 | S | none | enter | done | `run -d` refuses "a passed descriptor goes onto 17" when the parent holds descriptors 3 to 15 |
@@ -585,7 +585,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-516 entries: 7 open, 14 partial, 6 blocked, 489 done.
+516 entries: 6 open, 15 partial, 6 blocked, 489 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -597,8 +597,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 207 | 211 |
 | P2 | 4 | 6 | 5 | 168 | 183 |
-| P3 | 3 | 4 | 1 | 40 | 48 |
-| **All** | 7 | 14 | 6 | 489 | 516 |
+| P3 | 2 | 5 | 1 | 40 | 48 |
+| **All** | 6 | 15 | 6 | 489 | 516 |
 
 ## Work order
 

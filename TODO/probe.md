@@ -1937,7 +1937,7 @@ As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm system info --fo
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -1960,6 +1960,10 @@ A one-line map stays the default until the store rule holds for each verb.
 ## Prove
 
 As uid 1000 on a host with `newuidmap` and a range of `/etc/subuid`: `run --rm -u 1000 public.ecr.aws/docker/library/alpine:3.20 sh -c 'echo x > /root/qa'` fails with `Permission denied`, `run --rm public.ecr.aws/docker/library/alpine:3.20 stat -c %g /etc/shadow` prints 42, and after `run -d` and `rm -f` of the same image no file of the store is owned by a subordinate id.
+
+## Done
+
+**Partial (2026-11-15).** `PODVM_USERNS_RANGE=1` (opt-in, `crates/podvm/src/userns/range.rs`): where `newuidmap`, `newgidmap` and a range of the caller in `/etc/subuid` and `/etc/subgid` exist, a helper forked before the `unshare` runs both tools on podvm from outside, and the map is `0 UID 1` and `1 START COUNT`; else the one line as before. The store rule: `podvm_extract::live::remove_any` removes a tree, and where that fails (a directory of a subordinate id that holds entries), the hook `RANGE_REMOVER` runs `podvm --podvm-range-rm DIR` in a fresh user namespace with the range, where the caller holds each subordinate id; only a tree under `trees/`. Inside the one-line namespace of a run the hook cannot map, and the trash waits for the next verb outside it. Measured as uid 1000 (alpine:3.20): the map is `0 1000 1` and `1 100000 65536`; `run --rm -u 1000 ... sh -c 'echo x > /root/qa'` fails with "Permission denied"; after a kept run that left `/srv/a/b/c` of uid 1000 (3 files of host uid 100999), `podvm rm` leaves 0 such files and no trash; a `--rm` run leaves none. Remaining: the owners of the image on the tree (`stat -c %g /etc/shadow` prints 0, as the extraction records them in the sidecar and does not `chown`); then the default.
 
 
 # T-1912: `run -d` and `create` of an unprivileged caller do not use the user namespace of pod-enter

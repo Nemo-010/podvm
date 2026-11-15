@@ -70,6 +70,7 @@ unsafe extern "C" {
 
 mod host;
 mod join;
+mod range;
 mod sweep;
 pub use host::{bind_devices, host_pid};
 pub use join::{joined_pidfd, rejoin};
@@ -203,14 +204,63 @@ fn own_proc() -> bool {
     }
 }
 
-/// The user, PID and UTS namespaces, and the maps of `uid` and `gid`.
+/// The user, PID and UTS namespaces, and the maps of `uid` and `gid`:
+/// with the subordinate range where the caller asks and the host has it
+/// (T-1911), else the one line of the caller.
 fn open_namespaces(uid: u32, gid: u32) -> bool {
+    if let Some(p) = range::plan(std::env::var(range::VAR).ok().as_deref()) {
+        return with_range(&p, uid, gid, CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWUTS);
+    }
     // SAFETY: one thread (the contract of the callers).
     let opened = unsafe { unshare(CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWUTS) } == 0;
-    opened
-        && maps(uid, gid)
-            .iter()
-            .all(|(file, line)| std::fs::write(file, line).is_ok())
+    opened && one_line(uid, gid)
+}
+
+fn one_line(uid: u32, gid: u32) -> bool {
+    maps(uid, gid)
+        .iter()
+        .all(|(file, line)| std::fs::write(file, line).is_ok())
+}
+
+/// The namespaces with the range: a helper forked before the `unshare`
+/// waits on a pipe, then runs `newuidmap` and `newgidmap` on this process
+/// from outside. Where the tools fail, the one line of the caller.
+fn with_range(p: &range::Plan, uid: u32, gid: u32, flags: i32) -> bool {
+    let me = std::process::id() as i32;
+    let mut ends = [-1i32; 2];
+    // SAFETY: ends has room for two descriptors.
+    if unsafe { pipe2(ends.as_mut_ptr(), 0o2000000) } != 0 {
+        return false;
+    }
+    let (r, w) = (ends[0], ends[1]);
+    // SAFETY: one thread; the child reads, runs the two tools, and exits.
+    let helper = unsafe { fork() };
+    if helper < 0 {
+        return false;
+    }
+    if helper == 0 {
+        let mut b = 0u8;
+        // SAFETY: w is the parent's end; b lives for the read.
+        let go = unsafe {
+            close(w);
+            read(r, (&raw mut b).cast(), 1) == 1
+        };
+        let ok = go && range::write_maps(p, me, uid, gid);
+        // SAFETY: the end of the helper.
+        unsafe { _exit(if ok { 0 } else { 1 }) };
+    }
+    // SAFETY: r is the helper's end.
+    unsafe { close(r) };
+    // SAFETY: one thread (the contract of the callers).
+    let opened = unsafe { unshare(flags) } == 0;
+    if opened {
+        // SAFETY: w is open; one byte from a local.
+        unsafe { write(w, [1u8].as_ptr().cast(), 1) };
+    }
+    // SAFETY: w is open; the helper sees EOF where nothing was written.
+    unsafe { close(w) };
+    let mapped = wait_for(helper) == 0;
+    opened && (mapped || one_line(uid, gid))
 }
 
 /// The whole entry, tried in a child that is thrown away: true where each
@@ -254,6 +304,9 @@ pub fn enter_if(argv: &[String]) {
     if argv.get(1).map(String::as_str) == Some(sweep::REAPER_ARG) {
         sweep::reap_all();
     }
+    range::serve_rm(argv);
+    // T-1911: a tree that a run with the range left is removed with it.
+    let _ = podvm_extract::live::RANGE_REMOVER.set(range::remover);
     join::join_if();
     // SAFETY: getuid and getgid cannot fail.
     let (uid, gid) = unsafe { (getuid(), getgid()) };
