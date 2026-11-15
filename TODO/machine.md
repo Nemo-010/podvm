@@ -3444,6 +3444,14 @@ only the pointer, so the guest had no console yet, and a black screen
 also settles. The proof moves to KVM with T-1867 (`kvm.yml`), where the
 boot is fast. One run also found T-1893.
 
+**Partial 2026-11-15.** With podcrates `v0.48.0` (`Sign::After`), the
+setup under TCG on the cloud host still writes no SETUP.TXT, with a
+fixed wait of 900 s (1813 s in all) and of 300 s. Screen dumps after the
+keys, at 330 s, 420 s and 520 s, show the same black screen with the
+pointer. Under KVM, `windows setup` passed in 37 s (`kvm.yml` run
+43657522107), and experiment 450 failed there only on its own output
+path (fixed in `a52d483d`). The proof stays on KVM: run request 377.
+
 # T-1865: The plan of a Windows guest has no NIC, no CD-ROM, no USB media, no VNC socket and no serial channel
 
 **Source:** the Windows guest review of 2026-11-14, section 5, item W9

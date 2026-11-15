@@ -274,3 +274,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | open | T-1895 |
 | #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | open | T-1896 |
 | #377 | [gh action] requested | open | T-1864, T-1867, T-1894 |
+| #378 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
