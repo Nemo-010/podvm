@@ -63,7 +63,7 @@ status with `podvm-count` in the same commit as the work.
 1b. The live run of 2026-11-15 (issues 396 to 402, PodUtils/podrunner#115):
    [T-1908](enter.md) (partial: the namespace rung waits on COORD-130),
    then [T-1905](packaging.md) (partial: the next release proves it),
-   [T-1907](probe.md), and [T-1909](probe.md) (waits on COORD-132).
+   [T-1907](probe.md) (waits on COORD-133), and [T-1909](probe.md) (waits on COORD-132).
 2. The external QA report of `v0.2.0-beta.14` (2026-11-14): the open
    entries that it gave. Each P0 entry is done. Take the P1
    entries, each with the guard of its class (the guard entries of

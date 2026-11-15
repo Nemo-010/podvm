@@ -1877,7 +1877,7 @@ The leg opens `/dev/kvm`; under QEMU user mode the open passes through to the x8
 
 ## Approach
 
-Ask podcrates for a leg that checks that the device runs a guest of the architecture of the build (an ioctl of that architecture, as `KVM_ARM_PREFERRED_TARGET` on arm64).
+Ask podcrates for a leg that checks that the device runs a guest of the architecture of the build (an ioctl of that architecture, as `KVM_ARM_PREFERRED_TARGET` on arm64): COORD-133 (PodUtils/podvm#407), 2026-11-15. Take the tag that answers it.
 
 ## Decision
 

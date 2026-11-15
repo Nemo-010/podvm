@@ -303,3 +303,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
 | #405 | [gh action] requested | open | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
 | #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | open | T-1909 |
+| #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | open | T-1907 |
