@@ -31,6 +31,17 @@ fn stand_in(sock: &std::path::Path) -> Seen {
                         "stateful": false, "architecture": "x86_64",
                     }))
                 }
+                ("GET", p) if p.starts_with("/1.0/instances?") => sync(json!([
+                    {"name": "inc1", "status": "Running", "status_code": 103,
+                     "type": "container", "created_at": "2026-11-15T06:00:00Z",
+                     "config": {"user.podvm": "1", "user.podvm.image": "alpine:3.20"},
+                     "devices": {}, "profiles": [], "ephemeral": false,
+                     "stateful": false, "architecture": "x86_64"},
+                    {"name": "other", "status": "Running", "status_code": 103,
+                     "type": "container", "config": {}, "devices": {},
+                     "profiles": [], "ephemeral": false, "stateful": false,
+                     "architecture": "x86_64"},
+                ])),
                 ("PUT", _) => (
                     202,
                     json!({"type": "async", "operation": "/1.0/operations/st", "metadata": {}}),
@@ -88,5 +99,10 @@ fn incus_verbs_discard_and_rm_name_what_stays() {
         .block_on(super::verbs::one(&c, "rm", "inc1", false))
         .unwrap_err();
     assert!(e.contains("Error") && !e.contains("runs"), "{e}");
+    // ps lists the labelled instance, and not the one of another user.
+    let rows = rt.block_on(super::verbs::rows(&c, true)).unwrap();
+    assert_eq!(rows.len(), 1, "{rows:?}");
+    assert_eq!(rows[0][0], "inc1");
+    assert_eq!(rows[0][4], "Up");
     let _ = std::fs::remove_dir_all(&d);
 }

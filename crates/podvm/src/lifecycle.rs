@@ -380,8 +380,12 @@ pub fn ps(args: &[String]) -> i32 {
         .collect();
     // TODO/machine.md T-1870: the detached Windows and DOS machines, with
     // no filter (a filter reads the fields of a container).
+    // TODO/machine.md T-1846: and the instances of podvm where the
+    // configuration selects the incus tier.
     let machines = if filters.is_empty() {
-        crate::windows::machine::ps_rows(all)
+        let mut m = crate::windows::machine::ps_rows(all);
+        m.extend(crate::incus::verbs::ps_rows(all));
+        m
     } else {
         Vec::new()
     };

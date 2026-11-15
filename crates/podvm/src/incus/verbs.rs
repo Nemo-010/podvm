@@ -245,6 +245,70 @@ pub(crate) fn ours(i: &pod_incus::Instance) -> bool {
     i.config.get(LABEL).is_some_and(|v| v == "1")
 }
 
+/// TODO/machine.md T-1846: the rows of `podvm ps` for the instances of
+/// podvm, in the columns of the containers: each one with `all`, else the
+/// running ones.
+pub(super) async fn rows(c: &Client, all: bool) -> Result<Vec<Vec<String>>, String> {
+    let list = c.instances().await.map_err(|e| e.to_string())?;
+    Ok(list
+        .iter()
+        .filter(|i| ours(i) && (all || i.status == "Running"))
+        .map(|i| {
+            let status = if i.status == "Running" {
+                "Up".to_string()
+            } else {
+                format!("Exited ({})", i.status)
+            };
+            vec![
+                i.name.clone(),
+                i.config
+                    .get(IMAGE_KEY)
+                    .cloned()
+                    .unwrap_or_else(|| "-".into()),
+                "(incus instance)".to_string(),
+                if i.created_at.is_empty() {
+                    "-".into()
+                } else {
+                    i.created_at.clone()
+                },
+                status,
+                i.name.clone(),
+            ]
+        })
+        .collect())
+}
+
+/// The rows of `podvm ps` for the instances of podvm where the
+/// configuration selects the incus tier and its incusd answers; none else.
+pub fn ps_rows(all: bool) -> Vec<Vec<String>> {
+    if !matches!(
+        super::config::configured(),
+        Ok(super::config::Configured::Incus { socket: true })
+    ) {
+        return Vec::new();
+    }
+    let out = std::sync::Mutex::new(Vec::new());
+    block_on("ps", async {
+        match connect().await {
+            Ok((c, _)) => match rows(&c, all).await {
+                Ok(r) => {
+                    *out.lock().unwrap_or_else(|e| e.into_inner()) = r;
+                    0
+                }
+                Err(e) => {
+                    eprintln!("podvm ps: incus tier: {e}");
+                    1
+                }
+            },
+            Err(e) => {
+                eprintln!("podvm ps: incus tier: {e}");
+                1
+            }
+        }
+    });
+    out.into_inner().unwrap_or_default()
+}
+
 async fn ps(c: &Client, all: bool) -> i32 {
     let list = match c.instances().await {
         Ok(l) => l,
