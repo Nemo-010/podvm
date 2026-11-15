@@ -206,6 +206,7 @@ pub(crate) fn files_of(e: &Entry) -> Vec<PathBuf> {
         Kind::Iso => {
             v.push(super::install::golden_path(e));
             v.push(super::install::password_path(e));
+            v.push(super::install::meta_path(e));
         }
     }
     v.retain(|p| p.is_file());

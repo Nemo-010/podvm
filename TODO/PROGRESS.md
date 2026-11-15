@@ -7,7 +7,7 @@ start.
 
 ## State
 
-498 entries: 8 open, 14 partial, 2 blocked, 474 done.
+498 entries: 8 open, 13 partial, 2 blocked, 475 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -68,8 +68,8 @@ status with `podvm-count` in the same commit as the work.
    (`podvm run windows:NAME`). The owner accepts the vendor terms
    (`docs/decisions.md`, "Windows media"). Take the P1 entries first:
    [T-1861](machine.md), [T-1867](machine.md) (partial: the install of a
-   setup ISO is built; the job `install` of `kvm.yml` proves it) and
-   [T-1871](machine.md); then the P2 entries and T-1898 to T-1900 (P3). podcrates
+   setup ISO is built; the job `install` of `kvm.yml` proves it); then the
+   P2 entries and T-1898 to T-1900 (P3). podcrates
    `v0.45.0` carries the parts of the crates that they asked for
    (podcrates@T-590 to podcrates@T-595, podcrates@T-610; issues 350 and
    360), and podvm takes that tag: no entry of the plan waits for

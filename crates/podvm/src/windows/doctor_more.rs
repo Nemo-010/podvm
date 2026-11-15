@@ -80,6 +80,10 @@ pub(super) fn report() -> i32 {
              virtualization, and TCG runs without it"
         );
     }
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
     for e in podvm_windows::catalog::CATALOG {
         let have = store.join(e.file).is_file();
         println!(
@@ -87,6 +91,17 @@ pub(super) fn report() -> i32 {
             e.name,
             if have { "downloaded" } else { "not downloaded" }
         );
+        // TODO/machine.md T-1871: the days left of the evaluation.
+        if let Some((at, days)) = std::fs::read_to_string(super::install::meta_path(e))
+            .ok()
+            .as_deref()
+            .and_then(podvm_windows::install::meta_of)
+        {
+            println!(
+                "note: {}",
+                podvm_windows::install::eval_line(e.name, at, days, now)
+            );
+        }
     }
     if code == 0 {
         println!("next: `podvm run windows:dos ver` boots FreeDOS and prints its version");

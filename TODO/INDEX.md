@@ -533,7 +533,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1868](machine.md) | P2 | M | none | machine | open | A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe |
 | [T-1869](machine.md) | P2 | M | none | machine | partial | A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds` |
 | [T-1870](machine.md) | P2 | L | none | machine | partial | A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name` |
-| [T-1871](machine.md) | P1 | M | none | machine | partial | `podvm windows doctor` is thin |
+| [T-1871](machine.md) | P1 | M | none | machine | done | `podvm windows doctor` is thin |
 | [T-1872](machine.md) | P2 | M | none | machine | open | A Windows guest has no `-v`: no way to bring a folder in or out |
 | [T-1873](machine.md) | P2 | L | none | machine | partial | `windows setup` sleeps the whole wait with no readiness check |
 | [T-1874](machine.md) | P2 | L | none | machine | open | Each Windows run is a full boot: there is no warm start |
@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-498 entries: 8 open, 14 partial, 2 blocked, 474 done.
+498 entries: 8 open, 13 partial, 2 blocked, 475 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -577,10 +577,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 0 | 5 | 0 | 201 | 206 |
+| P1 | 0 | 4 | 0 | 202 | 206 |
 | P2 | 4 | 6 | 2 | 163 | 175 |
 | P3 | 4 | 3 | 0 | 36 | 43 |
-| **All** | 8 | 14 | 2 | 474 | 498 |
+| **All** | 8 | 13 | 2 | 475 | 498 |
 
 ## Work order
 

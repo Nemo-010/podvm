@@ -145,6 +145,47 @@ pub fn admit(name: &str, accel: Accel, asked_tcg: bool) -> Result<(), String> {
     }
 }
 
+/// TODO/machine.md T-1871: the days of the evaluation of a target, from
+/// its first boot: 90 for the Enterprise evaluation of Windows 10 and 11,
+/// 180 for Windows Server 2025 (the terms that Microsoft publishes for
+/// each evaluation ISO; podvm does not extend them).
+pub fn eval_days(target: answer::Target) -> u64 {
+    match target {
+        answer::Target::Server2025 => 180,
+        answer::Target::Win11 | answer::Target::Win10 => 90,
+    }
+}
+
+/// The line of the doctor for a golden image installed at `installed`
+/// (seconds since the epoch) with `days` of evaluation, at `now`.
+pub fn eval_line(name: &str, installed: u64, days: u64, now: u64) -> String {
+    let end = installed + days * 86_400;
+    if now >= end {
+        format!(
+            "windows:{name}: the evaluation of {days} days ended {} days ago; \
+             `podvm rmi windows:{name}` and `podvm pull windows:{name}` install it again",
+            (now - end) / 86_400
+        )
+    } else {
+        format!(
+            "windows:{name}: {} of {days} days of the evaluation are left",
+            (end - now).div_ceil(86_400)
+        )
+    }
+}
+
+/// The text of the meta file of a golden image: `NAME INSTALLED DAYS`.
+pub fn meta_text(name: &str, installed: u64, days: u64) -> String {
+    format!("{name} {installed} {days}\n")
+}
+
+/// The meta file of a golden image, read back: `(installed, days)`.
+pub fn meta_of(text: &str) -> Option<(u64, u64)> {
+    let mut it = text.split_whitespace();
+    let _name = it.next()?;
+    Some((it.next()?.parse().ok()?, it.next()?.parse().ok()?))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -226,5 +267,23 @@ mod tests {
                 "{x}"
             );
         }
+    }
+
+    /// The evaluation: the days of each target, the days left, and the
+    /// line after the end.
+    #[test]
+    fn windows_doctor_eval_period_counts_down() {
+        assert_eq!(eval_days(answer::Target::Server2025), 180);
+        assert_eq!(eval_days(answer::Target::Win11), 90);
+        let day = 86_400;
+        let l = eval_line("2025", 1_000 * day, 180, 1_010 * day);
+        assert!(l.contains("170 of 180 days"), "{l}");
+        let l = eval_line("11", 1_000 * day, 90, 1_100 * day);
+        assert!(
+            l.contains("ended 10 days ago") && l.contains("podvm pull windows:11"),
+            "{l}"
+        );
+        assert_eq!(meta_of(&meta_text("2025", 42, 180)), Some((42, 180)));
+        assert_eq!(meta_of("2025"), None);
     }
 }

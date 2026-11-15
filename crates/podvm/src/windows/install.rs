@@ -29,6 +29,12 @@ pub(crate) fn golden_path(e: &Entry) -> PathBuf {
     podvm_windows::catalog::store_dir().join(format!("windows-{}.golden.qcow2", e.name))
 }
 
+/// TODO/machine.md T-1871: the meta file of the golden image of `e`: the
+/// date of the install and the days of its evaluation.
+pub(crate) fn meta_path(e: &Entry) -> PathBuf {
+    golden_path(e).with_extension("meta")
+}
+
 /// The file of the password of the golden image of `e`.
 pub(crate) fn password_path(e: &Entry) -> PathBuf {
     password_path_of(&golden_path(e))
@@ -134,10 +140,19 @@ pub(crate) fn install(verb: &str, e: &Entry, iso: &Path, quiet: bool) -> Result<
         }
     };
     let _scratch = podvm_windows::RunGuard::arm(&plan);
-    let done = boot_and_convert(verb, e.name, &plan, &password, &golden, quiet);
+    let done = boot_and_convert(verb, e.name, &plan, &password, &golden, quiet).and_then(|()| {
+        // TODO/machine.md T-1871: the start of the evaluation, for the doctor.
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let text = inst::meta_text(e.name, now, inst::eval_days(target));
+        std::fs::write(meta_path(e), text).map_err(|why| fail(verb, e.name, why))
+    });
     if done.is_err() {
         let _ = std::fs::remove_file(&golden);
         let _ = std::fs::remove_file(password_path(e));
+        let _ = std::fs::remove_file(meta_path(e));
     }
     done.map(|()| golden)
 }

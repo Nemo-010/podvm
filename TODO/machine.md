@@ -3977,7 +3977,7 @@ KVM.
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4016,6 +4016,20 @@ The doctor refuses where `run` refuses, and shares `plan::accelerator`.
 `cargo test -p podvm windows_doctor` exits 0, with new tests for each check
 
 ## Done
+
+**Done 2026-11-15, later.** The install of T-1867 writes
+`windows-NAME.golden.meta` beside the golden image: the time of the install
+and the days of the evaluation (`podvm_windows::install::eval_days`: 180
+for Server 2025, 90 for the Enterprise evaluation of 10 and 11, the terms
+that Microsoft publishes). `podvm windows doctor` prints the days left, or
+how long ago the evaluation ended with the commands that install it again
+(`eval_line`); `rmi` removes the meta file. With two meta files made by
+hand on the cloud host the doctor printed "160 of 180 days of the
+evaluation are left" for windows:2025 and "the evaluation of 90 days
+ended 5 days ago" for windows:11. `PODVM_MACHINE_ACCEL` was done before.
+`cargo test -p podvm windows_doctor` exits 0 (three tests), and the test
+of the evaluation is `windows_doctor_eval_period_counts_down` in
+`podvm-windows`.
 
 **Partial 2026-11-14.** `windows/doctor_more.rs`: the QEMU version
 (with a note below 11, for the warm start of T-1874), a missing emulator
