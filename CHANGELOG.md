@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a quiet run prints no line of the extraction, 2026-11-15
+
+Record: T-1852 (partial).
+Deployed: not deployed; no version change.
+
+- The first run of an image printed `<layer>: Extracted (N entries, M
+  whiteouts)` on stderr also with no `--verbose`. It now prints the line
+  only with `--verbose`, or with a failed extraction.
+
 ### Added: limits of memory, CPU and processes on the incus tier, 2026-11-15
 
 Record: T-1897 (PodUtils/podrunner#110).
