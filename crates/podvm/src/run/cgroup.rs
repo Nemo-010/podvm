@@ -150,6 +150,15 @@ pub(super) fn limits(
         if !dir.starts_with(cgroup::ROOT) || dir == Path::new(cgroup::ROOT) {
             break;
         }
+        // ⛔ Not by the controllers alone: `pids` and `cpu` enable on a
+        // cgroup that holds a process, and the move into its child then
+        // fails with EOPNOTSUPP (run 43726504386, clause 2). podvm's own
+        // cgroup holds a process (podvm); `cgroup.procs` names the others
+        // that this PID namespace can see.
+        if dir == home || holds_process(dir) {
+            last = format!("{} holds a process", dir.display());
+            continue;
+        }
         match give_controllers(dir, &needed) {
             Ok(()) => {
                 target = Some(dir.to_path_buf());
@@ -166,6 +175,11 @@ pub(super) fn limits(
         *p = Some((target, home, files));
     }
     Ok(())
+}
+
+/// Does the cgroup `dir` hold a process that this process can see?
+fn holds_process(dir: &Path) -> bool {
+    std::fs::read_to_string(dir.join("cgroup.procs")).is_ok_and(|s| !s.trim().is_empty())
 }
 
 /// Right before the payload (or its launcher) is forked: the leaf of the

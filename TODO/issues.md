@@ -314,8 +314,8 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #415 | [gh action] requested | closed (run 43716914244) | T-1747: the job cgroup of kvm.yml (experiment 459) |
 | #416 | [gh action] requested | closed (403 again; call C22) | the rerun of the release run 43716584904 of 0.2.0-beta.23 |
 | #417 | COORD-136: the answer to PodUtils/podrunner#168: --store and the attestations (to podrunner) | closed (answered) | T-1913, T-1905 |
-| #418 | [gh action] requested | open | T-1747: the job cgroup of kvm.yml after a2227588 |
-| #419 | [gh action] requested | open | T-1867: the job install of kvm.yml with the logs of Setup |
+| #418 | [gh action] requested | closed (run 43726504386) | T-1747: the job cgroup of kvm.yml after a2227588 |
+| #419 | [gh action] requested | closed (run 43726557269) | T-1867: the job install of kvm.yml with the logs of Setup |
 | #420 | [gh action] requested | closed (run 43730876201) | the release of 0.2.0-beta.23 at 437bd12d |
 | #421 | COORD-137: the answer to PodUtils/podrunner#177: descriptor 17 (to podrunner) | open | T-1914 |
 | #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | open | T-1914 |
@@ -325,3 +325,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #426 | [gh action] requested | closed (run 43735766607 failed) | the release of 0.2.0-beta.24 from b6f8958e (call C22); the trial failed on the cross targets |
 | #427 | COORD-142: the answer to PodUtils/podcrates#182: podvm has no installer yet (to podcrates) | open | T-1918 |
 | #428 | COORD-143: the answer to PodUtils/podcrates#183: how podvm maps an issue to its entries (to podcrates) | open | T-1919 |
+| #429 | [gh action] requested | open | the release of 0.2.0-beta.24 from 95d1f3eb (call C22) |

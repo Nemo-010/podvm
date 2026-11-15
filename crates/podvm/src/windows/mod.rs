@@ -43,6 +43,7 @@ mod named; // TODO/machine.md T-1861, T-1867
 mod origin;
 mod plan;
 pub(crate) mod pull; // TODO/machine.md T-1861
+mod root_bus; // TODO/machine.md T-1867
 mod run;
 mod setup;
 pub(crate) mod tools; // TODO/machine.md T-1875

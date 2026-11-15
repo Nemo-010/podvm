@@ -252,9 +252,12 @@ fn boot_and_convert(
     let dir = plan.root.parent().unwrap_or(Path::new(".")).to_path_buf();
     let log =
         std::fs::File::create(dir.join("emulator.log")).map_err(|why| fail(verb, name, why))?;
-    let child =
-        podvm_windows::emulator::spawn_emulator(plan, &podvm_windows::argv(plan), log.into())
-            .map_err(|why| fail(verb, name, why))?;
+    let child = podvm_windows::emulator::spawn_emulator(
+        plan,
+        &super::root_bus::root_bus(podvm_windows::argv(plan)),
+        log.into(),
+    )
+    .map_err(|why| fail(verb, name, why))?;
     let mut guest = Guest {
         plan,
         child: Some(child),

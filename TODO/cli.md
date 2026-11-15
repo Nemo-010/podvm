@@ -4098,6 +4098,8 @@ run and the read of `memory.events`.
 
 **Partial (2026-11-15, later).** Run 43716914244 (`kvm.yml`, `only=cgroup`, request 415) on a runner with a delegated subtree: clause 1 PASS (`run -d --memory 64m --cpus 0.5 --pids-limit 32` made the leaf `podvm-ci/podvm-8b5218a140da` beside the cgroup of the shell, with `memory.max` 67108864, `cpu.max` "50000 100000", `pids.max` 32 and 2 processes in it); clauses 2 to 4 FAIL: a foreground run kept podvm itself in the leaf, so its threads counted against `pids.max` (podvm exited 125) and its memory against `memory.max`, and a leaf stayed. podvm now leaves the leaf right after the payload is spawned (`run::cgroup::leave`, from `take_hold`), so the leaf holds the payload and its children only. Experiment 459 prints the stderr of a failed clause and the processes of a leaf that stayed. Remaining: the rerun of the job.
 
+**Partial (2026-11-15, rerun).** Run 43726504386 (`kvm.yml`, `only=cgroup`, request 418, beta.23): clause 1 PASS again; clause 3 PASS (`--memory 16m` with a payload over it: exit 137, "oom_kill 2" named); no leaf stayed. Clause 2 FAIL: a foreground `run --pids-limit 32` made its leaf under the cgroup of the shell (`podvm-ci/shell/podvm-*`) and the move into it gave EOPNOTSUPP. `pids` and `cpu` enable on a cgroup that holds a process, so the step "the directory, else its parent" took the directory of the shell. `limits` now skips a directory that holds a process: podvm's own cgroup, or one whose `cgroup.procs` names a process. Remaining: the rerun of the job.
+
 # T-1752: A versioned JSON Schema for the record of `run --report`, published in each release
 
 **Source:** PodUtils/podcrates#124 (the asks of podswarm to podvm, a message from a
