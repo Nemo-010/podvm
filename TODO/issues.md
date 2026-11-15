@@ -292,7 +292,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #393 | COORD-127: a client of the QEMU Guest Agent for a running Windows guest (pod-qga?) (podvm T-1868) (to podcrates) | open | T-1868 |
 | #394 | COORD-128: pod-services: the aarch64 netboot of Alpine 3.22.6 for an arm64 guest (podvm T-1890) (to podcrates) | open | T-1890 |
 | #395 | COORD-129: pod-oci: one registry token for the parallel blob fetches of a pull (podvm T-1850) (to podcrates) | open | T-1850 |
-| #396 | --podvm-confine stops name resolution in the payload, while TCP to an address works | open | T-1902 |
+| #396 | --podvm-confine stops name resolution in the payload, while TCP to an address works | closed (T-1902) | T-1902 |
 | #397 | podvm probe takes userland on a host with user namespaces and KVM | open | T-1903 |
 | #398 | podvm load names an image docker.io/library/runner | closed (T-1904) | T-1904 |
 | #399 | The release has no attestation in GitHub's store, and its .sigstore cannot be read by gh attestation verify | open | T-1905 |

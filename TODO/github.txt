@@ -285,7 +285,7 @@
 393 issue open
 394 issue open
 395 issue open
-396 issue open
+396 issue closed
 397 issue open
 398 issue closed
 399 issue open
