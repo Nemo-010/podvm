@@ -161,7 +161,7 @@
 269 issue closed
 270 issue closed
 271 issue open
-272 issue open
+272 issue closed
 273 issue closed
 274 issue closed
 275 issue closed
@@ -242,7 +242,7 @@
 350 issue closed
 351 issue closed
 352 issue closed
-353 issue open
+353 issue closed
 354 issue closed
 355 issue closed
 356 issue closed
@@ -290,7 +290,7 @@
 398 issue closed
 399 issue closed
 400 issue closed
-401 issue open
+401 issue closed
 402 issue closed
 403 issue closed
 404 issue open
@@ -324,3 +324,4 @@
 432 issue closed
 433 issue closed
 434 issue open
+435 issue open

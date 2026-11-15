@@ -5895,3 +5895,5 @@ A dry run prints each change before the workflow first closes or reopens an issu
 ## Blocker
 
 **Blocked (2026-11-15).** The workflow and the check of podcrates@T-703. Clears when a tag of podcrates carries them.
+
+**Blocked, amended (2026-11-16).** podvm takes podcrates `v0.55.0` (COORD-115, PodUtils/podcrates#194), whose `pod-todo` holds the rules of the issues and whose `issue-sync.yml` writes them. With `issue_rules = "on"`, `podvm-todo check` gave 52 problems: 5 open reports whose entries are done (podvm closed #272, #353 and #401; #149 and #162 are references), and 47 references "(report) names no entry". A reference holds no work, and no kind of `pod-todo` fits it. COORD-145 (PodUtils/podvm#435) asks for a kind `reference`. Clears when a tag carries it; then the rules go on, and `issue-sync.yml` is called with a dry run first.

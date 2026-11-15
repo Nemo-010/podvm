@@ -166,7 +166,7 @@ before #127; their text is on GitHub, and the hidden ones are in
 | #269 | COORD-050: mcr.microsoft.com for pod-services (the image of podvm's profile playwright-chromium) (to podcrates) | closed | T-1694 |
 | #270 | COORD-051: podvm takes podcrates v0.26.0 (the answer to PodUtils/podcrates#77) (to podcrates) | closed | T-1658, T-1694 |
 | #271 | cfb asks: tracker for the 9 asks of cfb owned by podvm (from podcrates#35) | open | tracker: T-1658, T-1665, T-1663, T-1694, T-1695, T-1714, T-1723, T-1739 |
-| #272 | CI plan items: tracker for the 3 items owned by podvm (from podcrates#47) | open | tracker: T-1656, T-1723 (P3-3); #271 (P1-1) |
+| #272 | CI plan items: tracker for the 3 items owned by podvm (from podcrates#47) | closed | tracker: T-1656, T-1723 (P3-3); #271 (P1-1) |
 | #273 | COORD-052: podvm v0.2.0-beta.5 is released: confine for run -d, exec and the loader family; labels and run --report; headless Chromium (to all) | closed | T-1658, T-1694, T-1695, T-1711, T-1738 |
 | #274 | COORD-053: registry.npmjs.org (workerd) for pod-services (to podcrates) | closed | T-1661 |
 | #275 | COORD-054: the wasmtime release for pod-services (to podcrates) | closed | T-1661 |
@@ -249,7 +249,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #350 | COORD-103: seven asks for the Windows guest: fetch by range, pod-udf, the agent, plan options, pod-qga, provision, warm start (podvm T-1862 to T-1874) (to podcrates) | closed (podcrates `v0.45.0`; T-1862, T-1865, T-1866; the warm start is T-1874) | T-1862, T-1863, T-1864, T-1865, T-1868, T-1873, T-1874 |
 | #351 | COORD-104: the answer to PodUtils/podrunner#100: a glibc 2.34 image with no libdl.so.2 on the loader family (podvm T-1880) (to podrunner) | closed (T-1880 in `0.2.0-beta.17`) | T-1880 |
 | #352 | COORD-106 of Nemo-010: pod-extract counts the `./` archive root as an entry it could not materialise (to podcrates) | closed (T-1882, commit 4a02d45e) | T-1882 |
-| #353 | create and run do not report the entries the extraction could not materialise | open | T-1883 |
+| #353 | create and run do not report the entries the extraction could not materialise | closed | T-1883 |
 | #354 | COORD-107 of Nemo-010: pod-extract applies the mode of the image to files but not to directories, and its widening pass can chmod a symlink target outside the tree (to podcrates) | closed (T-1881, commit 4a02d45e) | T-1881 |
 | #355 | [gh action] requested | closed (gate 43576720202, arm 43577573447, nightly trial 43578086980 and release 43580765158 green on 0f13267c) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.17` (AGENTS.md, section 9) |
 | #356 | `exec` exits 125 for an image name that resolves to nothing, where the exit table and T-1805's own decision say 1 | closed (`0955fcab`, re-measured by the reporter) | T-1842, T-1805 |
@@ -297,7 +297,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #398 | podvm load names an image docker.io/library/runner | closed (T-1904) | T-1904 |
 | #399 | The release has no attestation in GitHub's store, and its .sigstore cannot be read by gh attestation verify | closed (T-1905) | T-1905 |
 | #400 | The store keeps machine/run-PID-* after each guest of the machine tier | closed (T-1906) | T-1906 |
-| #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | open | T-1907 |
+| #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | closed | T-1907 |
 | #402 | A podvm payload has the host name of the host | closed (T-1908) | T-1908 |
 | #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | closed (not needed: T-1908, T-1909) | T-1908 |
 | #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
@@ -331,3 +331,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #432 | [gh action] requested | closed (run 43740331439) | the kvm.yml run for T-1747, T-1907 and T-1867 from 283e3492 |
 | #433 | [gh action] requested | closed (run 43754060132) | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
 | #434 | [gh action] requested | open | the kvm.yml rerun for T-1747 (swap) and T-1867 (the sampler) from 7a6c1edb |
+| #435 | COORD-145: pod-todo: a kind `reference` for an issue that holds no work (to podcrates) | open | T-1919 |
