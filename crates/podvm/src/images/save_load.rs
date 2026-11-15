@@ -338,12 +338,22 @@ pub fn import(verb: &str, args: &[String]) -> i32 {
 }
 
 /// The `Loaded image:` line both verbs print: the ref-name where one was
-/// recorded, the manifest digest where none was.
+/// recorded, the manifest digest where none was. TODO/image.md T-1904: the
+/// familiar name, as docker prints it: an image of Docker Hub's library
+/// has no `docker.io/library/`, and one of Docker Hub no `docker.io/`.
 fn loaded_name(record: &podvm_image::Record) -> String {
     match &record.tag {
-        Some(tag) => format!("{}:{tag}", record.repository),
+        Some(tag) => format!("{}:{tag}", familiar(&record.repository)),
         None => record.manifest_digest.clone(),
     }
+}
+
+/// The repository as a person reads it (TODO/image.md T-1904).
+pub(crate) fn familiar(repository: &str) -> &str {
+    repository
+        .strip_prefix("docker.io/library/")
+        .or_else(|| repository.strip_prefix("docker.io/"))
+        .unwrap_or(repository)
 }
 
 pub const VERIFY_USAGE: &str = "\
@@ -461,4 +471,19 @@ pub(crate) fn saved_line(want: &str, done: &podvm_image::layout::Saved) -> Strin
         podvm_image::space::mib(done.bytes),
         done.record.manifest_digest
     )
+}
+
+#[cfg(test)]
+mod familiar_tests {
+    #[test]
+    fn load_prints_the_familiar_name() {
+        use super::familiar;
+        assert_eq!(familiar("docker.io/library/runner"), "runner");
+        assert_eq!(familiar("docker.io/podutils/podvm"), "podutils/podvm");
+        assert_eq!(familiar("ghcr.io/podutils/podvm"), "ghcr.io/podutils/podvm");
+        assert_eq!(
+            familiar("mirror.gcr.io/library/alpine"),
+            "mirror.gcr.io/library/alpine"
+        );
+    }
 }

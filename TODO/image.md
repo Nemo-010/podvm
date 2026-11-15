@@ -4482,7 +4482,7 @@ for `linux/amd64`, `podvm save -o a.tar` of the digest reference exited
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4503,3 +4503,21 @@ The record keeps the full reference; only the text that a person reads changes.
 ## Prove
 
 `podvm load -i` of a layout with the ref `runner:2.338.2` prints `Loaded image: runner:2.338.2`; a test holds it.
+
+## Correction
+
+2026-11-15. The Prove names a test of `load -i` of a layout; the name of
+the line is one function of both verbs (`loaded_name`), so the unit test
+`load_prints_the_familiar_name` holds the rule, and the round trip ran by
+hand.
+
+## Done
+
+**Done 2026-11-15.** The line of `load` (and `import`) prints the familiar
+name (`images/save_load.rs`, `familiar`): no `docker.io/library/` and no
+`docker.io/`; another registry keeps its name. The record keeps the full
+reference. On the cloud host, `save` of `runner:2.338.2` and `load -i`
+into a fresh store printed `Loaded image: runner:2.338.2`, and `run --rm
+runner:2.338.2 echo ran` found the record. `cargo test -p podvm --bin
+podvm load_prints` exits 0.
+
