@@ -1,12 +1,15 @@
 # Handoff
 
-The state on 2026-11-15, later. `0.2.0-beta.20` is released (issue 387).
-`main` adds, for the next release: the store copy of QEMU (T-1875), the
-detached Windows and DOS machines with `ps`, `stop`, `start`, `rm`,
-`logs -f`, `port` and `-p` (T-1870, T-1869), `windows screenshot` and
-`windows view` (T-1899), and a `:ro` volume on the native-static rung
-(T-1901, the ask of PodUtils/podrunner#111; podrunner@T-158 waits for the
-release). Request 388 runs the first Windows install under KVM.
+The state on 2026-11-15, later. `0.2.0-beta.21` is released (issue 392:
+gate, arm, nightly trial and release green on `e4dd9168`). It carries the
+store copy of QEMU (T-1875), the detached Windows and DOS machines with
+`ps`, `stop`, `start`, `rm`, `logs -f`, `port` and `-p` (T-1870, T-1869),
+`windows screenshot` and `windows view` (T-1899), and a `:ro` volume on the
+native-static rung (T-1901, PodUtils/podrunner#111). `main` adds the
+arm64 guest of the machine tier (T-1890), the source-pattern ratchet of
+the gate (T-1855), the machine case of the report test (T-1856) and the
+evaluation days in the Windows doctor (T-1871). Request 388 runs the first
+Windows install under KVM.
 A fresh
 session with no memory reads this file first, then `AGENTS.md`,
 `TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
@@ -53,8 +56,8 @@ PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
   until then the host is in `WAITING` of `crates/podvm/src/hosts_tests.rs`.
 * COORD-125 (#390): a leg of `pod-hostprobe` for a delegated cgroup2
   subtree (T-1747).
-* COORD-126 (#391): the answer to PodUtils/podrunner#111 (T-1901); close it
-  when a release carries T-1901.
+* COORD-127 (#393): a client of the QEMU Guest Agent (T-1868).
+* COORD-128 (#394): the aarch64 netboot pins in `pod-services` (T-1890).
 
 Each other COORD issue is closed; `TODO/issues.md` gives the state of
 each one.
@@ -62,7 +65,7 @@ each one.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8).
-2. The next release follows a batch of fixes, in the form of issue 387.
+2. The next release follows a batch of fixes, in the form of issue 392.
 3. The Windows proof is on KVM. Request 388 runs `kvm.yml` with the new
    job `install` (experiment 452: `pull windows:2025` and `run
    windows:2025 ver`). Read its transcript, record the first install

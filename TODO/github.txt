@@ -280,7 +280,7 @@
 388 issue open
 389 issue open
 390 issue open
-391 issue open
-392 issue open
+391 issue closed
+392 issue closed
 393 issue open
 394 issue open
