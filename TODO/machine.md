@@ -5060,3 +5060,31 @@ On an arm64 runner: `podvm run windows:11-arm64 cmd /c ver` prints a
 version string of Windows and exits 0, and a new experiment records the
 boot time.
 
+# T-1906: The store keeps `machine/run-PID-*` after each guest of the machine tier
+
+**Source:** PodUtils/podvm#400 (the live run of 2026-11-15)
+**Category:** machine
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** open
+
+## Problem
+
+After microvm units, `STORE/machine/` holds one `run-PID-*` directory for each guest (6 after the live run; `machine/` is 1.7 GB).
+
+## Premise
+
+`boot` removes the directory of its run when the guest ends; a podvm that is killed (the stop of a unit, a timeout of the caller) never reaches that line.
+
+## Approach
+
+Remove each `run-PID-*` directory whose PID runs no podvm, at the start of each boot.
+
+## Decision
+
+The directory of a running podvm stays.
+
+## Prove
+
+`cargo test -p podvm --bin podvm machine_run_dirs` exits 0, with a test that a run directory of a dead PID goes at the next boot and the one of a live PID stays.

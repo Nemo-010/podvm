@@ -4083,3 +4083,61 @@ native-static rung: errno 30, the read works, the host file stays) and
 says SKIP as root (the chroot rung). The rung of a run is already the
 field `rung` of `--report` (ask 2).
 
+# T-1902: `--podvm-confine` stops name resolution in the payload, while TCP to an address works
+
+**Source:** PodUtils/podvm#396 (the live run of 2026-11-15, podvm `0.2.0-beta.18`, WSL2, kernel 7.2.0, Landlock ABI 10)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** open
+
+## Problem
+
+Under `--podvm-confine "read=/;write=...;exec=..."`, `getent hosts github.com` and `curl https://github.com/` fail, while `curl -k https://140.82.112.3/` answers. Without the confine layer the same image resolves. Under podrunner each job gets `SocketException (11)` (EAI_AGAIN).
+
+## Premise
+
+The resolver sends UDP to the name server of the payload. A Landlock ruleset that handles a network right of a newer ABI with no rule for it refuses each use of that right. Not measured here: the cloud host has kernel 6.18.
+
+## Approach
+
+Find which right of the ruleset refuses the resolver (the ruleset of `pod-confine`, podcrates), allow the name server of the payload or handle only the rights that the spec names, and document what the confine layer refuses.
+
+## Decision
+
+The confine layer never breaks name resolution silently: it allows it, or it refuses the run by name.
+
+## Prove
+
+On a host with Landlock ABI 6 or more: `podvm run --rm --podvm-confine "read=/;write=/tmp" IMAGE getent hosts github.com` prints an address and exits 0; a new test of the ruleset holds the case.
+
+
+# T-1908: A payload has the host name of the host: no `--hostname`
+
+**Source:** PodUtils/podvm#402 and PodUtils/podrunner#115 (COORD-053 of podrunner, podrunner@T-182)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** open
+
+## Problem
+
+A podvm unit shares the UTS name of the host, so the official runner writes the host name of the machine of the operator into the job log of github.com (`Machine name`). `podvm run` has no `--hostname`.
+
+## Premise
+
+The namespace rung can unshare a UTS namespace. The native-static rung sees each system call (`uname` there is a call of the handler); the loader family has the interposer, which can answer `uname` and `gethostname`.
+
+## Approach
+
+Add `--hostname NAME` to `run` and `create`: a UTS namespace where the rung has one; else the handler or the interposer answers `uname` (nodename), `gethostname` and a read of `/proc/sys/kernel/hostname` and `/etc/hostname` with NAME. Where podvm cannot hold it, exit 125 with the reason.
+
+## Decision
+
+The release, the version and the machine of `uname` stay those of the host.
+
+## Prove
+
+`podvm run --rm --hostname unit1 IMAGE uname -n` prints `unit1` on the namespace rung and on the native-static rung (CI), and a rung that cannot hold it exits 125 by name.

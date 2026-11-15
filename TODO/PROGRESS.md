@@ -7,7 +7,7 @@ start.
 
 ## State
 
-498 entries: 7 open, 11 partial, 2 blocked, 478 done.
+505 entries: 14 open, 11 partial, 2 blocked, 478 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -60,6 +60,11 @@ status with `podvm-count` in the same commit as the work.
    carry the overlay root of the namespace rung (podcrates@T-486,
    `v0.42.0`) and the completion of two layers (podcrates@T-567,
    `v0.43.0`); podvm wires them next.
+1b. The live run of 2026-11-15 (issues 396 to 402, PodUtils/podrunner#115):
+   [T-1908](enter.md) (`--hostname`, podrunner@T-182 waits),
+   [T-1902](enter.md) (the confine layer stops the resolver),
+   [T-1906](machine.md), then [T-1904](image.md), [T-1905](packaging.md),
+   [T-1903](probe.md) and [T-1907](probe.md).
 2. The external QA report of `v0.2.0-beta.14` (2026-11-14): the open
    entries that it gave. Each P0 entry is done. Take the P1
    entries, each with the guard of its class (the guard entries of

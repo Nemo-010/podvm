@@ -1823,3 +1823,62 @@ of two lines of prose exit 1 as no report; the report with its 4 `proxy`
 lines removed exits 1 under `--strict` with "invariant sections of the
 reference with no record here: proxy"; the report against itself exits
 0.
+
+# T-1903: `podvm probe` takes userland on a host with user namespaces and KVM, and does not say why
+
+**Source:** PodUtils/podvm#397 (the live run of 2026-11-15)
+**Category:** probe
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** open
+
+## Problem
+
+On a WSL2 host where unprivileged user namespaces and `/dev/kvm` work, `podvm probe` says "the probes select supervise, and run enters userland" ("namespaces: none").
+
+## Premise
+
+The namespace rung needs more than a user namespace (a mount namespace, a writable `/proc` view, the legs of `pod-hostprobe`); the probe names the result, not the leg that failed.
+
+## Approach
+
+Read the legs of the namespace rung on such a host, and make the summary of `probe` name the first leg that fails for each stronger rung.
+
+## Decision
+
+A probe that does not take a stronger rung says which leg stopped it.
+
+## Prove
+
+`podvm probe` on a host where the namespace rung is refused names the failed leg in its summary; a test of the summary holds it.
+
+
+# T-1907: Under QEMU user mode, `probe` says `kvm: yes` for the device of the host
+
+**Source:** PodUtils/podvm#401 (the live run of 2026-11-15)
+**Category:** probe
+**Milestone:** none
+**Priority:** P3
+**Effort:** S
+**Status:** open
+
+## Problem
+
+In an arm64 container on an x86_64 host, `podvm-aarch64 probe` says `kvm: yes`: the x86_64 `/dev/kvm` cannot run an aarch64 guest.
+
+## Premise
+
+The leg opens `/dev/kvm`; under QEMU user mode the open passes through to the x86_64 kernel. The leg is in `pod-hostprobe` (podcrates).
+
+## Approach
+
+Ask podcrates for a leg that checks that the device runs a guest of the architecture of the build (an ioctl of that architecture, as `KVM_ARM_PREFERRED_TARGET` on arm64).
+
+## Decision
+
+`kvm` is yes only for a device that runs a guest of the architecture of podvm.
+
+## Prove
+
+`podvm-aarch64 probe` in an arm64 container on an x86_64 host says `kvm: no` with the reason.

@@ -4475,3 +4475,31 @@ one_manifest` exits 0. On the cloud host, after a pull of
 for `linux/amd64`, `podvm save -o a.tar` of the digest reference exited
 1 before the change and exits 0 after it.
 
+# T-1904: `podvm load` names a local image `docker.io/library/runner`
+
+**Source:** PodUtils/podvm#398 (the live run of 2026-11-15)
+**Category:** image
+**Milestone:** none
+**Priority:** P3
+**Effort:** S
+**Status:** open
+
+## Problem
+
+`podvm load -i` of an OCI layout whose ref name is `runner:2.338.2` prints `Loaded image: docker.io/library/runner:2.338.2`.
+
+## Premise
+
+docker prints the familiar name (`runner:2.338.2`) for an image of Docker Hub's library.
+
+## Approach
+
+Print the familiar name in the line of `load`: no `docker.io/library/` and no `docker.io/` prefix.
+
+## Decision
+
+The record keeps the full reference; only the text that a person reads changes.
+
+## Prove
+
+`podvm load -i` of a layout with the ref `runner:2.338.2` prints `Loaded image: runner:2.338.2`; a test holds it.

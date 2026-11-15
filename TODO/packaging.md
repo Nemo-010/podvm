@@ -1730,3 +1730,32 @@ notices. `nightly.yml` runs the binary; the script, experiment 394 and
 their rows in the READMEs are gone; `crates/podvm-gate/src/dev.rs` drops
 the 394 step, because `cargo test --workspace` runs the test.
 `git grep -n package-ssh.sh -- .github` prints nothing.
+
+# T-1905: The release has no attestation in GitHub's store
+
+**Source:** PodUtils/podvm#399 (the live run of 2026-11-15)
+**Category:** packaging
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** open
+
+## Problem
+
+`gh attestation verify podvm-x86_64 --repo PodUtils/podvm` answers 404. The `.sigstore` asset is a cosign bundle, which `cosign verify-blob` reads and `gh attestation verify` does not. podrunner and podnet have attestations that `gh attestation verify` reads.
+
+## Premise
+
+`actions/attest-build-provenance` writes a build provenance attestation into GitHub's store for each subject.
+
+## Approach
+
+Add the step to `release.yml` for each asset, with the permissions `id-token: write` and `attestations: write`, and name both ways of the check in the notes of the release.
+
+## Decision
+
+The cosign bundles stay beside the new attestation.
+
+## Prove
+
+After the next release, `gh attestation verify podvm-x86_64 --repo PodUtils/podvm` exits 0.
