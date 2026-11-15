@@ -113,6 +113,22 @@ Read [PROGRESS](../TODO/PROGRESS.md) for current verification.
   never writes the image's own tree after the extraction, so a spare
   stays its copy; a tool that edits that tree in place sets
   `PODVM_SPARE_TREE=0`, or a run takes a spare filled before the edit.
+- The host name (T-1908): no rung has a UTS namespace yet. With
+  `--hostname NAME`, the handler of the native-static rung and the
+  interposer of the loader family answer `uname` and `gethostname` with
+  NAME, and `/etc/hostname`, `HOSTNAME` and `/etc/hosts` hold it. A raw
+  `uname` system call of a dynamic program, and `/proc/sys/kernel/hostname`,
+  give the host's name. The namespace rung, the machine tier and the incus
+  tier refuse the flag with exit 125. `sethostname` in a payload fails with
+  `EPERM`.
+- The namespace rung (T-1909): pod-enter does not open a user namespace,
+  so an unprivileged caller enters the userland rung also on a host where
+  `unshare -Urm` works. `podvm probe` names the call that stops each
+  stronger rung.
+- The confine layer on the userland rung (T-1902): musl reads
+  `/etc/resolv.conf`, `/etc/hosts` and `/etc/services` with raw system
+  calls on the host path. Where the spec lets the payload read the guest
+  path, the layer also gives read on the host file.
 
 Forced FUSE mode enters through a rung-complete read-only server; its live
 entry arm and the permitted-tmpfs entry arm prove automatically where a
