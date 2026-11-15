@@ -14,6 +14,18 @@ use podvm_probe::Findings;
 /// Read the request variable. None where unset or empty: the default entry is
 /// the chroot by path, and the ladder only engages on a request. An unknown
 /// word refuses with the rung list, never a guess.
+/// TODO/probe.md T-1912: can a payload enter the namespace rung here?
+/// `chroot` works, or the leg of pod-enter's entry through a user
+/// namespace passes (podcrates `v0.52.0`; the device nodes of the host are
+/// bound since `v0.53.0`, podcrates@T-688).
+pub(crate) fn ns_reachable(findings: &podvm_probe::Findings) -> bool {
+    podvm_probe::probes::chroot_usable(findings)
+        || findings.rows.iter().any(|(n, out)| {
+            *n == podvm_probe::probes::USERNS_LEG
+                && matches!(out.verdict, podvm_probe::verdict::Verdict::Ok)
+        })
+}
+
 pub(crate) fn forced_mode() -> Result<Option<Mode>, podvm_enter::Error> {
     parse_request(&std::env::var(podvm_enter::NAMES.mode_request).unwrap_or_default())
 }
@@ -220,7 +232,7 @@ pub(crate) fn enter_forced(
     // forced memfd over anything else refuses naming the force and the
     // unforced loader family, and every other forced rung refuses naming
     // the force: their mechanisms need what this host denies.
-    if !podvm_probe::probes::chroot_usable(findings) {
+    if !ns_reachable(findings) {
         if mode == Mode::Memfd {
             match staged {
                 Some(payload) => {

@@ -39,23 +39,38 @@ pub(super) fn join_if() {
     const PIDFD_OPEN: i64 = 434;
     // SAFETY: pidfd_open takes two integers.
     let fd = unsafe { syscall(PIDFD_OPEN, pid, 0) };
+    // TODO/probe.md T-1912: only the namespaces that differ. The entry of
+    // pod-enter through a user namespace (`run -d`) opens no PID and no UTS
+    // namespace, and a join of the host's own PID namespace needs a right
+    // that the caller lacks there (EPERM).
+    let differs = |ns: &str| {
+        let ours = std::fs::read_link(format!("/proc/self/ns/{ns}"));
+        let theirs = std::fs::read_link(format!("/proc/{pid}/ns/{ns}"));
+        matches!((&ours, &theirs), (Ok(a), Ok(b)) if a != b)
+    };
+    let mut flags = CLONE_NEWUSER;
+    if differs("uts") {
+        flags |= CLONE_NEWUTS;
+    }
+    let pid_ns = differs("pid");
+    if pid_ns {
+        flags |= CLONE_NEWPID;
+    }
     // SAFETY: a pidfd and namespace types, on one thread.
-    let joined =
-        fd >= 0 && unsafe { setns(fd as i32, CLONE_NEWUSER | CLONE_NEWUTS | CLONE_NEWPID) } == 0;
+    let joined = fd >= 0 && unsafe { setns(fd as i32, flags) } == 0;
     if !joined {
+        // ⛔ Not on with the verb: outside the namespaces of the run, the
+        // command would act on the host's processes and files.
         eprintln!(
             "podvm: the namespaces of the run (pid {pid}) refused the join: {} (TODO/enter.md T-1910)",
             std::io::Error::last_os_error()
         );
-    }
-    if !joined {
-        if fd >= 0 {
-            // SAFETY: the pidfd of this call.
-            unsafe { close(fd as i32) };
-        }
-        return;
+        std::process::exit(125);
     }
     JOIN_FD.store(fd as i32, Ordering::Relaxed);
+    if !pid_ns {
+        return;
+    }
     // After `setns(CLONE_NEWPID)` this process makes no thread, and its
     // children go into the PID namespace: a child goes on with the verb as
     // a member of it, and this process waits and relays, as in `enter_if`.

@@ -254,7 +254,7 @@ fn start_one(s: &podvm_image::Store, verb: &str, want: &str) -> Result<String, i
     // detached operation, and the refusal names the call with the
     // affected verbs.
     let findings = podvm_probe::run();
-    if !podvm_probe::probes::chroot_usable(&findings) && c.userland_exec.is_empty() {
+    if !crate::ladder::ns_reachable(&findings) && c.userland_exec.is_empty() {
         eprintln!(
             "podvm {verb}: chroot(2) is denied on this machine and container {} carries \
              no userland loader drive in its record (rung {:?}): `run -d`, `create` and \

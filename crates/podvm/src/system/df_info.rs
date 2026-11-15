@@ -332,7 +332,7 @@ fn collect() -> Vec<(&'static str, String)> {
         .unwrap_or_else(|e| format!("unavailable: {e}"));
     fields_from(
         selection.rung,
-        podvm_probe::probes::chroot_usable(&findings),
+        crate::ladder::ns_reachable(&findings),
         selection.exit_code(podvm_probe::select::Strictness::Refuse) == 0,
         store,
     )
@@ -360,7 +360,7 @@ pub(super) fn entered_rung(selection: Rung, chroot_usable: bool) -> Rung {
 /// `userland` and `probe --strict` gates on it. The selection of the
 /// probes goes to stderr where it differs.
 pub fn to_entered(f: &podvm_probe::Findings, s: &mut podvm_probe::select::Selection) {
-    let entered = entered_rung(s.rung, podvm_probe::probes::chroot_usable(f));
+    let entered = entered_rung(s.rung, crate::ladder::ns_reachable(f));
     if entered != s.rung {
         eprintln!(
             "podvm probe: the probes select `{}`, and `run` enters `{}` on this machine \

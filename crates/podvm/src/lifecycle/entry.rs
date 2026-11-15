@@ -67,6 +67,18 @@ pub fn guest_verb(os: &str) -> Option<&'static str> {
 /// chroot holds, the static family needs the kernel's memfd, and the
 /// loader family needs an interposer object in this binary. Tests pin
 /// the table; the wrapper below reads the machine.
+/// TODO/probe.md T-1912: may `verb` take a rung with a root of its own?
+/// `run` and `create` reach pod-enter's launcher, which opens a user
+/// namespace where `chroot` alone is refused; `exec` (a fresh payload) and
+/// each other verb call `chroot` in this process.
+fn chroot_ok_for(verb: &str, findings: &podvm_probe::Findings) -> bool {
+    if matches!(verb, "run" | "create") {
+        crate::ladder::ns_reachable(findings)
+    } else {
+        podvm_probe::probes::chroot_usable(findings)
+    }
+}
+
 pub(super) fn entry_possible(chroot_ok: bool, memfd_ok: bool, objects: bool) -> bool {
     chroot_ok || memfd_ok || objects
 }
@@ -93,7 +105,7 @@ pub fn ensure_entry_possible(
 ) -> Result<(), i32> {
     // T-1688: the memfd leg is measured only where chroot is denied; where
     // chroot holds the answer cannot change the result.
-    let chroot_ok = podvm_probe::probes::chroot_usable(findings);
+    let chroot_ok = chroot_ok_for(verb, findings);
     let memfd = (!chroot_ok).then(podvm_enter::memfd::memfd_exec);
     if entry_possible(
         chroot_ok,
@@ -286,7 +298,7 @@ pub fn decide_entry_prefer(
     unsafe_host_paths: bool,
     retry: Option<&str>,
 ) -> Result<Option<Userland>, i32> {
-    let chroot_ok = podvm_probe::probes::chroot_usable(findings);
+    let chroot_ok = chroot_ok_for(verb, findings);
     if chroot_ok && !prefer {
         return Ok(None);
     }

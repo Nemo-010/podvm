@@ -46,7 +46,7 @@ pub fn why_not(f: &Findings, entered: Rung) -> Vec<String> {
         }
         v.push(l);
     }
-    if !podvm_probe::probes::chroot_usable(f) {
+    if !crate::ladder::ns_reachable(f) {
         let row = f.rows.iter().find(|(n, _)| n.starts_with("chroot("));
         v.push(format!(
             "the chroot rung needs chroot(2), and it gives {}",

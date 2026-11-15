@@ -1976,7 +1976,7 @@ As uid 1000 on a host with `newuidmap` and a range of `/etc/subuid`: `run --rm -
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** blocked
+**Status:** done
 
 ## Problem
 
@@ -1998,7 +1998,9 @@ Not before the rung has the device nodes of the host: in the user namespace `mkn
 
 As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm run -d public.ecr.aws/docker/library/alpine:3.20 sh -c 'id -u; head -c 2000000 /dev/urandom | wc -c; sleep 5'` logs `0` and `2000000`, and `inspect` names the namespace rung.
 
-## Blocker
+## Done
 
-**Blocked (2026-11-15).** The device nodes on the rung: COORD-135 (PodUtils/podvm#414) asks pod-enter for the binds. Clears when a tag of podcrates carries them.
+**Done (2026-11-15).** podvm takes podcrates `v0.53.0` (COORD-111, PodUtils/podcrates#185), whose entry through a user namespace binds the host's `/dev/null`, `/dev/zero`, `/dev/full`, `/dev/random`, `/dev/urandom` and `/dev/tty` (podcrates@T-688, the answer to COORD-135) and moves its root and its memfd clear of the passed descriptors (podcrates@T-691, COORD-138). `crate::ladder::ns_reachable` (`chroot` works, or the leg `mount(tmpfs,/tmp) in unshare(NEWUSER+maps,NEWNS)` passes) now decides in the ladder, in the gate of `start`, in the two deciders of `lifecycle/entry.rs`, and in the reports of `system info` and `probe`. The join of `exec` and `cp` (T-1910) takes only the namespaces that differ from the caller's (pod-enter's entry opens no PID and no UTS namespace, and a join of the host's PID namespace gave EPERM), and a refused join exits 125 in place of going on outside the run. Measured as uid 1000 on the cloud host: `run -d public.ecr.aws/docker/library/alpine:3.20 sh -c 'id -u; head -c 2000000 /dev/urandom | wc -c; sleep 5'` logs `0` and `2000000`, and `inspect` gives `"Rung":"namespace"`; `exec` gives uid 0 and sees a file that the payload wrote; `cp` copies it out; `stop` and `rm` leave no process; `exec` into a foreground run (T-1910) still sees its own pid 1.
+
+**Blocked (2026-11-15), cleared by `v0.53.0`.** The device nodes on the rung: COORD-135 (PodUtils/podvm#414) asks pod-enter for the binds. Clears when a tag of podcrates carries them.
 
