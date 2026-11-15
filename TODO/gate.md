@@ -5522,7 +5522,7 @@ the product and no test path. The run was the debug profile, not
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5555,3 +5555,14 @@ each payload of the userland rung gets its tests in CI.
 ## Prove
 
 Ten runs of `cargo test --release --target x86_64-unknown-linux-gnu` in `crates/podvm-interpose`, with the default thread count, each exit 0, and `gate.yml` has a step that runs them
+
+## Done
+
+**Done 2026-11-15.** `crates/podvm-interpose/.cargo/config.toml` sets
+`RUST_TEST_THREADS=1` for each `cargo test` in the directory of the
+crate, which is its own workspace, so "the default thread count" of a
+caller there is one. `gate.yml` has the step "interposer tests", which
+runs `cargo test --release --target x86_64-unknown-linux-gnu` from that
+directory. On the cloud host the suite failed 7 of 98 tests before the
+change (`exec::tests::the_route_enters_each_arm_through_the_rootfs`
+among them); after it, ten runs each exit 0 with 98 of 98.

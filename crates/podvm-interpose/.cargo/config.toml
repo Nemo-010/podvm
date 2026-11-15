@@ -1,0 +1,7 @@
+# TODO/gate.md T-1860: the tests of the interposer set the process
+# environment (`PODVM_MAPS` and others) and the working directory, and the
+# interposer reads them on each call, so two tests at the same time see
+# each other's table. Each caller that runs `cargo test` in this directory
+# runs them one at a time.
+[env]
+RUST_TEST_THREADS = "1"
