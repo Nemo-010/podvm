@@ -485,7 +485,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1820](net.md) | P1 | M | none | net | done | An allowed host through `--network broker` answers 502 "the far end failed" |
 | [T-1821](podssh.md) | P1 | S | none | podssh | done | `remote ssh serve` runs any program named `node` on PATH |
 | [T-1822](supervise.md) | P2 | S | none | supervise | done | `cp` of a file onto a directory fails and blames the source, `cp -r` drops directory modes, and the containment refusals name the wrong operation |
-| [T-1823](machine.md) | P2 | M | none | machine | open | An early end of the guest init reads "the guest gave no exit marker" with the socket of QEMU |
+| [T-1823](machine.md) | P2 | M | none | machine | done | An early end of the guest init reads "the guest gave no exit marker" with the socket of QEMU |
 | [T-1824](cli.md) | P2 | S | none | cli | done | The machine notice ignores `-q`, and the banner is said to print "on every run" where runs are quiet by default |
 | [T-1825](cli.md) | P2 | M | none | cli | done | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
 | [T-1826](complete.md) | P2 | S | none | complete | done | `--no-steps` leaves no line and no report row that says what the caller gave up |
@@ -511,7 +511,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1846](machine.md) | P2 | M | none | machine | open | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
 | [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
 | [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
-| [T-1849](machine.md) | P3 | S | none | machine | open | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
+| [T-1849](machine.md) | P3 | S | none | machine | done | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
 | [T-1850](cli.md) | P3 | M | none | cli | open | `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull` |
 | [T-1851](supervise.md) | P3 | S | none | supervise | open | A store that root and a user share refuses the next run of the user with a bare `Permission denied` |
 | [T-1852](gate.md) | P1 | M | none | gate | partial | The QA pass of experiment 443 has no row for the 22 defects that the external gate found |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 30 open, 12 partial, 2 blocked, 449 done.
+493 entries: 28 open, 12 partial, 2 blocked, 451 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 13 | 3 | 2 | 157 | 175 |
-| P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 30 | 12 | 2 | 449 | 493 |
+| P2 | 12 | 3 | 2 | 158 | 175 |
+| P3 | 15 | 2 | 0 | 23 | 40 |
+| **All** | 28 | 12 | 2 | 451 | 493 |
 
 ## Work order
 

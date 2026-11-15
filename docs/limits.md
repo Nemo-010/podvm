@@ -177,6 +177,10 @@ of a virtio console with the size of the host terminal, stdin goes there
 live, and stdout and stderr share it, as under docker (T-1723); a change of
 the size during the run does not reach the guest. `create` and `exec`
 with the machine tier report the profile and exit 125.
+The machine tier needs `qemu-system-x86_64` on the host; `podvm doctor`
+checks it. `--podvm-mem` sizes the virtual machine, as QEMU's `-m` does,
+and the guest kernel keeps a part of it: `MemTotal` is 85 % of 256M,
+92 % of 512M and 95 % of 1G (T-1849).
 `podvm machine ssh` and `podvm windows` boot a guest now
 ([architecture](architecture.md)).
 

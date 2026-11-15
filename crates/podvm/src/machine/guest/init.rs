@@ -73,7 +73,16 @@ pub fn script(
             s.push_str(&format!("export {k}={}\n", sh_quote(v)));
         }
     }
-    s.push_str(&format!("cd {} || exit 125\n", sh_quote(workdir)));
+    // TODO/machine.md T-1823: a missing working directory is made, as on
+    // the rootfs rungs and in docker; a file there refuses by name.
+    let w = sh_quote(workdir);
+    s.push_str(&format!(
+        "mkdir -p {w} 2>/dev/null; cd {w} 2>/dev/null || {}\n",
+        early_exit(
+            nonce,
+            &format!("the working directory {workdir} is not a directory in the image")
+        )
+    ));
     s.push_str(&format!("echo PODVM-READY-{nonce}\n"));
     if net {
         s.push_str("/podvm/podvm guest-net\n");
@@ -105,7 +114,11 @@ pub fn script(
     let words: Vec<String> = argv.iter().map(|a| sh_quote(a)).collect();
     s.push_str(&format!("set -- {}\n", words.join(" ")));
     if channel.as_ref().is_some_and(|c| c.sealed) {
-        s.push_str(&format!(". {} || exit 125\n", super::sealed::FRAGMENT));
+        s.push_str(&format!(
+            ". {} || {}\n",
+            super::sealed::FRAGMENT,
+            early_exit(nonce, "the run bundle did not unpack in the guest")
+        ));
     }
     if let Some(size) = tty {
         let size = if size.is_empty() {
@@ -189,4 +202,19 @@ pub fn nonce() -> Result<String, String> {
         .and_then(|mut f| f.read_exact(&mut b))
         .map_err(|e| format!("/dev/urandom: {e}"))?;
     Ok(b.iter().map(|x| format!("{x:02x}")).collect())
+}
+
+/// TODO/machine.md T-1823: an end of the init before the command, as one
+/// shell group: the reason on the second port (stderr), then the exit
+/// marker with 125, so that the host names the reason and not a missing
+/// marker.
+fn early_exit(nonce: &str, why: &str) -> String {
+    let line = sh_quote(&format!(
+        "podvm: machine tier: {why} (TODO/machine.md T-1823)"
+    ));
+    format!(
+        "{{ echo PODVM-READY-{nonce}; if [ -c /dev/ttyS1 ]; then echo {line} >/dev/ttyS1; \
+         else echo {line} >&2; fi; echo; echo PODVM-EXIT-{nonce} 125; sync; reboot -f; \
+         echo b > /proc/sysrq-trigger; }}"
+    )
 }

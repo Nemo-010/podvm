@@ -201,7 +201,7 @@ const MAX_LINKS: u32 = 40;
 /// from the root of the image (or of the volume), as the interposer
 /// resolves it, and `..` stops at that root: the host's own `/bin/sh` is
 /// not the `/bin/sh` of the image. `None` where the image lacks the path.
-fn host_resolved(maps: &crate::userland::Maps, guest: &str) -> Option<String> {
+pub fn host_resolved(maps: &crate::userland::Maps, guest: &str) -> Option<String> {
     let (base, mut todo): (String, std::collections::VecDeque<String>) = match maps.volume_at(guest)
     {
         Some(v) => {

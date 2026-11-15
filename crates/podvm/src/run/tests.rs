@@ -446,3 +446,28 @@ fn detach_tty_is_refused_by_name() {
     );
     assert!(parse("run", &v(&["-t", "img", "true"])).unwrap().tty);
 }
+
+/// TODO/machine.md T-1849: the help names the emulator that the machine
+/// tier needs and `doctor` beside `--podvm-tier`, and says that
+/// `--podvm-mem` sizes the virtual machine.
+#[test]
+fn machine_help_names_the_emulator_and_what_mem_sizes() {
+    let tier = RUN_OPTIONS
+        .split("--podvm-tier T")
+        .nth(1)
+        .and_then(|t| t.split("\n  --").next())
+        .unwrap();
+    assert!(
+        tier.contains("qemu-system-x86_64") && tier.contains("podvm doctor"),
+        "{tier}"
+    );
+    let mem = RUN_OPTIONS
+        .split("--podvm-mem S")
+        .nth(1)
+        .and_then(|t| t.split("\n  --").next())
+        .unwrap();
+    assert!(
+        mem.contains("memory of the virtual machine") && mem.contains("kernel keeps"),
+        "{mem}"
+    );
+}

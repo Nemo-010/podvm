@@ -64,6 +64,16 @@ pub(super) fn prepare_image(
         );
         return Err(EXIT_FLAG_ERROR);
     }
+    // TODO/machine.md T-1823: an absolute program that the tree lacks
+    // refuses before the boot with docker's 127, not with a line of the
+    // guest shell. Each link resolves inside the tree, as in the guest.
+    let maps = podvm_enter::userland::Maps::of_root(&rootfs.to_string_lossy());
+    if let Some(prog) = argv.first().filter(|p| p.starts_with('/'))
+        && podvm_enter::confine::host_resolved(&maps, prog).is_none()
+    {
+        eprintln!("podvm {verb}: {tier} tier: exec: {prog:?}: no such file in the image");
+        return Err(127);
+    }
     let workdir = o
         .workdir
         .clone()

@@ -110,7 +110,9 @@ pub const RUN_OPTIONS: &str = "\
                    as `podvm pull`; used only when something must be fetched
   -t, --tty        refused: REFUSED BY NAME where /dev/ptmx is unusable, rather
                    than silently degraded (TODO/enter.md T-0503)
-  --podvm-tier T  podvm's own: machine selects the machine tier, incus runs
+  --podvm-tier T  podvm's own: machine selects the machine tier, which needs
+                   qemu-system-x86_64 on the host (`podvm doctor` checks
+                   it, TODO/machine.md T-1849), incus runs
                    the image in an incusd that answers on INCUS_DIR's
                    socket (run only, TODO/machine.md T-1718), emulate runs
                    it under a static qemu-user of PATH on the native-static
@@ -144,7 +146,9 @@ pub const RUN_OPTIONS: &str = "\
                    token for the emulator per occurrence. Repeatable, and never
                    split on whitespace (TODO/machine.md T-1302)
   --podvm-mem S   podvm's own, machine tier only and refused elsewhere: the
-                   guest memory in bytes, with an optional K/M/G/T suffix. A
+                   memory of the virtual machine in bytes, with an optional
+                   K/M/G/T suffix, as QEMU's -m; the guest kernel keeps a
+                   part of it (256M gives 85 % to MemTotal). A
                    guest over the RLIMIT_FSIZE ceiling is refused before it
                    starts, naming both numbers (TODO/machine.md T-1305)
   --podvm-cpus N  podvm's own, machine tier only and refused elsewhere: the

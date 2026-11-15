@@ -106,7 +106,7 @@ fn the_init_script_quotes_each_word() {
     );
     assert!(s.contains("export A='x y'"));
     assert!(!s.contains("1BAD"));
-    assert!(s.contains("cd '/w d' || exit 125"));
+    assert!(s.contains("cd '/w d' 2>/dev/null || {"), "{s}");
     assert!(s.contains("echo PODVM-EXIT-n $rc"));
 }
 
@@ -207,7 +207,7 @@ fn the_command_writes_to_fifos_not_to_a_terminal() {
     let wait = s
         .find("wait $o $e")
         .expect("the script waits for the copies");
-    assert!(wait < s.find("PODVM-EXIT-n").unwrap(), "{s}");
+    assert!(wait < s.find("PODVM-EXIT-n $rc").unwrap(), "{s}");
 }
 
 /// stdin of the guest: the bytes ride in the run archive, and the script
@@ -383,4 +383,30 @@ fn banner_quiet_hides_the_machine_notice() {
     r.loud = true;
     let line = notice(&r, Accel::Tcg, false).unwrap();
     assert!(line.contains("TCG") && line.contains("built now"), "{line}");
+}
+
+/// TODO/machine.md T-1823: a missing working directory is made in the
+/// guest, and an end before the command gives the exit marker with 125
+/// and a reason on stderr, not a missing marker.
+#[test]
+fn an_early_end_gives_the_marker_and_a_reason() {
+    let s = init::script(
+        "n",
+        &["true".into()],
+        &[],
+        "/no/such",
+        false,
+        &[],
+        None,
+        None,
+    );
+    assert!(
+        s.contains("mkdir -p '/no/such' 2>/dev/null; cd '/no/such'"),
+        "{s}"
+    );
+    let line = s.lines().find(|l| l.starts_with("mkdir -p")).unwrap();
+    assert!(line.contains("echo PODVM-EXIT-n 125"), "{line}");
+    assert!(line.contains("is not a directory in the image"), "{line}");
+    assert!(line.contains(">/dev/ttyS1"), "{line}");
+    assert!(!s.contains("|| exit 125"), "{s}");
 }

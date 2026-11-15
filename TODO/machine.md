@@ -3021,7 +3021,7 @@ passes its 6 clauses under TCG; experiment 443 has the row
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -3062,6 +3062,23 @@ where the tree on the host can tell.
 ## Prove
 
 `PODVM_443_ONLY=machine sh experiments/443-qa-surface.sh` exits 0 on a host with `/dev/kvm`, with rows for `-w /no/such/dir` (prints the directory, exit 0), `-w /etc/hostname`, `--platform linux/arm64` and `--entrypoint /no/such` (each refused by name, no "exit marker" text)
+
+## Done
+
+**Done 2026-11-15.** The init of a guest makes a missing working
+directory and refuses a file there by name; each early end (the working
+directory, the sealed fragment) prints the exit marker with 125 and a
+reason on the second port (`init.rs`, `early_exit`). An absolute program
+that the tree lacks refuses before the boot with 127, each link resolved
+inside the tree (`podvm_enter::confine::host_resolved`). A guest that
+ends with no marker reads "the guest ended before it gave the exit code
+of the payload", and the last line of the emulator comes with
+`--verbose` only. `--platform linux/arm64` refuses since T-1889.
+`PODVM_443_ONLY=machine sh experiments/443-qa-surface.sh` exits 0 on the
+cloud host under TCG (no `/dev/kvm` here): pass 24, fail 0, with the rows
+`machine.workdir-made` (prints `/no/such/dir`, rc 0),
+`machine.workdir-file` (125), `machine.platform` (125) and
+`machine.entrypoint` (127), none with "exit marker".
 
 
 # T-1846: A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus`
@@ -3113,7 +3130,7 @@ docs/incus.md says that a run deletes its instance; a failed run too.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -3142,6 +3159,15 @@ The value stays the size of the virtual machine, as QEMU's `-m` is.
 ## Prove
 
 `cargo test -p podvm --bin podvm machine_help` exits 0, with a test that `run --help` names `qemu-system` and `doctor` beside `--podvm-tier` and says what `--podvm-mem` sizes
+
+## Done
+
+**Done 2026-11-15.** The help of `--podvm-tier` says that the machine
+tier needs `qemu-system-x86_64` and that `podvm doctor` checks it. The
+help of `--podvm-mem` and `docs/limits.md` say that the value sizes the
+virtual machine, as QEMU's `-m`, and that the guest kernel keeps a part
+of it (85 % of 256M reaches `MemTotal`). `cargo test -p podvm --bin
+podvm machine_help` exits 0.
 
 
 # T-1861: `podvm run windows:NAME` has no image name, no catalog and no `pull`, `images` or `rmi`

@@ -155,15 +155,18 @@ pub(super) fn drive(
         None => {
             let tail = std::fs::read_to_string(dir.join("qemu.err")).unwrap_or_default();
             let tail = tail.lines().last().unwrap_or("");
+            // TODO/machine.md T-1823: the last line of the emulator is
+            // most often its chardev notice, so it comes with --verbose.
             eprintln!(
-                "podvm {}: machine tier: the guest gave no exit marker{}{}",
+                "podvm {}: machine tier: the guest ended before it gave the exit code of \
+                 the payload{}{}",
                 r.verb,
                 if Instant::now() >= deadline {
-                    " before the timeout"
+                    ", at the bound of the run"
                 } else {
                     ""
                 },
-                if tail.is_empty() {
+                if tail.is_empty() || !r.loud {
                     String::new()
                 } else {
                     format!("; qemu: {tail}")
