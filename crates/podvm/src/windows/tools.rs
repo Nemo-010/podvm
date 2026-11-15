@@ -47,6 +47,17 @@ pub(crate) fn ensure(verb: &str) -> Result<PathBuf, i32> {
     Ok(root)
 }
 
+/// TODO/machine.md T-1875: the emulator of the Linux guest of the machine
+/// tier: the host one on PATH, else the store copy, fetched where it is
+/// not there.
+pub(crate) fn emulator_for(verb: &str) -> Result<PathBuf, i32> {
+    if let Some(p) = crate::tier::which_qemu("qemu-system-x86_64") {
+        return Ok(p);
+    }
+    let root = ensure(verb)?;
+    Ok(tools::bin(&root, "qemu-system-x86_64"))
+}
+
 /// Each file of the table into `part`.
 fn fetch_all(part: &Path) -> Result<(), String> {
     let fsize = super::plan::ceiling().map_err(|_| "RLIMIT_FSIZE could not be read".to_string())?;

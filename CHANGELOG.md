@@ -8,12 +8,13 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
-### Added: the Windows and DOS guests need no QEMU on the host, 2026-11-15
+### Added: the guests of the machine tier need no QEMU on the host, 2026-11-15
 
 Record: T-1875.
 Deployed: none yet.
 
-- A host with no QEMU needs no install for Windows and DOS guests: podvm
+- A host with no QEMU needs no install for Windows and DOS guests and for
+  the Linux guest of `--podvm-tier=machine`: podvm
   fetches a pinned static QEMU 9.2.0 and its firmware (54 MiB) into its
   store on the first run (T-1875). A QEMU of the host still wins.
 

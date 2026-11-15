@@ -177,10 +177,10 @@ live, and stdout and stderr share it, as under docker (T-1723); a change of
 the size during the run does not reach the guest. `create` and `exec`
 with the machine tier report the profile and exit 125.
 The machine tier needs `qemu-system-x86_64` on the host; `podvm doctor`
-checks it. `podvm windows` and `run windows:NAME` fetch a pinned static
-QEMU 9.2.0 and its firmware into the store where the host has none
-(T-1875); the Linux guest of the machine tier does not take the store
-copy yet. `--podvm-mem` sizes the virtual machine, as QEMU's `-m` does,
+checks it. Where the host has none, `run --podvm-tier=machine`, `podvm
+windows` and `run windows:NAME` fetch a pinned static QEMU 9.2.0 and its
+firmware into the store (T-1875); `podvm machine ssh` and `podvm doctor`
+look on PATH only. `--podvm-mem` sizes the virtual machine, as QEMU's `-m` does,
 and the guest kernel keeps a part of it: `MemTotal` is 85 % of 256M,
 92 % of 512M and 95 % of 1G (T-1849).
 `podvm machine ssh` and `podvm windows` boot a guest now

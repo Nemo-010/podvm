@@ -1,6 +1,6 @@
-date      2026-11-15T04:29:51Z
+date      2026-11-15T04:34:05Z
 podvm     podvm 0.2.0-beta.20
-run ver   rc 0 in 73 s: FreeCom version 0.86 - WATCOMC - XMS_Swap [Dec 30 2024 22:10:51]
+run ver   rc 0 in 70 s: FreeCom version 0.86 - WATCOMC - XMS_Swap [Dec 30 2024 22:10:51]
 podvm run: this host has no QEMU; podvm fetches the static QEMU 9.2.0 and its firmware (54 MiB) into /workspace/podvm/.work/exp453/home/.local/share/podvm/tools/qemu-9.2.0 (TODO/machine.md T-1875)
 podvm run: the store copy of QEMU 9.2.0 is in /workspace/podvm/.work/exp453/home/.local/share/podvm/tools/qemu-9.2.0
 store     19 files in /workspace/podvm/.work/exp453/home/.local/share/podvm/tools/qemu-9.2.0
@@ -8,5 +8,6 @@ sha256    b0597850cc3aa3d473410d8da27102eddfcf3f23abbe58bd1efc7a06f197b0a1  bin/
 sha256    7311a2598164b3055097f8f0484c1bbb0cd92463889fd8108c2f40fcc9f597c6  bin/qemu-img
 sha256    33090cc07675baa5190d9f1e84bf5176b33bcbfa9bacac522961150cdb6dbb2a  share/qemu/edk2-x86_64-code.fd
 doctor    emulator: /workspace/podvm/.work/exp453/home/.local/share/podvm/tools/qemu-9.2.0/bin/qemu-system-x86_64
+linux     rc 0: guest-on-store 6.12.110-0-virt
 host      emulator: qemu-system-x86_64
 PASS

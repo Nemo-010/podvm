@@ -234,8 +234,10 @@ pub fn boot(r: &Request) -> i32 {
         Ok(a) => a,
         Err(e) => return fail(e),
     };
-    let Some(qemu) = crate::tier::which_qemu("qemu-system-x86_64") else {
-        return fail("qemu-system-x86_64 is not on PATH".to_string());
+    // TODO/machine.md T-1875: the store copy where the host has no QEMU.
+    let qemu = match crate::windows::tools::emulator_for(r.verb) {
+        Ok(q) => q,
+        Err(code) => return code,
     };
     if std::fs::symlink_metadata(r.rootfs.join("bin/sh")).is_err() {
         return fail("the image has no /bin/sh, which runs /podvm-init in the guest".to_string());

@@ -44,7 +44,7 @@ mod plan;
 pub(crate) mod pull; // TODO/machine.md T-1861
 mod run;
 mod setup;
-mod tools; // TODO/machine.md T-1875
+pub(crate) mod tools; // TODO/machine.md T-1875
 
 use std::path::PathBuf;
 use std::time::Duration;

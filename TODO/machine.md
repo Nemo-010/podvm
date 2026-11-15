@@ -4194,8 +4194,10 @@ booted FreeDOS under TCG and printed the FreeCOM version, exit 0 in 73 s;
 the store held 19 files (`qemu-system-x86_64` sha256 `b0597850...b0a1`,
 `qemu-img` `7311a259...97c6`); `podvm windows doctor` named the store
 copy; outside the namespace it named the QEMU of the host; no emulator
-stayed. The Linux guest of the machine tier does not take the store copy
-yet (`docs/limits.md`).
+stayed. The Linux guest of `run --podvm-tier=machine` takes the store
+copy too (`machine/guest.rs`): in the namespace, clause 6 printed
+`guest-on-store 6.12.110-0-virt`, exit 0. `podvm machine ssh` and `podvm
+doctor` look on PATH only (`docs/limits.md`).
 
 
 # T-1876: Nothing checks the catalog pins for drift

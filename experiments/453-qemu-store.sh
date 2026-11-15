@@ -20,7 +20,9 @@
 #   3. `podvm windows doctor` names the emulator of the store;
 #   4. outside the namespace, on a host with QEMU, the doctor names the
 #      emulator of the host;
-#   5. no emulator stays.
+#   5. no emulator stays;
+#   6. `podvm run --podvm-tier=machine` boots the Linux guest with the
+#      store copy and prints the line of the payload.
 
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -72,6 +74,12 @@ done
 doc=$(unshare -Urm sh "$WORK/hidden.sh" "$BIN" windows doctor 2>&1)
 say "doctor    $(printf '%s\n' "$doc" | grep '^emulator:')"
 printf '%s\n' "$doc" | grep '^emulator:' | grep -q "$STORE" || bad "clause 3: the doctor does not name the store copy"
+
+lin=$(timeout 600 unshare -Urm sh "$WORK/hidden.sh" "$BIN" run --rm --podvm-tier=machine \
+	mirror.gcr.io/library/alpine:3.20 sh -c 'echo guest-on-store; uname -r' 2>"$WORK/lin.err")
+lrc=$?
+say "linux     rc $lrc: $(printf '%s' "$lin" | tr '\n' ' ')"
+[ "$lrc" -eq 0 ] && printf '%s' "$lin" | grep -q "guest-on-store" || { bad "clause 6"; tail -5 "$WORK/lin.err" | tee -a "$OUT"; }
 
 if command -v qemu-system-x86_64 >/dev/null; then
 	host=$("$BIN" windows doctor 2>&1 | grep '^emulator:')
