@@ -424,7 +424,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1747](cli.md) | P3 | M | none | cli | open | `--memory`, `--cpus` and `--pids-limit` by cgroup2 where a subtree is delegated |
 | [T-1748](supervise.md) | P2 | S | none | supervise | done | A foreground payload dies when its `podvm run` is killed with SIGKILL |
 | [T-1749](enter.md) | P3 | L | none | enter | partial | A read-only image as the lower layer of the root, with a tmpfs upper layer, and no copy |
-| [T-1750](machine.md) | P3 | L | none | machine | open | `exec` into a running guest of the machine tier |
+| [T-1750](machine.md) | P3 | L | none | machine | done | `exec` into a running guest of the machine tier |
 | [T-1751](machine.md) | P1 | L | none | machine | done | The guest plan of shield `guest`: no host file in the guest, no network card, one serial channel |
 | [T-1752](cli.md) | P3 | M | none | cli | done | A versioned JSON Schema for the record of `run --report`, published in each release |
 | [T-1753](interpose.md) | P1 | M | none | interpose | done | The userland rung reads the host's /etc/hosts, /etc/passwd and /etc/group through libc's internal opens |
@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-498 entries: 8 open, 11 partial, 2 blocked, 477 done.
+498 entries: 7 open, 11 partial, 2 blocked, 478 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -579,8 +579,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 202 | 206 |
 | P2 | 4 | 5 | 2 | 164 | 175 |
-| P3 | 4 | 2 | 0 | 37 | 43 |
-| **All** | 8 | 11 | 2 | 477 | 498 |
+| P3 | 3 | 2 | 0 | 38 | 43 |
+| **All** | 7 | 11 | 2 | 478 | 498 |
 
 ## Work order
 

@@ -21,6 +21,15 @@ pub fn exec(args: &[String]) -> i32 {
         eprintln!("podvm exec: {text}");
         return podvm_image::error::EXIT_RUNTIME_ERROR;
     }
+    // TODO/machine.md T-1750: exec into a detached guest of the machine tier.
+    if let Some(r) = o.image.as_deref().and_then(crate::windows::machine::find) {
+        return crate::machine::guest::exec::exec_machine(
+            &r,
+            &o.command,
+            &o.env,
+            o.workdir.as_deref(),
+        );
+    }
     // ⭐ TODO/machine.md T-1302, as in `run`'s `prepare`: the tier is decided
     // before the store is touched, so a machine-tier refusal names the legs
     // with nothing pulled for a tier that cannot run.

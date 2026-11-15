@@ -21,6 +21,7 @@ pub(crate) mod channel;
 pub(crate) mod cpio;
 mod drive;
 pub(crate) mod engine;
+pub(crate) mod exec; // TODO/machine.md T-1750
 pub(crate) mod init;
 pub(crate) mod kernel;
 pub(crate) mod net;
@@ -52,6 +53,8 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(600);
 /// One guest run.
 pub struct Request<'a> {
     pub verb: &'a str,
+    /// `run -d`: the files of the keeper (TODO/machine.md T-1750).
+    pub keeper: Option<exec::Keeper>,
     /// The architecture of the image (TODO/machine.md T-1890).
     pub arch: arch::Arch,
     /// The banner switch (`--verbose`, not `-q`): the notice of the tier.
@@ -341,6 +344,7 @@ pub fn boot(r: &Request) -> i32 {
                     sealed: r.sealed.is_some(),
                 }),
             );
+            let script = exec::with_server_if(script, r.keeper.is_some());
             run_archive(&script, tools.as_ref(), &copies, r.stdin.as_deref())
         })
         .and_then(|extra| {
@@ -419,6 +423,7 @@ pub fn boot(r: &Request) -> i32 {
         &extra,
     );
     arch::adapt(&mut argv, r.arch);
+    argv.extend(r.keeper.iter().flat_map(exec::keeper_args));
     arch::err_port(&mut argv, r.arch);
     if r.net_none
         && let Some(nic) = argv

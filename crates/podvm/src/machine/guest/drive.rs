@@ -42,6 +42,11 @@ pub(super) fn drive(
         }
     };
     let pid = child.id() as i32;
+    // TODO/machine.md T-1750: the keeper of `run -d` records the emulator.
+    if let Some(k) = &r.keeper {
+        let start = podvm_windows::machines::start_of(child.id()).unwrap_or(0);
+        let _ = std::fs::write(&k.pidfile, format!("{pid} {start}\n"));
+    }
     let deadline = Instant::now() + r.timeout.unwrap_or(DEFAULT_TIMEOUT);
     let gone = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let errs = stderr::pump(sock.to_path_buf(), deadline, gone.clone());

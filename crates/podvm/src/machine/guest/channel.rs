@@ -160,6 +160,10 @@ fn port_device() -> Option<PathBuf> {
 /// carry each connection over the port. It writes [`READY`] once it
 /// listens, and runs until the guest ends.
 pub fn guest_main(args: &[String]) -> i32 {
+    // TODO/machine.md T-1750: the exec server of a detached guest.
+    if args.first().is_some_and(|a| a == "exec") {
+        return super::exec::guest_main();
+    }
     let sealed = args.first().is_some_and(|a| a == "--sealed");
     let rest = &args[usize::from(sealed)..];
     let port = match rest.first().map(|p| p.parse::<u16>()) {

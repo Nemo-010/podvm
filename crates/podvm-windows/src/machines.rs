@@ -112,6 +112,12 @@ pub fn vnc_socket(root: &Path, name: &str) -> PathBuf {
     runtime_path(root, name, "vnc")
 }
 
+/// TODO/machine.md T-1750: the exec port of a Linux guest of the machine
+/// tier (`run -d --podvm-tier=machine`).
+pub fn exec_socket(root: &Path, name: &str) -> PathBuf {
+    runtime_path(root, name, "exec")
+}
+
 /// A file of the machine `name` in the runtime directory, with the
 /// extension `ext`.
 fn runtime_path(root: &Path, name: &str, ext: &str) -> PathBuf {

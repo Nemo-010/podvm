@@ -164,6 +164,13 @@ pub(super) fn machine_tier(
         );
         return EXIT_FLAG_ERROR;
     }
+    // TODO/machine.md T-1750: `run -d` starts a keeper of the guest; the
+    // keeper is this same run, in the foreground.
+    let keeper = crate::machine::detach::keeper();
+    if o.detach && keeper.is_none() {
+        let image = o.image.as_deref().unwrap_or_default();
+        return crate::machine::detach::start(verb, o.name.as_deref(), image, o.mem, o.timeout);
+    }
     let mut p = match prepare_image(verb, store, o, platform, policy, "machine") {
         Ok(p) => p,
         Err(c) => return c,
@@ -247,8 +254,10 @@ pub(super) fn machine_tier(
     // line stays a refusal in the report.
     note_guest_run("machine", o, &p);
     let loud = crate::complete::banner_loud(store, &o.ask);
+    let detached = keeper.is_some();
     let code = crate::machine::guest::boot(&crate::machine::guest::Request {
         verb,
+        keeper,
         arch: crate::machine::guest::arch::Arch::of(&platform.arch)
             .unwrap_or(crate::machine::guest::arch::Arch::Amd64),
         loud,
@@ -261,7 +270,10 @@ pub(super) fn machine_tier(
         mem: o.mem,
         cpus: o.cpus,
         broker,
-        timeout: o.timeout.map(std::time::Duration::from_secs),
+        timeout: o
+            .timeout
+            .or(detached.then_some(podvm_windows::machines::DEFAULT_LIFETIME_SECS))
+            .map(std::time::Duration::from_secs),
         qemu_args: o.qemu_args.clone(),
         copies,
         volumes,
@@ -274,6 +286,9 @@ pub(super) fn machine_tier(
     });
     if let Some(d) = probe {
         let _ = std::fs::remove_dir_all(d);
+    }
+    if detached {
+        crate::machine::detach::ended(code);
     }
     code
 }

@@ -15,6 +15,7 @@
 //! there is no Windows or DOS flavor here, only the Linux guest the flags
 //! describe.
 
+pub(crate) mod detach; // TODO/machine.md T-1750
 pub(crate) mod guest;
 pub(crate) mod proxy;
 pub(crate) mod ssh;

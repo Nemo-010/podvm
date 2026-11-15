@@ -343,7 +343,13 @@ fn stop_record(root: &Path, name: &str) -> Option<String> {
     if let Ok(mut m) = podvm_windows::qmp::Monitor::connect(&sock, Duration::from_secs(2)) {
         let _ = m.call("system_powerdown");
         let t0 = Instant::now();
-        while t0.elapsed() < STOP_GRACE && r.running() {
+        // A Linux guest boots with `acpi=off` and takes no power button.
+        let grace = if r.flavor == "linux" {
+            Duration::ZERO
+        } else {
+            STOP_GRACE
+        };
+        while t0.elapsed() < grace && r.running() {
             std::thread::sleep(Duration::from_millis(250));
         }
         how = "ACPI power-off";
@@ -414,6 +420,13 @@ pub(crate) fn start_if(verb: &str, want: &str) -> Option<Result<String, i32>> {
     if r.running() {
         return Some(Ok(r.name));
     }
+    if r.flavor == "linux" {
+        eprintln!(
+            "podvm {verb}: {want} is a guest of the machine tier, whose disk is the image: \
+             `podvm rm {want}` and `podvm run -d` start a new one (TODO/machine.md T-1750)"
+        );
+        return Some(Err(EXIT_RUNTIME_ERROR));
+    }
     if machines::alive(r.keeper_pid, r.keeper_start) {
         eprintln!("podvm {verb}: the keeper of {want} still runs; wait for it to end");
         return Some(Err(EXIT_RUNTIME_ERROR));
@@ -453,6 +466,11 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
             return EXIT_RUNTIME_ERROR;
         }
         let _ = stop_record(&root, name);
+    }
+    // A keeper that saw its emulator end writes the end and exits.
+    let t0 = Instant::now();
+    while machines::alive(r.keeper_pid, r.keeper_start) && t0.elapsed() < STOP_GRACE {
+        std::thread::sleep(Duration::from_millis(100));
     }
     if r.running() || machines::alive(r.keeper_pid, r.keeper_start) {
         eprintln!("podvm rm: the emulator of {name} did not end; nothing was removed");

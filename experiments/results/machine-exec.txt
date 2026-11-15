@@ -1,0 +1,10 @@
+date      2026-11-15T06:53:54Z
+podvm     podvm 0.2.0-beta.21
+accel     tcg
+run -d    rc 0 in 2 s: w1; w1             mirror.gcr.io/library/alpine:3.20   (linux guest)   2026-11-15T06:53:57Z   Up       w1
+uname -r  rc 0: 6.12.110-0-virt
+streams   rc 7: stdout [v /tmp] stderr [err]
+missing   rc 127
+ten execs 2216 ms
+stop rm   rc 0 0
+PASS

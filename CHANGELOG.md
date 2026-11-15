@@ -8,6 +8,17 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `podvm exec` into a running guest of the machine tier, 2026-11-15
+
+Record: T-1750 (PodUtils/podcrates#124, ask of podswarm).
+Deployed: none yet.
+
+- `podvm run -d --podvm-tier=machine IMAGE CMD` keeps the guest running,
+  and `podvm exec NAME CMD` runs a command in it in about 0.2 s, with its
+  stdout, stderr and exit code. `ps`, `stop`, `rm` and `logs` serve the
+  guest. Before this, `-d` with the machine tier ran in the foreground and
+  was ignored.
+
 ### Added: a linux/arm64 guest of the machine tier on an x86_64 host, 2026-11-15
 
 Record: T-1890 (PodUtils/podrunner#102).

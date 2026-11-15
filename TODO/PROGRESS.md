@@ -7,7 +7,7 @@ start.
 
 ## State
 
-498 entries: 8 open, 11 partial, 2 blocked, 477 done.
+498 entries: 7 open, 11 partial, 2 blocked, 478 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -86,9 +86,9 @@ status with `podvm-count` in the same commit as the work.
 5. Low priority, the asks of podswarm (PodUtils/podcrates#124):
    [T-1749](enter.md) (partial: podvm wires the overlay root of
    podcrates@T-486 with the completion of podcrates@T-567),
-   [T-1747](cli.md) and [T-1750](machine.md).
-   V-1, V-2 (the probe cache of `run`), V-4, V-7 (`--podvm-sealed`) and
-   V-8 are done.
+   [T-1747](cli.md).
+   V-1, V-2 (the probe cache of `run`), V-4, V-7 (`--podvm-sealed`), V-8
+   and the warm guest of the machine tier are done.
 
 The entries done since the resume of 2026-11-11 are in the record; the
 handoff (`docs/HANDOFF.md`) names them.

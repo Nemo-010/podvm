@@ -362,6 +362,7 @@ fn banner_quiet_hides_the_machine_notice() {
     let p = Path::new("/x");
     let mut r = Request {
         verb: "run",
+        keeper: None,
         arch: super::arch::Arch::Amd64,
         loud: false,
         store_root: p,

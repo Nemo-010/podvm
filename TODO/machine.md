@@ -2348,7 +2348,7 @@ test runs the binary, so the variable stays in the child.
 **Milestone:** none
 **Priority:** P3
 **Effort:** L
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -2376,6 +2376,39 @@ The channel is the one of T-1751; one design serves both.
 
 `cargo test -p podvm` exits 0, with a test that `exec` into a running
 guest gives the exit code of its command (under TCG on the cloud host)
+
+## Correction
+
+2026-11-15. The Prove names a test of `cargo test -p podvm` that boots a
+guest under TCG; the workspace tests run on CI with no QEMU and no
+network for the kernel, so the boot is experiment 457, and `cargo test -p
+podvm --bin podvm machine_exec` holds the protocol and runs the guest side
+of one command for real (a file in place of the port). Before this, `run -d
+--podvm-tier=machine` ran in the foreground and ignored `-d` with exit 0
+(a comment said that the machine tier refuses `-d`).
+
+## Done
+
+**Done 2026-11-15.** `run -d --podvm-tier=machine` keeps the guest
+(`crates/podvm/src/machine/detach.rs`): podvm runs itself again as the
+keeper, with the same argv and `PODVM_MACHINE_KEEPER=NAME`, which makes
+the run a foreground boot with a `virtserialport` `podvm.exec` on a
+socket of the host, a QMP monitor and a pid file
+(`machine/guest/exec.rs`, `Keeper`); its stdout is `serial.log` of the
+machine. The guest's init starts `podvm guest-channel exec`, which serves
+one command at a time on the port (a request of one JSON line; frames of
+stdout, stderr and the exit code). `podvm exec NAME CMD` sends the
+command and gives its output and exit code (`-e` and `-w` taken). The
+record is the machine record of T-1870 (flavor `linux`), so `ps`, `stop`
+(QMP `quit` at once: the guest boots with `acpi=off`), `rm` and `logs`
+serve it; the lifetime is `--timeout`, else 24 h; `start` of an ended
+guest is refused by name. A virtio port opens one time (a second open is
+EBUSY), so the guest side opens it once and duplicates the descriptor.
+Experiment 457 under TCG on the cloud host: PASS; `run -d` returned in 2 s,
+`exec w1 uname -r` printed `6.12.110-0-virt`, the streams case gave `v
+/tmp`, `err` and 7, `/no/such` gave 127, ten execs took 2216 ms together,
+and `stop` and `rm` left no emulator.
+
 
 # T-1751: The guest plan of shield `guest`: no host file in the guest, no network card, one serial channel
 
