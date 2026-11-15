@@ -1,0 +1,51 @@
+# TODO/machine.md T-1876: the pins of the Windows catalog point at vendor
+# URLs that move. Each week this sends HEAD to each pinned URL, compares
+# the size with the pin, and opens an issue on a drift. It reads only and
+# never changes a pin.
+
+name: catalog-drift
+
+on:
+  schedule:
+    - cron: "17 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    name: catalog pins against their URLs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: the planted pin must fail
+        run: |
+          if sh scripts/common/check-catalog-drift.sh --plant; then
+            echo "the planted pin passed: the check checks nothing"
+            exit 1
+          fi
+      - name: the live catalog
+        id: live
+        run: |
+          set +e
+          sh scripts/common/check-catalog-drift.sh > drift.txt 2>&1
+          rc=$?
+          cat drift.txt
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+      - name: an issue on a drift
+        if: steps.live.outputs.rc != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "The weekly check of the Windows catalog found a pin that its URL no longer serves (TODO/machine.md T-1876)."
+            echo
+            echo '```'
+            cat drift.txt
+            echo '```'
+          } > body.md
+          gh issue create -R "$GITHUB_REPOSITORY" --title "Catalog drift: a Windows pin no longer matches its URL" --body-file body.md
+          exit 1

@@ -80,6 +80,14 @@ Each call stays in force until the owner rules otherwise.
 
 ## Questions for the owner
 
+Q9 (2026-11-15, T-1876): the Windows catalog pins URLs, sizes and
+digests in the binary, so a moved URL needs a release. The weekly job
+`catalog-drift.yml` finds a drift and opens an issue. The
+recommendation: keep the pins in the binary (each pin is checked by its
+sha256), and answer a drift with a patch release; a catalog that the
+binary fetches at run time needs a signature and a key, which podvm does
+not have. Until the owner answers, a drift is a patch release.
+
 Q8 (2026-11-15, T-1824): a run is quiet by default, and only
 `--verbose` prints the banner; the problem of T-1824 asks for a line on
 the default path. The recommendation: print one line on stderr by default only where the

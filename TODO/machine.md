@@ -4068,7 +4068,7 @@ number) runs it and prints the sha256 of each fetched tool.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4099,6 +4099,17 @@ The job reads only. It never changes a pin.
 `sh scripts/common/check-catalog-drift.sh --plant` exits 1 for a planted URL
 and `sh scripts/common/check-catalog-drift.sh` exits 0 on the live catalog. The
 script is new and this entry adds it. The workflow runs it on a schedule.
+
+## Done
+
+**Done 2026-11-15.** `scripts/common/check-catalog-drift.sh` reads each
+`url` and `size` of `crates/podvm-windows/src/catalog.rs`, sends HEAD,
+and compares the `Content-Length` with the pin; a URL with no length is
+a drift too. `.github/workflows/catalog-drift.yml` runs it each week,
+first with `--plant`, and opens an issue on a drift. The question of the
+refresh path is Q9 of `docs/decisions.md`. On the cloud host: `sh
+scripts/common/check-catalog-drift.sh` exits 0 (7 pins hold), and
+`--plant` (the FreeDOS size one byte off) exits 1.
 
 
 # T-1877: A Windows desktop has no Hyper-V enlightenments, and no one measured its boot time

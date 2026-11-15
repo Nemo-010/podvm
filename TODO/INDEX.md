@@ -538,7 +538,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1873](machine.md) | P2 | L | none | machine | open | `windows setup` sleeps the whole wait with no readiness check |
 | [T-1874](machine.md) | P2 | L | none | machine | open | Each Windows run is a full boot: there is no warm start |
 | [T-1875](machine.md) | P2 | L | none | machine | open | podvm needs `qemu-system-x86_64`, `qemu-img` and OVMF on the host |
-| [T-1876](machine.md) | P2 | S | none | machine | open | Nothing checks the catalog pins for drift |
+| [T-1876](machine.md) | P2 | S | none | machine | done | Nothing checks the catalog pins for drift |
 | [T-1877](machine.md) | P2 | M | none | machine | open | A Windows desktop has no Hyper-V enlightenments, and no one measured its boot time |
 | [T-1878](machine.md) | P3 | L | none | machine | open | `podvm run -it windows:11 -- powershell`, streamed logs, a web viewer and Windows ARM64 are not planned in detail |
 | [T-1879](machine.md) | P2 | S | none | machine | done | The messages of `dos.rs` and `doctor.rs` and the premise of T-1112 still say that podvm fetches no image |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 20 open, 12 partial, 2 blocked, 459 done.
+493 entries: 19 open, 12 partial, 2 blocked, 460 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 12 | 3 | 2 | 158 | 175 |
+| P2 | 11 | 3 | 2 | 159 | 175 |
 | P3 | 7 | 2 | 0 | 31 | 40 |
-| **All** | 20 | 12 | 2 | 459 | 493 |
+| **All** | 19 | 12 | 2 | 460 | 493 |
 
 ## Work order
 
