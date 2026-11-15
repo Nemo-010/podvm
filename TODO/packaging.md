@@ -1738,7 +1738,7 @@ the 394 step, because `cargo test --workspace` runs the test.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -1759,3 +1759,16 @@ The cosign bundles stay beside the new attestation.
 ## Prove
 
 After the next release, `gh attestation verify podvm-x86_64 --repo PodUtils/podvm` exits 0.
+
+## Done
+
+**Partial 2026-11-15.** The publish job of `nightly.yml` (which `release.yml`
+runs on the tag) writes a build provenance attestation after the cosign
+signatures: `actions/attest-build-provenance` v4.2.2 (pinned by commit),
+with `attestations: write`, for each binary and each SSH archive (a
+`sha256sum` list, `subject-checksums`; not the `.sha256` and `.sigstore`
+files). The notes of a release name both checks: `gh attestation verify`
+and `cosign verify-blob` with the identity of the workflow
+(`podvm-release/src/notes.rs`). The clause that remains: the next release,
+and `gh attestation verify podvm-x86_64 --repo PodUtils/podvm` on it.
+

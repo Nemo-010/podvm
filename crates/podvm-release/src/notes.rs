@@ -134,10 +134,18 @@ fn main() {
     println!();
     println!("Build commit: {commit}");
     println!("Gate on that commit: {gate}");
+    // TODO/packaging.md T-1905 (issue 399): both ways of the check.
+    let name = identity::asset_prefix(&tag);
+    println!();
+    println!("Verify a binary with its build provenance attestation:");
+    println!("`gh attestation verify {name}-x86_64 --repo {repo}`");
+    println!("or with its cosign bundle:");
+    println!(
+        "`cosign verify-blob --bundle {name}-x86_64.sigstore --certificate-identity-regexp '^https://github.com/{repo}/' --certificate-oidc-issuer https://token.actions.githubusercontent.com {name}-x86_64`"
+    );
     println!();
     println!("Reproducibility boundary: byte-identical within one host and toolchain.");
     println!("Cross-host builds differ in the embedded glibc interposer object.");
-    let name = identity::asset_prefix(&tag);
     println!("Its digest is in `{name} version --verbose`.");
     println!(
         "Reproduction requires the builder's host glibc as well as its Rust and Zig toolchains."
