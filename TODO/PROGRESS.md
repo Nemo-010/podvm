@@ -9,17 +9,17 @@ start.
 
 494 entries: 16 open, 14 partial, 2 blocked, 462 done.
 
-The state on 2026-11-14 (`docs/HANDOFF.md` has the detail):
+The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.18` (2026-11-14, release run
-  43607691009 on `aaea18eb`; the gate 43605290339, `arm.yml` 43606602497
-  and the nightly trial 43607102100 passed first, through issue 368):
-  podcrates `v0.44.0` (a fix of security in extraction, a foreground run
-  that is live in its record, the setuid bits), the confine paths of the
-  userland rung (T-1887, T-1888, issue 364), `exec` after `--tmpfs`, and
-  the machine tier's refusal of another architecture (T-1889).
-  Requests 363 and 365 stopped at the gate on the plant harness and on
-  test stores; both causes are fixed. `release.yml`
+* The newest release is `v0.2.0-beta.19` (2026-11-15, release run
+  43668566087 on `f5a757c6`; the gate 43666264498, `arm.yml` 43667556798
+  and the nightly trial 43667929703 passed first, through issue 381):
+  podcrates `v0.49.0`, `container prune`, the detached driver of the
+  native-static rung (PodUtils/podrunner#100), `save` of an index digest
+  (PodUtils/podrunner#104), `--flag=value` for each flag, the end of a
+  detached report, and piped input to `-t` on the machine tier.
+  Requests 378 and 379 stopped at the gate on tests that needed chroot
+  or root; both causes are fixed. `release.yml`
   needs a successful gate run on its commit; dispatch `nightly.yml` with
   `trial=true` on `main` first. A request asks for one dispatch of the
   gate: two runs of it cancel each other (issue 301).
@@ -28,13 +28,10 @@ The state on 2026-11-14 (`docs/HANDOFF.md` has the detail):
   `actions_run_trigger` answers "Actions has been disabled for this user".
   Each run of a cloud session is an issue `[gh action] requested`
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.45.0` (`ad50c7f`,
-  PodUtils/podcrates#157): exact directory modes and a removal that
-  opens a closed directory (podcrates@T-598, podcrates@T-599,
-  podcrates@T-604 to podcrates@T-606), the Windows crates (`pod-udf`,
-  `pod-qga`, the resume of `pod-guest`), and the defects of the QA report
-  (podcrates@T-583 to podcrates@T-586, podcrates@T-609 to podcrates@T-611,
-  podcrates@T-616).
+* podvm takes the crates of PodUtils/podcrates at `v0.49.0` (`212d45d`,
+  PodUtils/podcrates#163): the emulator guard and `Sign::After` of
+  `pod-guest` (podcrates@T-622, podcrates@T-633), the warm start and the
+  USB mailbox, which podvm does not use yet.
   A change of moved code goes to podcrates as a COORD issue.
 * KVM is free (the owner, 2026-11-09). The cloud host has no `/dev/kvm`;
   `kvm.yml` (T-1682) gives a hosted runner with it, and `arm.yml` a
