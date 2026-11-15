@@ -4037,7 +4037,7 @@ image gives a record with `refused`) and
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4093,6 +4093,8 @@ controllers, or the reason for none. podvm keeps the child cgroup of each
 run and the read of `memory.events`.
 
 ## Done
+
+**Done (2026-11-16).** Run 43767666467 (`kvm.yml`, request 434, `7a6c1edb`), job `cgroup`, experiment 459 in a delegated subtree on a runner with a swap file: clause 1 PASS (`run -d --memory 64m --cpus 0.5 --pids-limit 32` made the leaf `podvm-ci/podvm-eccc2908b1b8` beside the cgroup of the shell, with `memory.max` 67108864, `cpu.max` "50000 100000", `pids.max` 32 and 3 processes); clause 2 PASS (`run --rm --pids-limit 16` of 40 children exits 2 with the line of the failed fork); clause 3 PASS (`run --rm --memory 32m` of a shell that holds 200 MB exits 137 and names "oom_kill 1", now that `memory.swap.max` holds the value of `--memory`); no leaf stayed. PASS.
 
 **Partial (2026-11-15).** podvm takes podcrates `v0.51.0`, whose `pod-hostprobe::cgroup` reports a delegated cgroup2 subtree (COORD-125). `crates/podvm/src/run/cgroup.rs`: early in `prepare` (before any pull), a native `run` or `run -d` with `--memory`, `--cpus` or `--pids-limit` finds the delegated directory, needs only the controllers of the flags given (systemd delegates memory and pids by default), and makes them reach a child of the directory or, where the directory holds a process (the scope of a shell), of its parent; else it refuses by name with exit 125 (no delegation, a cgroup v1 host, `create`, the guest tiers). Right before the payload or its launcher is forked, podvm makes the leaf `podvm-ID`, writes `memory.max`, `cpu.max` and `pids.max`, and moves itself in (`0` to `cgroup.procs`), so the run inherits it; at its exit (`atexit`, only in that process) it names an OOM kill from `memory.events`, moves back, and removes the leaf; each later use removes the empty `podvm-*` leaves of ended detached runs. On the cloud host (cgroup v1 hybrid) `run --memory 64m` refuses: "none: /sys/fs/cgroup is not cgroup2". The test `the_limits_become_the_files_of_the_leaf` holds the values. Remaining: the Prove on a host with a delegated subtree: experiment 459 in the job `cgroup` of `kvm.yml` (dispatch with `only=cgroup`), which makes the layout of a systemd user session on a runner.
 
