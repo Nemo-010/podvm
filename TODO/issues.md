@@ -291,3 +291,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #392 | [gh action] requested | closed (gate 43682978612, arm 43683769568, trial 43684116751, release 43684654940: `v0.2.0-beta.21`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.21` at e4dd9168 (AGENTS.md, section 9) |
 | #393 | COORD-127: a client of the QEMU Guest Agent for a running Windows guest (pod-qga?) (podvm T-1868) (to podcrates) | open | T-1868 |
 | #394 | COORD-128: pod-services: the aarch64 netboot of Alpine 3.22.6 for an arm64 guest (podvm T-1890) (to podcrates) | open | T-1890 |
+| #395 | COORD-129: pod-oci: one registry token for the parallel blob fetches of a pull (podvm T-1850) (to podcrates) | open | T-1850 |

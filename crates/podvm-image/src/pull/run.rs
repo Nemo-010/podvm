@@ -41,7 +41,11 @@ pub fn pull(
     }
     let probe = crate::probe_cache::resolve(store);
 
+    // TODO/cli.md T-1850: the time of each phase, printed where
+    // `PODVM_PULL_PHASES` is set (a switch for measurements).
+    let t0 = std::time::Instant::now();
     let mut client = crate::registry::client(policy.clone())?;
+    let t_client = t0.elapsed();
     let endpoint = reference.endpoint().to_string();
     let repository = reference.repository.clone();
 
@@ -194,6 +198,7 @@ pub fn pull(
     // cut short, and a `BufWriter` has no way to discard what it is holding;
     // the fetch already writes one 128 KiB chunk at a time, so the buffer was
     // adding a copy rather than a saving.
+    let t_manifest = t0.elapsed();
     let report = fetch_parallel(store, &jobs, |job, file, buf, cancel| {
         // ⛔ The flag is read here as well as before staging: another worker
         // may have failed while this one staged, and a blob fetched past the
@@ -212,6 +217,17 @@ pub fn pull(
         )?;
         Ok(FetchStep::Done(back))
     });
+    if std::env::var_os("PODVM_PULL_PHASES").is_some() {
+        let ms = |d: std::time::Duration| d.as_millis();
+        eprintln!(
+            "podvm pull: phases: client {} ms, manifest and token {} ms, blobs {} ms ({} blob(s), \
+             one client and token each) (TODO/cli.md T-1850)",
+            ms(t_client),
+            ms(t_manifest - t_client),
+            ms(t0.elapsed() - t_manifest),
+            jobs.len()
+        );
+    }
 
     // ⛔ The transcript is assembled HERE, in manifest order, however the
     // fetches interleaved: every worker buffered its lines and this loop

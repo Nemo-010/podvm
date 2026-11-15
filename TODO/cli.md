@@ -5686,7 +5686,7 @@ document with its `# run flags:` line.
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5718,6 +5718,20 @@ A measurement first; a change only where a phase is measured.
 `sh experiments/443-qa-surface.sh` exits 0, with a perf row for `exec IMG true` and one for `pull` that print the time of each phase
 
 ## Done
+
+**Done 2026-11-15, later.** `PODVM_PULL_PHASES=1` makes `pull` print the
+time of each phase (`podvm-image/src/pull/run.rs`): the client, the
+manifest with its token (the 401 and the token request are inside the
+first manifest request of `pod-oci`, so the two are one phase), and the
+blobs. The row `perf.pull` of experiment 443 prints them: on the cloud host
+`ms=2337 phases=[client 5 ms, manifest and token 964 ms, blobs 1300 ms (2
+blob(s), one client and token each)]` for busybox:musl; python:3.12-slim
+gave 6, 1065 and 2903 ms. The largest phases are the manifest with its
+token and the blobs; each blob worker builds its own client, so each blob
+starts with its own token request (an estimate of the cause, not timed
+alone). The share of one token across the workers needs `pod-oci`
+(COORD-129, issue 395). With the `exec` phase of the Partial below, each
+clause of the Prove holds.
 
 **Partial 2026-11-15.** The largest phase of `exec` was the probe: `exec`
 ran the full probe on each call, where `run` reads the cache of T-1746.

@@ -537,8 +537,12 @@ for r in ns ul; do
 done
 ps_store="$W/pull-store-$$"
 rm -rf "$ps_store"
-s=$(date +%s%N); PODVM_STORE="$ps_store" timeout 300 "$PB" pull -q "$B" >/dev/null 2>&1; e=$(date +%s%N)
-note "perf.pull | pull -q IMAGE into a fresh store | ns | - | ms=$(( (e - s) / 1000000 )) | INFO"
+s=$(date +%s%N); PODVM_STORE="$ps_store" PODVM_PULL_PHASES=1 timeout 300 "$PB" pull -q "$B" >/dev/null 2>"$W/pull-phases-$$.txt"; e=$(date +%s%N)
+# TODO/cli.md T-1850: the phases of the pull (the client, the manifest
+# with the token, the blobs).
+phases=$(sed -n 's/^podvm pull: phases: \(.*\) (TODO.*/\1/p' "$W/pull-phases-$$.txt")
+note "perf.pull | pull -q IMAGE into a fresh store | ns | - | ms=$(( (e - s) / 1000000 )) phases=[$phases] | INFO"
+rm -f "$W/pull-phases-$$.txt"
 rm -rf "$ps_store"
 # The phases of one ubuntu run on ns, from the timestamps of strace.
 if command -v strace >/dev/null 2>&1; then
