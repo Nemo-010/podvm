@@ -3452,6 +3452,13 @@ pointer. Under KVM, `windows setup` passed in 37 s (`kvm.yml` run
 43657522107), and experiment 450 failed there only on its own output
 path (fixed in `a52d483d`). The proof stays on KVM: run request 377.
 
+**Partial 2026-11-15, KVM.** `kvm.yml` run 43660534832 at `a52d483d`:
+setup passed in 37 s; `cmd /c exit 42` gave 42 in 50 s, and `exit 42`
+and `echo out & exit 7` each timed out at 600 s. Since the drop of the
+`cmd /c` prefix, the first two runs gave the agent the same line, so one
+cold boot of two does not reach the shutdown, whatever the command. The
+ask is COORD-120 (issue 380); the clause that remains is the same.
+
 # T-1865: The plan of a Windows guest has no NIC, no CD-ROM, no USB media, no VNC socket and no serial channel
 
 **Source:** the Windows guest review of 2026-11-14, section 5, item W9

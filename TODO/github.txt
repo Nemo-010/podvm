@@ -266,5 +266,7 @@
 374 issue open
 375 issue open
 376 issue open
-377 issue open
+377 issue closed
 378 issue closed
+379 issue open
+380 issue open
