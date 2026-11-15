@@ -573,10 +573,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1908](enter.md) | P1 | M | none | enter | done | A payload has the host name of the host: no `--hostname` |
 | [T-1909](probe.md) | P2 | M | none | probe | done | The namespace rung does not enter through a user namespace |
 | [T-1910](enter.md) | P2 | M | none | enter | done | `exec` and `cp` do not join a run that podvm put in a user namespace |
+| [T-1911](probe.md) | P3 | M | none | probe | open | In the user namespace of a run, `-u UID` is faked: the map holds the caller only |
 
 ## Counts
 
-507 entries: 8 open, 11 partial, 2 blocked, 486 done.
+508 entries: 9 open, 11 partial, 2 blocked, 486 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -588,8 +589,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 205 | 209 |
 | P2 | 4 | 5 | 2 | 168 | 179 |
-| P3 | 4 | 2 | 0 | 39 | 45 |
-| **All** | 8 | 11 | 2 | 486 | 507 |
+| P3 | 5 | 2 | 0 | 39 | 46 |
+| **All** | 9 | 11 | 2 | 486 | 508 |
 
 ## Work order
 
