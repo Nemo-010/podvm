@@ -350,3 +350,37 @@ fn the_base_archive_keeps_the_owners_of_the_image() {
     assert_eq!(ids("home"), (0, 0), "a name with no row is root's");
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// TODO/cli.md T-1824: the notice of the machine tier follows the banner
+/// switch, so `-q` and the default print nothing, and `--verbose` prints it.
+#[test]
+fn banner_quiet_hides_the_machine_notice() {
+    let p = Path::new("/x");
+    let mut r = Request {
+        verb: "run",
+        loud: false,
+        store_root: p,
+        rootfs: p,
+        digest: "sha256:0",
+        argv: Vec::new(),
+        env: Vec::new(),
+        workdir: "/".into(),
+        mem: None,
+        cpus: None,
+        broker: None,
+        timeout: None,
+        qemu_args: Vec::new(),
+        copies: Vec::new(),
+        volumes: Vec::new(),
+        stdin: None,
+        tty: false,
+        net_none: false,
+        channel: None,
+        sealed: None,
+        engine: false,
+    };
+    assert_eq!(notice(&r, Accel::Kvm, true), None);
+    r.loud = true;
+    let line = notice(&r, Accel::Tcg, false).unwrap();
+    assert!(line.contains("TCG") && line.contains("built now"), "{line}");
+}

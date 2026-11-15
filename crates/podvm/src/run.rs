@@ -191,9 +191,9 @@ pub const RUN_OPTIONS: &str = "\
                    T-1658)
 
   refused: podvm run enters a CHROOT, not a container. It shares this machine's
-    process table, network, IPC and mount namespaces with the payload. The
-    banner on stderr says so on every run and names what the selected rung
-    must never claim.
+    process table, network, IPC and mount namespaces with the payload. With
+    --verbose, the banner on stderr says so and names what the selected rung
+    must never claim; a default run is quiet.
 
   note: The payload owns stdout. Every word podvm prints goes to stderr, so
     `podvm run <image> cmd | consumer` gives the consumer the payload's

@@ -4933,7 +4933,7 @@ back, which beta.17 did not do either: T-1885.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4969,6 +4969,18 @@ the binary does now.
 ## Prove
 
 `cargo test -p podvm --bin podvm banner_quiet` exits 0, with a test that the machine notice is not printed under `-q`, and `podvm system info --format '{{.Banner}}'` names `--verbose`
+
+## Done
+
+**Done 2026-11-15.** `machine/guest.rs` prints the notice of the machine
+tier through `notice`, which returns nothing where the banner switch is
+off (`complete::banner_loud`: `-q`, the store config, or no `--verbose`).
+The texts of `system info` (`.Banner`), of the parity row of `run`, of
+the help of `run` and of `exec.rs` say "with `--verbose`". The question
+of a default line is Q8 of `docs/decisions.md`. `cargo test -p podvm
+--bin podvm banner_quiet` exits 0, and `podvm system info --format
+'{{.Banner}}'` prints "printed on a run and an exec with --verbose; -q
+forces it off".
 
 
 # T-1825: A `--report` that cannot be written exits 0, and the report of a detached run is never finished

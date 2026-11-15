@@ -9,7 +9,7 @@
 //! from the record, as docker's `exec` does (TODO/cli.md T-1765).
 //!
 //! ⭐ That difference is said in three places a caller can reach, and the three
-//! agree because they read one pair of constants: the banner on every run
+//! agree because they read one pair of constants: the banner of a `--verbose` run
 //! ([`degradation`]), `podvm inspect --format '{{.Exec.Shares}}'`
 //! ([`crate::images::EXEC_SHARES`]), and the `Degraded` row for the verb in the
 //! parity table.

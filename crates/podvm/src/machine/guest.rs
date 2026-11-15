@@ -51,6 +51,8 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(600);
 /// One guest run.
 pub struct Request<'a> {
     pub verb: &'a str,
+    /// The banner switch (`--verbose`, not `-q`): the notice of the tier.
+    pub loud: bool,
     pub store_root: &'a Path,
     pub rootfs: &'a Path,
     pub digest: &'a str,
@@ -343,23 +345,9 @@ pub fn boot(r: &Request) -> i32 {
         let _ = std::fs::remove_dir_all(&dir);
         return fail(format!("the initrd of the run: {e}"));
     }
-    eprintln!(
-        "podvm {}: machine tier: a guest under {} ({}), base archive {} (TODO/machine.md T-1656)",
-        r.verb,
-        match accel {
-            Accel::Kvm => "KVM",
-            Accel::Tcg => "TCG",
-        },
-        match accel {
-            Accel::Kvm => "hardware virtualization",
-            Accel::Tcg => "the emulator process is the boundary, not hardware isolation",
-        },
-        if cached {
-            "from the cache"
-        } else {
-            "built now"
-        }
-    );
+    if let Some(line) = notice(r, accel, cached) {
+        eprintln!("{line}");
+    }
     for (host, guest, ro) in &r.volumes {
         if nine && *ro {
             eprintln!(
@@ -466,6 +454,31 @@ pub fn boot(r: &Request) -> i32 {
     }
     let _ = std::fs::remove_dir_all(&dir);
     code
+}
+
+/// The notice of the machine tier, or `None` where the banner is off
+/// (TODO/cli.md T-1824: `-q`, and the default, keep stderr silent).
+pub fn notice(r: &Request, accel: Accel, cached: bool) -> Option<String> {
+    if !r.loud {
+        return None;
+    }
+    Some(format!(
+        "podvm {}: machine tier: a guest under {} ({}), base archive {} (TODO/machine.md T-1656)",
+        r.verb,
+        match accel {
+            Accel::Kvm => "KVM",
+            Accel::Tcg => "TCG",
+        },
+        match accel {
+            Accel::Kvm => "hardware virtualization",
+            Accel::Tcg => "the emulator process is the boundary, not hardware isolation",
+        },
+        if cached {
+            "from the cache"
+        } else {
+            "built now"
+        }
+    ))
 }
 
 #[cfg(test)]

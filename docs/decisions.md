@@ -80,7 +80,12 @@ Each call stays in force until the owner rules otherwise.
 
 ## Questions for the owner
 
-No question is open on 2026-11-11.
+Q8 (2026-11-15, T-1824): a run is quiet by default, and only
+`--verbose` prints the banner; the problem of T-1824 asks for a line on
+the default path. The recommendation: print one line on stderr by default only where the
+entered rung gives no isolation (chroot, userland, supervise) and stdout
+or stderr is a terminal; `-q` and a pipe stay silent. Until the owner
+answers, the default stays quiet, and each text says "with `--verbose`".
 
 The seven questions of 2026-11-10 (Q1 to Q7, `git show 00c189b:docs/decisions.md`)
 are settled on 2026-11-11. Q1: DR-1 and DR-2 are yes (the row "podrunner

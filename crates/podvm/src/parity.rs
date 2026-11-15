@@ -118,7 +118,7 @@ pub use filter::*;
 /// quieter and less honest, not smaller.
 pub const TABLE: &[Row] = &[
     // ------------------------------------------------------------- the verbs
-    Row { verb: "run", flag: Option::None, status: Degraded, note: "enters the rung that the ladder selects (namespace, chroot or userland), which system info names as .EnteredRung. The banner names what the selected rung does not provide, on every run. A SIGINT or SIGTERM to a foreground run is forwarded to the payload and named on stderr with the payload's exit (TODO/supervise.md T-1335)" },
+    Row { verb: "run", flag: Option::None, status: Degraded, note: "enters the rung that the ladder selects (namespace, chroot or userland), which system info names as .EnteredRung. With --verbose, the banner names what the selected rung does not provide; a default run is quiet. A SIGINT or SIGTERM to a foreground run is forwarded to the payload and named on stderr with the payload's exit (TODO/supervise.md T-1335)" },
     Row { verb: "exec", flag: Option::None, status: Degraded, note: "a fresh chroot re-entry sharing only the filesystem, never an entry into a running container's namespaces (T-0505)" },
     Row { verb: "pull", flag: Option::None, status: Native, note: "HTTPS only. A registry offering only http:// is a named refusal, never a downgrade" },
     Row { verb: "images", flag: Option::None, status: Native, note: "one record per platform of a tag" },

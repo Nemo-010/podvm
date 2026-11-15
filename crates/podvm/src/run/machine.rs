@@ -229,8 +229,10 @@ pub(super) fn machine_tier(
     // T-1803: from here the guest runs the payload; a refusal before this
     // line stays a refusal in the report.
     note_guest_run("machine", o, &p);
+    let loud = crate::complete::banner_loud(store, &o.ask);
     let code = crate::machine::guest::boot(&crate::machine::guest::Request {
         verb,
+        loud,
         store_root: store.root(),
         rootfs: &p.rootfs,
         digest: &p.digest,

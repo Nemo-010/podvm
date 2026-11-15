@@ -140,7 +140,7 @@ fn banner_state() -> String {
             crate::complete::CONFIG_FILE,
             crate::complete::BANNER_KEY
         ),
-        _ => "printed on every run and exec".to_string(),
+        _ => "printed on a run and an exec with --verbose; -q forces it off".to_string(),
     }
 }
 

@@ -486,7 +486,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1821](podssh.md) | P1 | S | none | podssh | done | `remote ssh serve` runs any program named `node` on PATH |
 | [T-1822](supervise.md) | P2 | S | none | supervise | done | `cp` of a file onto a directory fails and blames the source, `cp -r` drops directory modes, and the containment refusals name the wrong operation |
 | [T-1823](machine.md) | P2 | M | none | machine | open | An early end of the guest init reads "the guest gave no exit marker" with the socket of QEMU |
-| [T-1824](cli.md) | P2 | S | none | cli | open | The machine notice ignores `-q`, and the banner is said to print "on every run" where runs are quiet by default |
+| [T-1824](cli.md) | P2 | S | none | cli | done | The machine notice ignores `-q`, and the banner is said to print "on every run" where runs are quiet by default |
 | [T-1825](cli.md) | P2 | M | none | cli | partial | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
 | [T-1826](complete.md) | P2 | S | none | complete | open | `--no-steps` leaves no line and no report row that says what the caller gave up |
 | [T-1827](cli.md) | P2 | S | none | cli | done | A repeated `--ulimit` that raises a hard limit, `--ulimit nofile=-1` and a hard value over podvm's own all fail with a bare EPERM |
@@ -560,7 +560,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-491 entries: 37 open, 11 partial, 4 blocked, 439 done.
+491 entries: 36 open, 11 partial, 4 blocked, 440 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -571,9 +571,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 6 | 2 | 193 | 202 |
-| P2 | 20 | 3 | 2 | 150 | 175 |
+| P2 | 19 | 3 | 2 | 151 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 37 | 11 | 4 | 439 | 491 |
+| **All** | 36 | 11 | 4 | 440 | 491 |
 
 ## Work order
 
