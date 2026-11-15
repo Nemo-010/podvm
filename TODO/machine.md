@@ -4628,7 +4628,7 @@ and `pgrep qemu` finds nothing.
 **Milestone:** none
 **Priority:** P2
 **Effort:** L
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4662,6 +4662,31 @@ guest.
 ## Prove
 
 On an x86_64 host with `qemu-system-aarch64`, `podvm run --rm --podvm-tier=machine --platform linux/arm64` of `mirror.gcr.io/library/alpine:3.20` with `uname -m` prints `aarch64` and exits 0, and no emulator stays after the run
+
+## Done
+
+**Done 2026-11-15.** `run --podvm-tier=machine --platform linux/arm64`
+boots an aarch64 guest (`crates/podvm/src/machine/guest/arch.rs`): the
+architecture of the image chooses `qemu-system-aarch64 -M virt` (from
+PATH), the console `ttyAMA0`, and TCG for a guest of another architecture
+than the host (`PODVM_MACHINE_ACCEL=kvm` is refused by name). `-M virt`
+has one PL011, so the stderr port is a `virtserialport` named
+`podvm.err`, and the init takes the named port before `ttyS1` (the 8250
+driver of the arm64 kernel makes a `ttyS1` node with no port, and a write
+there failed with EIO). The kernel of an arm64 guest has no pin in
+`pod-services` yet (COORD-128, issue 394): `PODVM_MACHINE_KERNEL_ARM64`
+names it, as the override path of x86_64 does, so the guest has no podvm
+binary (no `-t`, no 9p `-v`, no guest network module). `foreign_guest`
+refuses only an architecture with no guest (riscv64, for example).
+Experiment 456 on the cloud host (x86_64) with the static
+qemu-system-aarch64 9.2.0 and `boot/vmlinuz-virt` of
+alpine-netboot-3.22.6-aarch64, each checked against its sha256: PASS;
+`uname -m` printed `aarch64`, exit 0 in 10 s; `sh -c 'echo out; echo err
+>&2; exit 3'` gave `out`, `err` and 3 in 12 s; KVM was refused; no
+emulator stayed. The x86_64 guest keeps its stderr on `ttyS1` (checked:
+`e2` on stderr, exit 4). `cargo test -p podvm --bin podvm` exits 0 (450
+tests, with the two of `arch.rs`).
+
 
 # T-1893: The provision of a Windows guest leaves the emulator running when the typing fails
 

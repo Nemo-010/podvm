@@ -249,6 +249,8 @@ pub(super) fn machine_tier(
     let loud = crate::complete::banner_loud(store, &o.ask);
     let code = crate::machine::guest::boot(&crate::machine::guest::Request {
         verb,
+        arch: crate::machine::guest::arch::Arch::of(&platform.arch)
+            .unwrap_or(crate::machine::guest::arch::Arch::Amd64),
         loud,
         store_root: store.root(),
         rootfs: &p.rootfs,
@@ -281,14 +283,16 @@ pub(super) fn machine_tier(
 /// TODO/machine.md T-1889: the refusal of an image of another
 /// architecture than the guest kernel (`amd64`), or None.
 pub(super) fn foreign_guest(platform: &Platform) -> Option<String> {
-    (platform.arch != "amd64").then(|| {
-        format!(
-            "the guest of the machine tier is linux/amd64 (qemu-system-x86_64 and an x86_64 \
-             kernel), and --platform asks for linux/{}: a guest of another architecture is \
-             planned (TODO/machine.md T-1890)",
-            platform.arch
-        )
-    })
+    crate::machine::guest::arch::Arch::of(&platform.arch)
+        .is_none()
+        .then(|| {
+            format!(
+                "the guest of the machine tier is linux/amd64 or linux/arm64 \
+                 (TODO/machine.md T-1890), and --platform asks for linux/{}: no guest of that \
+                 architecture is planned",
+                platform.arch
+            )
+        })
 }
 
 pub(super) fn unhonoured_flags(o: &Opts) -> Vec<&'static str> {

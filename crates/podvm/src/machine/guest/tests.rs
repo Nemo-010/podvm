@@ -193,7 +193,11 @@ fn stderr_has_its_own_port() {
     assert!(a.contains("server=on,wait=on") && a.ends_with("-serial chardev:podvmerr"));
     assert_eq!(stderr::strip_cr(b"e1\r\ne2\r\n"), b"e1\ne2\n");
     let s = init::script("n", &["true".into()], &[], "/", false, &[], None, None);
-    assert!(s.contains("cat /podvm-err >/dev/ttyS1"));
+    assert!(
+        s.contains("E=/dev/ttyS1; for p in") && s.contains("podvm.err"),
+        "{s}"
+    );
+    assert!(s.contains("cat /podvm-err >\"$E\""), "{s}");
 }
 
 /// TODO/machine.md T-1728: the command's stdout and stderr are FIFOs, not
@@ -358,6 +362,7 @@ fn banner_quiet_hides_the_machine_notice() {
     let p = Path::new("/x");
     let mut r = Request {
         verb: "run",
+        arch: super::arch::Arch::Amd64,
         loud: false,
         store_root: p,
         rootfs: p,
@@ -407,6 +412,9 @@ fn an_early_end_gives_the_marker_and_a_reason() {
     let line = s.lines().find(|l| l.starts_with("mkdir -p")).unwrap();
     assert!(line.contains("echo PODVM-EXIT-n 125"), "{line}");
     assert!(line.contains("is not a directory in the image"), "{line}");
-    assert!(line.contains(">/dev/ttyS1"), "{line}");
+    assert!(
+        line.contains("E=/dev/ttyS1") && line.contains(">\"$E\""),
+        "{line}"
+    );
     assert!(!s.contains("|| exit 125"), "{s}");
 }

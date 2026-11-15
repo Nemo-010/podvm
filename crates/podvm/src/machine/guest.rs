@@ -15,6 +15,7 @@
 //! a kernel of `PODVM_MACHINE_KERNEL` (no 9p module) it is a copy. `-t`
 //! runs the command on a terminal of a virtio console ([`tty`]).
 
+pub(crate) mod arch; // TODO/machine.md T-1890
 pub(crate) mod archive;
 pub(crate) mod channel;
 pub(crate) mod cpio;
@@ -51,6 +52,8 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(600);
 /// One guest run.
 pub struct Request<'a> {
     pub verb: &'a str,
+    /// The architecture of the image (TODO/machine.md T-1890).
+    pub arch: arch::Arch,
     /// The banner switch (`--verbose`, not `-q`): the notice of the tier.
     pub loud: bool,
     pub store_root: &'a Path,
@@ -230,19 +233,20 @@ pub fn boot(r: &Request) -> i32 {
         EXIT_RUNTIME_ERROR
     };
     let want = std::env::var("PODVM_MACHINE_ACCEL").ok();
-    let accel = match accel(want.as_deref(), crate::machine::ssh::kvm_opens()) {
+    // TODO/machine.md T-1890: the architecture of the image.
+    let accel = match arch::accel(r.arch, want.as_deref(), crate::machine::ssh::kvm_opens()) {
         Ok(a) => a,
         Err(e) => return fail(e),
     };
     // TODO/machine.md T-1875: the store copy where the host has no QEMU.
-    let qemu = match crate::windows::tools::emulator_for(r.verb) {
+    let qemu = match arch::emulator(r.verb, r.arch) {
         Ok(q) => q,
-        Err(code) => return code,
+        Err(e) => return fail(e),
     };
     if std::fs::symlink_metadata(r.rootfs.join("bin/sh")).is_err() {
         return fail("the image has no /bin/sh, which runs /podvm-init in the guest".to_string());
     }
-    let assets = match kernel::ensure(r.store_root) {
+    let assets = match arch::kernel(r.store_root, r.arch) {
         Ok(k) => k,
         Err(e) => return fail(format!("the guest kernel: {e}")),
     };
@@ -414,6 +418,8 @@ pub fn boot(r: &Request) -> i32 {
         &initrd,
         &extra,
     );
+    arch::adapt(&mut argv, r.arch);
+    arch::err_port(&mut argv, r.arch);
     if r.net_none
         && let Some(nic) = argv
             .iter_mut()

@@ -552,7 +552,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1887](enter.md) | P1 | S | none | enter | done | `--podvm-confine` on the userland rung resolves an absolute link of the image against the host root |
 | [T-1888](enter.md) | P2 | S | none | enter | done | A required confine path whose link leaves the tree still grants a host inode |
 | [T-1889](machine.md) | P1 | S | none | machine | done | The machine tier boots an image of another architecture and ends with "no exit marker" |
-| [T-1890](machine.md) | P2 | L | none | machine | open | The machine tier has no guest of another architecture |
+| [T-1890](machine.md) | P2 | L | none | machine | done | The machine tier has no guest of another architecture |
 | [T-1891](extract.md) | P1 | S | none | extract | done | A tree with a directory of mode 0555 cannot be removed by a user who is not root |
 | [T-1892](enter.md) | P3 | S | none | enter | done | Two exec tables reach the payload: podvm's guest paths and the crate's host paths |
 | [T-1893](machine.md) | P1 | S | none | machine | done | The provision of a Windows guest leaves the emulator running when the typing fails |
@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-498 entries: 9 open, 16 partial, 2 blocked, 471 done.
+498 entries: 8 open, 16 partial, 2 blocked, 472 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -578,9 +578,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 201 | 206 |
-| P2 | 5 | 8 | 2 | 160 | 175 |
+| P2 | 4 | 8 | 2 | 161 | 175 |
 | P3 | 4 | 3 | 0 | 36 | 43 |
-| **All** | 9 | 16 | 2 | 471 | 498 |
+| **All** | 8 | 16 | 2 | 472 | 498 |
 
 ## Work order
 

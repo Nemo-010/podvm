@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: a linux/arm64 guest of the machine tier on an x86_64 host, 2026-11-15
+
+Record: T-1890 (PodUtils/podrunner#102).
+Deployed: none yet.
+
+- `podvm run --podvm-tier=machine --platform linux/arm64 IMAGE` boots an
+  aarch64 guest under TCG with `qemu-system-aarch64` of the host, and
+  gives stdout, stderr and the exit code as for x86_64. Until podcrates
+  pins the kernel, `PODVM_MACHINE_KERNEL_ARM64` names it.
+
 ### Added: `podvm windows view` shows the screen of a guest in a browser, 2026-11-15
 
 Record: T-1899.

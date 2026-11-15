@@ -139,9 +139,11 @@ pub fn script(
     // the node is there.
     s.push_str("mkfifo /podvm-out /podvm-err\n");
     s.push_str("cat /podvm-out & o=$!\n");
-    s.push_str(
-        "if [ -c /dev/ttyS1 ]; then cat /podvm-err >/dev/ttyS1 & else cat /podvm-err >&2 & fi\ne=$!\n",
-    );
+    // TODO/machine.md T-1890: an arm64 guest (`-M virt`, one PL011) has its
+    // second port as a virtio port.
+    s.push_str(&format!(
+        "{ERR_PORT}\nif [ -c \"$E\" ]; then cat /podvm-err >\"$E\" & else cat /podvm-err >&2 & fi\ne=$!\n"
+    ));
     s.push_str("\"$@\" >/podvm-out 2>/podvm-err\nrc=$?\nwait $o $e\n");
     s.push_str(&format!("echo; echo PODVM-EXIT-{nonce} $rc\n"));
     s.push_str("sync\nreboot -f 2>/dev/null\necho b > /proc/sysrq-trigger\n");
@@ -204,6 +206,14 @@ pub fn nonce() -> Result<String, String> {
     Ok(b.iter().map(|x| format!("{x:02x}")).collect())
 }
 
+/// The second port of the guest, the one of stderr, into `$E`: `ttyS1` on
+/// x86_64; on arm64 the virtio port named `podvm.err` (TODO/machine.md
+/// T-1890), found by its name in `/sys/class/virtio-ports`.
+/// The named port wins: the 8250 driver of an arm64 kernel makes the node
+/// `ttyS1` with no port behind it, and a write there fails with EIO.
+const ERR_PORT: &str = "E=/dev/ttyS1; for p in /sys/class/virtio-ports/*; do \
+     [ \"$(cat $p/name 2>/dev/null)\" = podvm.err ] && E=/dev/${p##*/}; done";
+
 /// TODO/machine.md T-1823: an end of the init before the command, as one
 /// shell group: the reason on the second port (stderr), then the exit
 /// marker with 125, so that the host names the reason and not a missing
@@ -213,7 +223,7 @@ fn early_exit(nonce: &str, why: &str) -> String {
         "podvm: machine tier: {why} (TODO/machine.md T-1823)"
     ));
     format!(
-        "{{ echo PODVM-READY-{nonce}; if [ -c /dev/ttyS1 ]; then echo {line} >/dev/ttyS1; \
+        "{{ echo PODVM-READY-{nonce}; {ERR_PORT}; if [ -c \"$E\" ]; then echo {line} >\"$E\"; \
          else echo {line} >&2; fi; echo; echo PODVM-EXIT-{nonce} 125; sync; reboot -f; \
          echo b > /proc/sysrq-trigger; }}"
     )

@@ -1,0 +1,8 @@
+date      2026-11-15T06:12:59Z
+podvm     podvm 0.2.0-beta.21
+host      x86_64
+emulator  QEMU emulator version 9.2.0
+uname -m  rc 0 in 10 s: aarch64
+streams   rc 3 in 12 s: stdout [out ] stderr [err ]
+kvm       rc 125: podvm run: machine tier: PODVM_MACHINE_ACCEL=kvm, and KVM runs a guest of the architecture of the host only; a linux/arm64 guest runs under TCG on this host (TODO/machine.md T-1890)
+PASS

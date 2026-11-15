@@ -176,6 +176,9 @@ of a virtio console with the size of the host terminal, stdin goes there
 live, and stdout and stderr share it, as under docker (T-1723); a change of
 the size during the run does not reach the guest. `create` and `exec`
 with the machine tier report the profile and exit 125.
+A `--platform linux/arm64` guest needs `qemu-system-aarch64` on PATH and a
+kernel named by `PODVM_MACHINE_KERNEL_ARM64`, runs under TCG on an x86_64
+host, and has no `-t`, 9p volume or podvm in the guest (T-1890).
 The machine tier needs `qemu-system-x86_64` on the host; `podvm doctor`
 checks it. Where the host has none, `run --podvm-tier=machine`, `podvm
 windows` and `run windows:NAME` fetch a pinned static QEMU 9.2.0 and its
