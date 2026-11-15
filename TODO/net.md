@@ -628,7 +628,7 @@ carries (COORD-108, issue 359, podcrates@T-609), and the test
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -663,3 +663,16 @@ difference is either closed or documented.
 ## Prove
 
 `podvm lab plan --icmp allow` exits 0, and `podvm lab scenarios` lists each scenario of the sand-net table or `docs/limits.md` names each absent one
+
+## Done
+
+**Done 2026-11-15.** `podvm lab plan --icmp allow` exits 0: podcrates
+`v0.45.0` takes `allow` as a word for `pass`, and podvm has `v0.50.0`.
+`docs/limits.md`, section "Network lab", names each of the 12 absent
+scenarios of sand-net and the reason (each needs a knob of issue 180 and
+a live uplink or server, podcrates@T-348), and each kept difference with
+its reason from the README of `pod-netlab` (`--loss` to 20 %, DNS64 as a
+flag of its own, the nine knob sets with no source of sand-net,
+podcrates@T-586). No new COORD issue is needed: the README of the crate
+answers the ask of the Approach.
+

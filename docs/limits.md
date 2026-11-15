@@ -266,6 +266,25 @@ The 2026-09-30 KVM runs on the Windows base failed at setup or command
 shutdown. An earlier KVM success does not establish current reliability.
 The operator removed the ReactOS clause from T-1112 on 2026-10-02.
 
+## Network lab
+
+`podvm lab scenarios` lists 27 scenarios of `pod-netlab` (podcrates
+`v0.50.0`); sand-net listed 39 (TODO/net.md T-1847). These 12 are absent,
+as each needs a knob of issue 180 (`--vpn`, `--killswitch`, `--vpn-down`,
+`--uplink warp`, `--cfrs-pod`) and a WireGuard server, a live uplink or
+`podnet pod`, so none is an offline lab (podcrates@T-348): `vpn-full`,
+`vpn-split`, `vpn-v6-only`, `vpn-udp-blocked`, `vpn-bypass-policy`,
+`vpn-leak`, `vpn-killswitch`, `warp-uplink`, `warp-v6-only`,
+`warp-no-udp`, `warp-443-only` and `corp-proxy-pod`. The differences that
+stay, each with its reason in the README of `pod-netlab`: `--loss` stops
+at 20 % (past it a TCP probe gives no verdict in its time limit);
+`--nat64` alone has no DNS64 (`--dns64` is a flag of its own, and
+`nat64-dns64` sets both); the knob sets of `symmetric-nat`, `pmtu-ok`,
+`pmtu-blackhole`, `cgnat`, `cgnat-dnat`, `nat64-dns64`, `nat64-web`,
+`locked-443` and `corp-proxy` come from the names of the scenarios, as no
+source of sand-net's values exists (podcrates@T-586). `--icmp allow` is a
+word for `pass`.
+
 ## Parked Windows lane
 
 The Windows lane on wsl-toolkit is parked since 2026-11-06

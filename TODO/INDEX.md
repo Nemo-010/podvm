@@ -509,7 +509,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1844](interpose.md) | P2 | S | none | interpose | done | `interpose::place` writes the object through one fixed temporary name in the root |
 | [T-1845](cli.md) | P3 | S | none | cli | done | `profile show` writes a part of the document to stdout and then fails |
 | [T-1846](machine.md) | P2 | M | none | machine | partial | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
-| [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
+| [T-1847](net.md) | P3 | M | none | net | done | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
 | [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
 | [T-1849](machine.md) | P3 | S | none | machine | done | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
 | [T-1850](cli.md) | P3 | M | none | cli | partial | `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull` |
@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-498 entries: 10 open, 16 partial, 2 blocked, 470 done.
+498 entries: 9 open, 16 partial, 2 blocked, 471 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -579,8 +579,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 201 | 206 |
 | P2 | 5 | 8 | 2 | 160 | 175 |
-| P3 | 5 | 3 | 0 | 35 | 43 |
-| **All** | 10 | 16 | 2 | 470 | 498 |
+| P3 | 4 | 3 | 0 | 36 | 43 |
+| **All** | 9 | 16 | 2 | 471 | 498 |
 
 ## Work order
 
