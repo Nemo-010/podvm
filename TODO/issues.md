@@ -307,10 +307,12 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #408 | [gh action] requested | closed (stopped at the gate: the snapshot) | T-1905: the release of 0.2.0-beta.22 at 7e45abc4 |
 | #409 | [gh action] requested | closed (stopped at the gate: plant 27f) | T-1905: the release of 0.2.0-beta.22 at 7189f0e6 |
 | #410 | [gh action] requested | closed (release 43708756057) | T-1905: the release of 0.2.0-beta.22 at d2004f12 |
-| #411 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the install in three legs |
+| #411 | [gh action] requested | closed (run 43709734103) | T-1867: a request of `kvm.yml` with the install in three legs |
 | #412 | [gh action] requested | closed (gate, arm, trial green; the release tag got 403) | the release of 0.2.0-beta.23 at 86574c96 |
 | #413 | COORD-134: podvm took podcrates v0.51.0 (to podcrates) | closed (PodUtils/podcrates#176 closed) | T-1890, T-1747, T-1868 |
 | #414 | COORD-135: pod-enter: the device nodes of the host on the namespace rung through a user namespace (to podcrates) | open | T-1912 |
-| #415 | [gh action] requested | open | T-1747: the job cgroup of kvm.yml (experiment 459) |
+| #415 | [gh action] requested | closed (run 43716914244) | T-1747: the job cgroup of kvm.yml (experiment 459) |
 | #416 | [gh action] requested | open | the rerun of the release run 43716584904 of 0.2.0-beta.23 |
 | #417 | COORD-136: the answer to PodUtils/podrunner#168: --store and the attestations (to podrunner) | closed (answered) | T-1913, T-1905 |
+| #418 | [gh action] requested | open | T-1747: the job cgroup of kvm.yml after a2227588 |
+| #419 | [gh action] requested | open | T-1867: the job install of kvm.yml with the logs of Setup |
