@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.22 (2026-11-15)
+
 ### Changed: `podvm probe` names why a stronger rung is not taken, 2026-11-15
 
 Record: T-1903 (PodUtils/podvm#397).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - `podvm probe` names on stderr the call that keeps the namespace rung and
   the chroot rung from the run, and says when the host opens a user
@@ -20,7 +22,7 @@ Deployed: none yet.
 ### Fixed: name resolution under `--podvm-confine`, 2026-11-15
 
 Record: T-1902 (PodUtils/podvm#396).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - Under `--podvm-confine`, a musl payload on the userland rung resolves
   names again. musl reads `/etc/resolv.conf` with a raw system call, and
@@ -30,7 +32,7 @@ Deployed: none yet.
 ### Added: `--hostname` for `run` and `create`, 2026-11-15
 
 Record: T-1908 (PodUtils/podvm#402, PodUtils/podrunner#115).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - `podvm run --hostname NAME` gives the payload NAME for `uname -n`,
   `hostname`, `/etc/hostname`, `$HOSTNAME` and `/etc/hosts`, on the
@@ -40,7 +42,7 @@ Deployed: none yet.
 ### Added: `podvm exec` into a running guest of the machine tier, 2026-11-15
 
 Record: T-1750 (PodUtils/podcrates#124, ask of podswarm).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - `podvm run -d --podvm-tier=machine IMAGE CMD` keeps the guest running,
   and `podvm exec NAME CMD` runs a command in it in about 0.2 s, with its
@@ -51,7 +53,7 @@ Deployed: none yet.
 ### Added: a linux/arm64 guest of the machine tier on an x86_64 host, 2026-11-15
 
 Record: T-1890 (PodUtils/podrunner#102).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - `podvm run --podvm-tier=machine --platform linux/arm64 IMAGE` boots an
   aarch64 guest under TCG with `qemu-system-aarch64` of the host, and
@@ -61,7 +63,7 @@ Deployed: none yet.
 ### Added: `podvm windows view` shows the screen of a guest in a browser, 2026-11-15
 
 Record: T-1899.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.22.
 
 - `podvm windows view NAME` prints a URL on 127.0.0.1; the page is the
   noVNC client (fetched once into the store, its digest pinned), connected
