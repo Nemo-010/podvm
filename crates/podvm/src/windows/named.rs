@@ -57,7 +57,7 @@ pub(super) fn run_named(
 
 /// The provisioned image of Validation OS: the VHDX out of the ISO
 /// (T-1863), then one provisioning boot where none was made.
-fn vos_image(verb: &str, e: &Entry) -> Result<PathBuf, i32> {
+pub(super) fn vos_image(verb: &str, e: &Entry) -> Result<PathBuf, i32> {
     let vhdx = super::pull::vos_disk(verb, e)?;
     let out = super::setup::provisioned_path(&vhdx);
     if out.is_file() {
@@ -96,7 +96,7 @@ fn provision(verb: &str, e: &Entry, vhdx: &Path, out: &Path) -> Result<(), i32> 
 }
 
 /// The golden image of a setup ISO, or the refusal that names `podvm pull`.
-fn golden_image(verb: &str, e: &Entry) -> Result<PathBuf, i32> {
+pub(super) fn golden_image(verb: &str, e: &Entry) -> Result<PathBuf, i32> {
     let golden = super::install::golden_path(e);
     if golden.is_file() {
         return Ok(golden);

@@ -1,0 +1,11 @@
+date      2026-11-15T05:05:03Z
+podvm     podvm 0.2.0-beta.20
+run -d    rc 0: m1
+ps        m1             windows:dos   (dos guest)   2026-11-15T05:05:04Z   Up       m1
+rm (runs) rc 125
+stop      rc 0 in 11 s; m1             windows:dos   (dos guest)   2026-11-15T05:05:04Z   Exited (stopped by podvm stop (QMP quit))   m1
+rm        rc 0
+fault     the keeper 12402 is killed; the emulator runs with no owner
+rm -f     rc 0
+lifetime  win-a93dcb     windows:dos   (dos guest)   2026-11-15T05:05:27Z   Exited (its lifetime of 5 s ended; the emulator 12501 was killed and reaped, so its process group is gone)   win-a93dcb
+PASS

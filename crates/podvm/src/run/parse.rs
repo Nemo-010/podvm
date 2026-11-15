@@ -471,7 +471,7 @@ use values::*;
 
 pub(crate) mod limits;
 mod opts; // TODO/machine.md T-1897
-pub(super) use opts::Opts;
+pub(crate) use opts::Opts;
 
 /// TODO/cli.md T-1829: no image: the usage line and the cause on stderr,
 /// not the whole help (11 kB), and docker's exit 1.

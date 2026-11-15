@@ -130,6 +130,10 @@ podvm run windows:dos ver
 podvm run windows:validationos ver
 podvm pull windows:2025
 podvm run windows:2025 ver
+podvm run -d --name dos1 windows:dos
+podvm ps
+podvm stop dos1
+podvm rm dos1
 podvm windows doctor
 podvm images
 ```

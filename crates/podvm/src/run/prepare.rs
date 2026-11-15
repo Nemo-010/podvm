@@ -57,9 +57,11 @@ pub(crate) fn prepare(
         );
         return Err(EXIT_FLAG_ERROR);
     }
-    // ⭐ TODO/milestones.md T-1112, T-1861. A Windows guest (the machine tier
-    // and the platform windows, or a name `windows:NAME`) takes the driver's
-    // door ahead of the OS gate, which refuses each other non-Linux platform.
+    // ⭐ TODO/machine.md T-1861, T-1870: a Windows guest takes its door
+    // ahead of the OS gate; `run -d windows:NAME` makes a machine.
+    if let Some(c) = crate::windows::machine::detach_if(verb, &o) {
+        return Err(c);
+    }
     if crate::windows::should_drive(
         verb,
         o.detach,
@@ -156,7 +158,6 @@ pub(crate) fn prepare(
         eprintln!("podvm {verb}: {e}");
         podvm_image::error::EXIT_RUNTIME_ERROR
     })?;
-
     if !podvm_extract::is_extracted(store, &record.manifest_digest) {
         extract_now(verb, store, &record, o.ask.verbose)?;
     }

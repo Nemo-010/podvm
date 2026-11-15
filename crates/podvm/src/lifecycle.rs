@@ -375,9 +375,19 @@ pub fn ps(args: &[String]) -> i32 {
             })
         })
         .collect();
+    // TODO/machine.md T-1870: the detached Windows and DOS machines, with
+    // no filter (a filter reads the fields of a container).
+    let machines = if filters.is_empty() {
+        crate::windows::machine::ps_rows(all)
+    } else {
+        Vec::new()
+    };
     if quiet {
         for c in &list {
             println!("{}", if no_trunc { c.id.clone() } else { c.short_id() });
+        }
+        for m in &machines {
+            println!("{}", m[0]);
         }
         return 0;
     }
@@ -411,6 +421,7 @@ pub fn ps(args: &[String]) -> i32 {
             c.name.clone(),
         ]);
     }
+    rows.extend(machines);
     print!("{}", crate::images::table(&rows));
     0
 }

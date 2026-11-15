@@ -38,6 +38,7 @@ mod doctor;
 mod doctor_more; // TODO/machine.md T-1871
 mod dos;
 mod install; // TODO/machine.md T-1867
+pub(crate) mod machine; // TODO/machine.md T-1870
 mod named; // TODO/machine.md T-1861, T-1867
 mod origin;
 mod plan;
@@ -259,6 +260,11 @@ fn doctor_unused(a: &args::Args) -> Option<&'static str> {
 
 /// `podvm windows`.
 pub fn windows(args: &[String]) -> i32 {
+    // TODO/machine.md T-1870: the keeper of a detached machine, which `run
+    // -d` starts; no person types it.
+    if args.first().map(String::as_str) == Some("keeper") {
+        return machine::keeper(&args[1..]);
+    }
     let a = match args::parse(args) {
         Ok(Some(a)) => a,
         Ok(None) => return 0,

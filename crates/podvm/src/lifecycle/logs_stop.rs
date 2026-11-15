@@ -132,6 +132,10 @@ pub fn logs(args: &[String]) -> i32 {
         Ok(o) => o,
         Err(c) => return c,
     };
+    // TODO/machine.md T-1870: the serial line of a detached machine.
+    if crate::windows::machine::find(&o.want).is_some() {
+        return crate::windows::machine::logs(&o.want);
+    }
     let s = match store() {
         Ok(s) => s,
         Err(c) => return c,
@@ -236,6 +240,14 @@ pub fn stop(args: &[String]) -> i32 {
     };
     let mut code = 0;
     for want in &names {
+        // TODO/machine.md T-1870: a detached Windows or DOS machine.
+        if crate::windows::machine::find(want).is_some() {
+            let c = crate::windows::machine::stop(want);
+            if c != 0 {
+                code = c;
+            }
+            continue;
+        }
         // TODO/image.md T-1767: the caller prints the name, so `restart`,
         // which also starts, prints it once.
         match stop_one(&s, "stop", want, grace) {

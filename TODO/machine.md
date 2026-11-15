@@ -3858,7 +3858,7 @@ T-1865, T-1867 and T-1870.
 **Milestone:** none
 **Priority:** P2
 **Effort:** L
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3899,6 +3899,41 @@ then `pgrep qemu-system` is empty and the run directory is gone. A plant that
 leaves the emulator makes the check fail (`podvm-plant`).
 `cargo test -p podvm windows_lifecycle` exits 0, with new tests of the
 record and the pidfile start-time check.
+
+## Correction
+
+2026-11-15. The Prove names `cargo test -p podvm windows_lifecycle`; the
+record and the start-time check are in `podvm-windows`, so the tests run
+with `cargo test -p podvm-windows windows_lifecycle`. The Prove also names
+a plant of `podvm-plant`; that tool plants into the tree and runs the
+static checks of the gate, which see no emulator. Experiment 454 plants the
+fault at run time instead: it kills the keeper with SIGKILL, so the
+emulator has no owner, and checks that `rm -f` still ends it.
+
+## Done
+
+**Partial 2026-11-15.** `podvm run -d [--name N] [--timeout S]
+windows:NAME` makes a machine in `windows/machines/NAME/`
+(`crates/podvm/src/windows/machine.rs`; the record is
+`podvm_windows::machines`): an overlay on the base (DOS), the provisioned
+image (Validation OS) or the golden image (a setup ISO), a mailbox (with
+`KEEP` for the agent of a Windows image), and `machine.json`. A keeper
+(`podvm windows keeper NAME ACCEL`, its own process group) starts the
+emulator, writes both pids with their start times (field 22 of
+`/proc/PID/stat`; a zombie counts as gone), ends the emulator at the end
+of its lifetime (24 h by default), and writes how it ended. `ps [-a]` lists
+the machines beside the containers; `stop` sends ACPI power-off, then QMP
+`quit` after 10 s, then SIGKILL to the process group; `rm` refuses a
+running machine, `rm -f` stops it first; `logs` prints the serial line.
+The QMP socket is in the runtime directory under a short name, as a socket
+path holds at most 107 bytes. Before this, `run -d windows:dos` went to
+Docker Hub and failed with HTTP 401. `cargo test -p podvm-windows
+windows_lifecycle` exits 0 with five tests (the record, the start time,
+the names and the status, the list, the socket). Experiment 454 under TCG
+on the cloud host: PASS, each of eight clauses (run -d, ps, the refused
+rm, stop in 11 s, rm, the killed keeper, the lifetime of 5 s, nothing
+stays). The clauses that remain: `start` of a stopped machine, `logs -f`,
+and a Windows machine (`windows:2025`) under KVM.
 
 
 # T-1871: `podvm windows doctor` is thin

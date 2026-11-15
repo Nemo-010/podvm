@@ -157,6 +157,10 @@ pub fn rm(args: &[String]) -> i32 {
     };
     let mut code = 0;
     for want in &names {
+        if let Some(c) = crate::windows::machine::rm_if(want, force) {
+            code = if c == 0 { code } else { c }; // T-1870
+            continue;
+        }
         code = match remove_tree(&s, want, force) {
             Ok(None) => code,
             Ok(Some(c)) => c,
@@ -166,10 +170,8 @@ pub fn rm(args: &[String]) -> i32 {
     code
 }
 
-/// `rm` of one container. ⛔ TODO/supervise.md T-1708: `rm -f` of a running
-/// container stops it with SIGKILL through its launcher. Where processes of
-/// the tree stayed after the kill, the record stays and the verb exits 125
-/// naming the count; a later `rm` removes it and names the count again.
+/// `rm` of one container. ⛔ TODO/supervise.md T-1708: `rm -f` kills a running one
+/// through its launcher; processes that stayed keep the record (exit 125, the count).
 pub(super) fn remove_tree(
     s: &podvm_image::Store,
     want: &str,
