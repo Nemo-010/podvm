@@ -11,6 +11,11 @@ name: kvm
 
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: "One job to run (guest, windows, cgroup or install); empty runs each"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -21,6 +26,7 @@ concurrency:
 
 jobs:
   guest:
+    if: inputs.only == '' || inputs.only == 'guest'
     name: Linux guest under KVM (experiment 390)
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -148,7 +154,7 @@ jobs:
   windows:
     name: ValidationOS guest under KVM (experiment 392, the Linux half)
     needs: guest
-    if: always()
+    if: always() && (inputs.only == '' || inputs.only == 'windows')
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -253,6 +259,51 @@ jobs:
             ${{ runner.temp }}/shots/
           if-no-files-found: warn
 
+  # TODO/cli.md T-1747: --memory, --cpus and --pids-limit by a delegated
+  # cgroup2 subtree (experiment 459). The job makes the layout of a systemd
+  # user session: the shell in a writable leaf, under a writable parent
+  # that gives memory, cpu and pids to its children. No guest.
+  cgroup:
+    if: inputs.only == '' || inputs.only == 'cgroup'
+    name: cgroup2 limits of a native run (experiment 459)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: bootstrap
+        run: ./scripts/common/bootstrap-env.sh rust cc zig tools
+
+      - name: build podvm
+        run: |
+          cargo build --release -p podvm-gate --bin podvm-interpose-build
+          mkdir -p target/release
+          cp target/x86_64-unknown-linux-musl/release/podvm-interpose-build target/release/
+          ./target/release/podvm-interpose-build
+          cargo build --release -p podvm
+
+      - name: experiment 459 in a delegated subtree
+        run: |
+          set -eu
+          D=/sys/fs/cgroup/podvm-ci
+          sudo mkdir -p "$D/shell"
+          echo "+memory +cpu +pids" | sudo tee /sys/fs/cgroup/cgroup.subtree_control >/dev/null
+          echo "+memory +cpu +pids" | sudo tee "$D/cgroup.subtree_control" >/dev/null
+          sudo chown -R "$(id -u):$(id -g)" "$D"
+          echo $$ | sudo tee "$D/shell/cgroup.procs" >/dev/null
+          cat /proc/self/cgroup
+          rc=0
+          sh experiments/459-cgroup-limits.sh || rc=$?
+          exit "$rc"
+
+      - name: keep the transcript
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cgroup-limits
+          path: experiments/results/cgroup-limits.txt
+          if-no-files-found: warn
+
   # TODO/machine.md T-1867: `podvm pull windows:2025` installs the setup
   # ISO into a golden image under KVM (experiment 452). The clause of a
   # host with TCG only runs first, while the job has no /dev/kvm. One
@@ -265,7 +316,7 @@ jobs:
   install:
     name: Windows install under KVM (experiment 452, ${{ matrix.leg }})
     needs: windows
-    if: always()
+    if: always() && (inputs.only == '' || inputs.only == 'install')
     runs-on: ubuntu-latest
     timeout-minutes: 240
     strategy:

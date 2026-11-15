@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `--memory`, `--cpus` and `--pids-limit` in a delegated cgroup2 subtree, 2026-11-15
+
+Record: T-1747 (PodUtils/podrunner#110).
+Deployed: none yet.
+
+- Where the host delegates a cgroup v2 subtree to the user (a systemd user
+  session, for example), `podvm run` and `podvm run -d` hold `--memory`,
+  `--cpus` and `--pids-limit` in a leaf of the run, and name an OOM kill.
+  Elsewhere each flag still refuses with exit 125 and the reason.
+
 ## 0.2.0-beta.23 (2026-11-15)
 
 ### Changed: podvm takes podcrates `v0.51.0`, 2026-11-15

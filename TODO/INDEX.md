@@ -421,7 +421,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1744](interpose.md) | P2 | S | none | interpose | done | The open flags of the interposer have their x86_64 values on aarch64 |
 | [T-1745](cli.md) | P3 | L | none | cli | done | A Rust call for `run` with a typed request that returns the record of `--report` |
 | [T-1746](probe.md) | P2 | M | none | probe | done | `run` reads the cached probe, and probes again only when its key changes |
-| [T-1747](cli.md) | P3 | M | none | cli | open | `--memory`, `--cpus` and `--pids-limit` by cgroup2 where a subtree is delegated |
+| [T-1747](cli.md) | P3 | M | none | cli | partial | `--memory`, `--cpus` and `--pids-limit` by cgroup2 where a subtree is delegated |
 | [T-1748](supervise.md) | P2 | S | none | supervise | done | A foreground payload dies when its `podvm run` is killed with SIGKILL |
 | [T-1749](enter.md) | P3 | L | none | enter | partial | A read-only image as the lower layer of the root, with a tmpfs upper layer, and no copy |
 | [T-1750](machine.md) | P3 | L | none | machine | done | `exec` into a running guest of the machine tier |
@@ -577,7 +577,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-508 entries: 9 open, 11 partial, 2 blocked, 486 done.
+508 entries: 8 open, 12 partial, 2 blocked, 486 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -589,8 +589,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 205 | 209 |
 | P2 | 4 | 5 | 2 | 168 | 179 |
-| P3 | 5 | 2 | 0 | 39 | 46 |
-| **All** | 9 | 11 | 2 | 486 | 508 |
+| P3 | 4 | 3 | 0 | 39 | 46 |
+| **All** | 8 | 12 | 2 | 486 | 508 |
 
 ## Work order
 

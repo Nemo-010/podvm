@@ -160,7 +160,8 @@ pub(super) fn ro_env(
         userland,
         env,
     )?;
-    hostname_env(verb, o, rootfs, userland, env)
+    hostname_env(verb, o, rootfs, userland, env)?;
+    super::cgroup::apply(verb) // TODO/cli.md T-1747
 }
 
 /// TODO/enter.md T-1908 (PodUtils/podvm#402): `--hostname NAME`. The

@@ -334,13 +334,17 @@ toolkit does not install it. `base ensure --repair` reports the condition
 and does not repair it (T-1610). No task owns it, because only a change
 to the host clears it.
 
-⚠ **`podvm` does not depend on cgroup delegation and does not enforce it either way.**
-`--memory` (`-m`), `--cpus` and `--pids-limit` hold on the incus tier only,
-as the keys `limits.memory`, `limits.cpu` (or `limits.cpu.allowance`) and
-`limits.processes` of the instance; each other tier refuses each of them
-with exit 125 and a named reason, instead of an accepted flag that does
-nothing ([machine](../TODO/machine.md) T-1897). `--ulimit nproc=` and
-`--ulimit as=` hold on each tier, also for `run -d`. A cgroup v2 subtree
-that a host delegates is T-1747. The hazard is the engine underneath podvm, which
+⚠ **`podvm` does not need cgroup delegation; it uses a delegated subtree where the host gives one.**
+`--memory` (`-m`), `--cpus` and `--pids-limit` hold on the incus tier, as
+the keys `limits.memory`, `limits.cpu` (or `limits.cpu.allowance`) and
+`limits.processes` of the instance ([machine](../TODO/machine.md) T-1897),
+and for `run` and `run -d` of the native tiers where the host delegates a
+cgroup v2 subtree to the caller: podvm makes one leaf `podvm-ID` for the
+run, writes `memory.max`, `cpu.max` and `pids.max`, and names an OOM kill
+([cli](../TODO/cli.md) T-1747). Each other case (no delegation, a cgroup
+v1 host, `create`, the machine tier) refuses each of them with exit 125
+and a named reason, instead of an accepted flag that does nothing.
+`--ulimit nproc=` and `--ulimit as=` hold on each tier, also for
+`run -d`. The hazard is the engine underneath podvm, which
 accepts those limits silently; [RULES](../TODO/RULES.md) section 8 says an
 option accepted by an engine does not prove enforcement.

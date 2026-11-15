@@ -1,8 +1,8 @@
 //! PodUtils/podrunner#110, TODO/machine.md T-1897: `--memory`, `--cpus`
 //! and `--pids-limit`. The incus tier holds them as the keys of the
-//! instance (`limits.memory`, `limits.cpu`, `limits.processes`); each other
-//! tier refuses them by name, as a limit with no cgroup is not held
-//! (the cgroup route is TODO/cli.md T-1747).
+//! instance (`limits.memory`, `limits.cpu`, `limits.processes`); a native
+//! run holds them in a delegated cgroup2 subtree (`run::cgroup`,
+//! TODO/cli.md T-1747); each other tier refuses them by name.
 
 use podvm_image::error::EXIT_FLAG_ERROR;
 

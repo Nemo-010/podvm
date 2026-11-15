@@ -253,6 +253,7 @@ fn wrapped(o: &Opts, argv: Vec<String>) -> Vec<String> {
 }
 
 mod acquire;
+mod cgroup; // TODO/cli.md T-1747
 pub(crate) use acquire::*;
 
 mod wall;

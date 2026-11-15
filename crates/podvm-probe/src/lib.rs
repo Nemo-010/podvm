@@ -26,8 +26,8 @@ pub mod report;
 pub mod select;
 
 pub use pod_hostprobe::{
-    binfmt, child, identity, interp, machine, mounts, probes, supervise, sys, verdict, writable,
-    Findings, Settings,
+    binfmt, cgroup, child, identity, interp, machine, mounts, probes, supervise, sys, verdict,
+    writable, Findings, Settings,
 };
 
 /// The private argument a probe child is re-executed with.

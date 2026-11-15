@@ -4037,7 +4037,7 @@ image gives a record with `refused`) and
 **Milestone:** none
 **Priority:** P3
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -4092,6 +4092,9 @@ report of a delegated subtree belongs to the probe of `pod-hostprobe`
 controllers, or the reason for none. podvm keeps the child cgroup of each
 run and the read of `memory.events`.
 
+## Done
+
+**Partial (2026-11-15).** podvm takes podcrates `v0.51.0`, whose `pod-hostprobe::cgroup` reports a delegated cgroup2 subtree (COORD-125). `crates/podvm/src/run/cgroup.rs`: early in `prepare` (before any pull), a native `run` or `run -d` with `--memory`, `--cpus` or `--pids-limit` finds the delegated directory, needs only the controllers of the flags given (systemd delegates memory and pids by default), and makes them reach a child of the directory or, where the directory holds a process (the scope of a shell), of its parent; else it refuses by name with exit 125 (no delegation, a cgroup v1 host, `create`, the guest tiers). Right before the payload or its launcher is forked, podvm makes the leaf `podvm-ID`, writes `memory.max`, `cpu.max` and `pids.max`, and moves itself in (`0` to `cgroup.procs`), so the run inherits it; at its exit (`atexit`, only in that process) it names an OOM kill from `memory.events`, moves back, and removes the leaf; each later use removes the empty `podvm-*` leaves of ended detached runs. On the cloud host (cgroup v1 hybrid) `run --memory 64m` refuses: "none: /sys/fs/cgroup is not cgroup2". The test `the_limits_become_the_files_of_the_leaf` holds the values. Remaining: the Prove on a host with a delegated subtree: experiment 459 in the job `cgroup` of `kvm.yml` (dispatch with `only=cgroup`), which makes the layout of a systemd user session on a runner.
 
 # T-1752: A versioned JSON Schema for the record of `run --report`, published in each release
 
