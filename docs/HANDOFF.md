@@ -1,12 +1,12 @@
 # Handoff
 
-The state on 2026-11-15, after the release `0.2.0-beta.19` (issue 381:
-gate, arm, nightly trial and release green on `f5a757c6`). beta.19
-carries podcrates `v0.49.0`, `container prune`, the detached driver of
-the native-static rung (PodUtils/podrunner#100, case 2), `save` of an
-index digest (PodUtils/podrunner#104), `--flag=value` for each flag, the
-end of a detached report and piped input to `-t` on the machine tier.
-`main` adds the texts of T-1829 to T-1857 (CHANGELOG "Unreleased").
+The state on 2026-11-15, later. The release `0.2.0-beta.20` waits for
+request 387 (gate and arm green on `35d5b686`; the nightly trial and the
+release follow). beta.20 carries the limits of the incus tier (T-1897,
+PodUtils/podrunner#110), `podvm pull windows:2025` (the install of a
+setup ISO, T-1867, not yet run under KVM: request 388) and `run
+windows:validationos`. `main` adds the store copy of QEMU (T-1875,
+CHANGELOG "Unreleased").
 A fresh
 session with no memory reads this file first, then `AGENTS.md`,
 `TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
@@ -45,7 +45,13 @@ PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
 * COORD-112 (#366): the answer to PodUtils/podrunner#102 (T-1889, T-1890).
 * COORD-117 (#374): podvm took podcrates `v0.48.0`.
 * COORD-120 (#380): podvm took `v0.49.0`; a Validation OS run under KVM
-  times out on one cold boot of two (T-1864).
+  timed out on one cold boot of two (T-1864); it did not recur.
+* COORD-121 (#382), COORD-122 (#384): the limits for podrunner, and the
+  hook of the run ladder for T-1786.
+* COORD-123 (#386): a FAT writer with directories for `-v` of a Windows
+  guest (T-1872).
+* COORD-124 (#389): `pod-services` lists `api.ghcr.pkgforge.dev` (T-1875);
+  until then the host is in `WAITING` of `crates/podvm/src/hosts_tests.rs`.
 
 Each other COORD issue is closed; `TODO/issues.md` gives the state of
 each one.
@@ -54,11 +60,12 @@ each one.
 
 1. Start the session (`AGENTS.md`, section 8).
 2. The next release follows a batch of fixes, in the form of issue 381.
-3. The Windows proof is on KVM: `kvm.yml` (run 43660534832)
-   (experiments 392 and 450) for T-1864 and T-1894: setup passes under
-   KVM, and one run of two times out (issue 380). Under TCG on the
-   cloud host the console of Validation OS does not draw in 15 minutes
-   (T-1864).
+3. The Windows proof is on KVM. Request 388 runs `kvm.yml` with the new
+   job `install` (experiment 452: `pull windows:2025` and `run
+   windows:2025 ver`). Read its transcript, record the first install
+   time in T-1867, then add `windows:11` to the job. A failure there is
+   most likely the "Press any key" of the ISO, the disk order of Setup
+   (the answer file wipes disk 0) or the image index of the Server ISO.
 4. A tool of the record (`podvm-gate`, `podvm-count`) finds the repository
    from its own path: in a worktree, build it in the worktree's own
    `target/`, or it reads and writes the main checkout. Commit no
