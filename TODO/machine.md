@@ -4381,7 +4381,7 @@ On an x86_64 host with `qemu-system-aarch64`, `podvm run --rm --podvm-tier=machi
 **Milestone:** none
 **Priority:** P1
 **Effort:** S
-**Status:** blocked
+**Status:** done
 
 ## Problem
 
@@ -4408,11 +4408,15 @@ The stop belongs to the code that spawned the emulator.
 
 `podvm windows setup` with a QMP socket that refuses the keys exits 125, and `pgrep qemu-system` finds no emulator after it
 
-## Blocker
+## Done
 
-**Blocked 2026-11-14.** Blocker: `pod_guest::provision` returns on a
-failure of the typing with the emulator running. Clears when: a
-podcrates tag carries the ask of COORD-115 (issue 370).
+**Done 2026-11-15.** podcrates `v0.48.0` carries podcrates@T-622 (from
+`v0.46.0`): a guard owns the emulator after the spawn and stops it on
+each error. podvm takes the tag. On the cloud host, `podvm windows
+setup` of Validation OS 26100.9818 under TCG with `--podvm-timeout 20`,
+with a second QMP client on the socket of the run, exits 125 with `qmp
+read: Resource temporarily unavailable (os error 11)`, and `pgrep -a
+qemu-system` finds no emulator after it.
 
 # T-1894: The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails
 
@@ -4421,7 +4425,7 @@ podcrates tag carries the ask of COORD-115 (issue 370).
 **Milestone:** none
 **Priority:** P1
 **Effort:** S
-**Status:** blocked
+**Status:** partial
 
 ## Problem
 
@@ -4455,8 +4459,12 @@ cannot see the guest.
 
 `kvm.yml` passes experiment 392 and experiment 450 under KVM
 
-## Blocker
+## Done
 
-**Blocked 2026-11-15.** Blocker: `pod_guest::ready` has no sign that
-holds for the console of Validation OS. Clears when: a podcrates tag
-carries the ask of COORD-116 (issue 372).
+**Partial, 2026-11-15.** podcrates `v0.48.0` carries podcrates@T-633:
+`Sign::After` and a screen sign that ignores a cursor box. podvm takes
+the tag, and `podvm_windows::ready_for(accel, wait)` passes
+`Sign::After(wait)` under TCG and a screen settle of 15 s before it
+under KVM, with a bound of `wait` and 60 s more. `cargo test -p
+podvm-windows provision_readiness` exits 0. The clause that remains:
+`kvm.yml` passes experiments 392 and 450 under KVM.

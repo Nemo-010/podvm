@@ -87,25 +87,36 @@ pub fn provision(
         base,
         plan,
         out,
-        &ready_for(plan.accel),
+        &ready_for(plan.accel, wait),
         wait,
     )
 }
 
-/// TODO/machine.md T-1864, T-1873: when the console of a provision boot
-/// takes the keys. podcrates `v0.45.0` waits for a screen that changed and
-/// then stayed the same; its 5 s took a still phase of a boot under TCG
-/// for the shell, and the keys went nowhere (experiment 450, build 9818:
-/// the keys at about 30 s, no SETUP.TXT). The settle is 60 s under TCG and
-/// 15 s under KVM, and the bound 1200 s and 600 s (estimates).
-pub fn ready_for(accel: Accel) -> pod_guest::ready::Ready {
-    let (settle, deadline) = match accel {
-        Accel::Kvm => (Duration::from_secs(15), Duration::from_secs(600)),
-        _ => (Duration::from_secs(60), Duration::from_secs(1200)),
+/// TODO/machine.md T-1864, T-1873, T-1894: when the console of a
+/// provision boot takes the keys. The screen sign of podcrates `v0.45.0`
+/// never held under KVM (a cursor blinks) and held on a black phase of a
+/// boot under TCG. podcrates `v0.48.0` (podcrates@T-633) gives
+/// `Sign::After`: the keys go after `wait`, the fixed wait of the
+/// provision before `v0.45.0`. Under KVM, a screen that settles for 15 s
+/// (a change in a cursor box is no change) can end the wait sooner. The
+/// bound is `wait` and 60 s more.
+pub fn ready_for(accel: Accel, wait: Duration) -> pod_guest::ready::Ready {
+    use pod_guest::ready::{Ready, Sign, EVERY};
+    let after = Sign::After(wait);
+    let signs = match accel {
+        Accel::Kvm => vec![
+            Sign::Screen {
+                settle: Duration::from_secs(15),
+            },
+            after,
+        ],
+        _ => vec![after],
     };
-    let mut r = pod_guest::ready::Ready::screen(deadline);
-    r.signs = vec![pod_guest::ready::Sign::Screen { settle }];
-    r
+    Ready {
+        signs,
+        deadline: wait + Duration::from_secs(60),
+        every: EVERY,
+    }
 }
 
 /// Remove a per-run directory unless `PODVM_WINDOWS_KEEP` is set.

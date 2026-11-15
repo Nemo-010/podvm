@@ -65,3 +65,18 @@ fn podvm_windows_keep_keeps_the_run() {
     cleanup(&plan);
     assert!(!dir.exists(), "without it the run goes");
 }
+
+/// TODO/machine.md T-1894: the keys of a provision go after the fixed
+/// wait under TCG; under KVM a settled screen can end the wait sooner.
+#[test]
+fn provision_readiness_has_a_fixed_wait_on_each_accelerator() {
+    use pod_guest::ready::Sign;
+    let wait = Duration::from_secs(240);
+    let tcg = ready_for(Accel::Tcg, wait);
+    assert_eq!(tcg.signs, vec![Sign::After(wait)]);
+    assert!(tcg.deadline > wait);
+    let kvm = ready_for(Accel::Kvm, wait);
+    assert_eq!(kvm.signs.last(), Some(&Sign::After(wait)));
+    assert!(matches!(kvm.signs[0], Sign::Screen { .. }));
+    assert!(kvm.deadline > wait);
+}
