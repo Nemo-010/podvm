@@ -229,6 +229,11 @@ use tree_checks::*;
 mod retired;
 use retired::*;
 
+// TODO/gate.md T-1855: the ratchet of the source patterns.
+#[path = "gate/patterns.rs"]
+mod patterns;
+use patterns::check_source_patterns;
+
 #[path = "gate/record_checks.rs"]
 mod record_checks;
 use record_checks::*;

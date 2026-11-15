@@ -1,0 +1,46 @@
+# TODO/gate.md T-1855: the reviewed count of each source pattern in each file
+# (crates/podvm-gate/src/gate/patterns.rs). Lower a count when a fix removes a hit;
+# never raise one: a new hit takes the approved form of docs/conventions/forbidden-patterns.md.
+byte_slice	crates/podvm-interpose/src/exec/parse.rs	1
+byte_slice	crates/podvm-interpose/src/map/links.rs	1
+byte_slice	crates/podvm-interpose/src/memo.rs	2
+byte_slice	crates/podvm-release/src/package_ssh/elf.rs	1
+byte_slice	crates/podvm-supervise/src/table/memo.rs	2
+byte_slice	crates/podvm/src/complete/capability.rs	1
+byte_slice	crates/podvm/src/machine/guest.rs	1
+byte_slice	crates/podvm/src/machine/guest/kernel.rs	2
+discard_write	crates/podvm-extract/src/lib.rs	1
+discard_write	crates/podvm-image/src/pull/run.rs	9
+discard_write	crates/podvm-image/src/registry.rs	1
+discard_write	crates/podvm/src/complete/step_output.rs	1
+discard_write	crates/podvm/src/complete/strict.rs	8
+discard_write	crates/podvm/src/diagnose.rs	4
+discard_write	crates/podvm/src/exec/command.rs	6
+discard_write	crates/podvm/src/exec/enter.rs	7
+discard_write	crates/podvm/src/images/login_extract.rs	1
+discard_write	crates/podvm/src/incus/run.rs	2
+discard_write	crates/podvm/src/incus/verbs.rs	6
+discard_write	crates/podvm/src/lifecycle/native.rs	2
+discard_write	crates/podvm/src/lifecycle/userland.rs	5
+discard_write	crates/podvm/src/machine/guest/channel.rs	1
+discard_write	crates/podvm/src/machine/guest/drive.rs	4
+discard_write	crates/podvm/src/machine/guest/stderr.rs	1
+discard_write	crates/podvm/src/machine/guest/tty.rs	2
+discard_write	crates/podvm/src/man.rs	1
+discard_write	crates/podvm/src/names/stdout.rs	1
+discard_write	crates/podvm/src/run/acquire.rs	5
+discard_write	crates/podvm/src/run/exit_note.rs	1
+discard_write	crates/podvm/src/run/foreground.rs	11
+discard_write	crates/podvm/src/run/foreground/record.rs	1
+discard_write	crates/podvm/src/run/foreign.rs	4
+discard_write	crates/podvm/src/run/prepare.rs	1
+discard_write	crates/podvm/src/run/pty.rs	1
+discard_write	crates/podvm/src/runsc.rs	1
+discard_write	crates/podvm/src/sandprobe.rs	1
+discard_write	crates/podvm/src/windows/dos.rs	1
+discard_write	crates/podvm/src/windows/machine/viewer.rs	4
+discard_write	crates/podvm/src/windows/run.rs	2
+tmp_pid	crates/podvm-release/src/package_ssh.rs	1
+tmp_pid	crates/podvm-release/src/size.rs	1
+tmp_pid	crates/podvm-release/src/verify.rs	1
+tmp_pid	crates/podvm/src/doctor/scope.rs	1

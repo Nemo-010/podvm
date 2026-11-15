@@ -5346,7 +5346,7 @@ now refuses each by name with 125 before the incusd is reached. By hand:
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5379,6 +5379,24 @@ A scan of the source is cheap and finds the class, not only the case.
 `./target/x86_64-unknown-linux-musl/release/podvm-gate` exits 0, and exits 1 when `podvm-plant` plants one of the five patterns in a file of `crates/podvm/src`
 
 ## Done
+
+**Done 2026-11-15, later.** `podvm-gate` counts four of the patterns in
+the product sources as a ratchet (`crates/podvm-gate/src/gate/patterns.rs`,
+check `source_patterns`): `|| exit 125` in a guest script, a temporary
+name of `temp_dir()` and a pid or `.so.tmp`, `&name[..N]` with a fixed N,
+and `let _ =` of a write. `crates/podvm-gate/patterns.baseline` holds the
+reviewed count in each file (96 discarded writes, nearly all to stderr; 11
+byte slices, each of bytes that are not text; 4 temporary names of the
+release tools and the doctor; no `|| exit 125`), and a file with a new hit
+fails with its path, its lines and the approved form of
+`docs/conventions/forbidden-patterns.md`, which now lists the four. The
+print macros stay out of the scan, by the decision of the Partial note
+below: `tests/stdout_full.rs` holds the full stdout of the verbs (T-1816).
+`podvm-gate` exits 0 on the tree; a line `cd /w || exit 125` planted at
+the head of `crates/podvm/src/machine/guest/init.rs` made it report "1
+hit(s) of the pattern exit125 ... allows 0" and exit 1, and `podvm-plant`
+has the case 27f for it. `cargo test -p podvm-gate source_patterns`
+exits 0.
 
 **Partial, 2026-11-15.** A count of the five patterns in the product
 sources (no test file, no `podvm-gate`): 13 byte slices, 9 discarded

@@ -241,6 +241,7 @@ pub(super) fn run_gate(root: &Path) -> i32 {
     check_rust_file_lines(&mut gate, root, &files);
     check_retired_sentences(&mut gate, root, &files);
     check_future_promises(&mut gate, root, &files, &rows);
+    check_source_patterns(&mut gate, root, &files);
     check_experiment_numbers(&mut gate, root, &files);
     check_ci_components(&mut gate, root, &files);
     check_exit_codes(&mut gate, root, &files);

@@ -378,5 +378,19 @@ pub(super) fn continue_run(
         },
     );
 
+    // TODO/gate.md T-1855: a new hit of a counted source pattern.
+    plant.case_plant(
+        "27f a guest script that ends with || exit 125",
+        "the pattern exit125",
+        scratch,
+        &|| {
+            let file = "crates/podvm/src/machine/guest/init.rs";
+            let text = read_file(root, file);
+            let planted = concat!("const PLANTED: &str = \"cd /w ", "|| exit 125\";");
+            write_file(root, file, &format!("{planted}\n{text}"));
+            true
+        },
+    );
+
     finish_run(plant, root, scratch)
 }
