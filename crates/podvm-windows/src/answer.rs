@@ -135,6 +135,10 @@ pub fn xml(a: &Answer) -> String {
         r#"netsh advfirewall firewall set rule group="Remote Desktop" new enable=Yes"#,
         "powercfg /change standby-timeout-ac 0",
         "powercfg /change monitor-timeout-ac 0",
+        // TODO/machine.md T-1867: no Fast Startup, so the shutdown of the
+        // first logon is a full one and each run of the golden image is a
+        // cold boot that fires the `onstart` task of the agent (COORD-120).
+        "powercfg /h off",
         &format!("cmd /c echo {READY}> COM1"),
         // TODO/machine.md T-1867: the installer of the mailbox agent
         // (`pod_guest::agent::SETUP_CMD`) registers the agent and shuts

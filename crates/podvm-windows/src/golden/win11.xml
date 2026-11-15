@@ -72,9 +72,10 @@
         <SynchronousCommand wcm:action="add"><Order>3</Order><CommandLine>netsh advfirewall firewall set rule group=&quot;Remote Desktop&quot; new enable=Yes</CommandLine></SynchronousCommand>
         <SynchronousCommand wcm:action="add"><Order>4</Order><CommandLine>powercfg /change standby-timeout-ac 0</CommandLine></SynchronousCommand>
         <SynchronousCommand wcm:action="add"><Order>5</Order><CommandLine>powercfg /change monitor-timeout-ac 0</CommandLine></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>6</Order><CommandLine>cmd /c echo PODVM-WINDOWS-READY&gt; COM1</CommandLine></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>7</Order><CommandLine>cmd /c &quot;for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\WQMARK.TXT %d:\WA.CMD&quot;</CommandLine></SynchronousCommand>
-        <SynchronousCommand wcm:action="add"><Order>8</Order><CommandLine>shutdown /s /t 5</CommandLine></SynchronousCommand>
+        <SynchronousCommand wcm:action="add"><Order>6</Order><CommandLine>powercfg /h off</CommandLine></SynchronousCommand>
+        <SynchronousCommand wcm:action="add"><Order>7</Order><CommandLine>cmd /c echo PODVM-WINDOWS-READY&gt; COM1</CommandLine></SynchronousCommand>
+        <SynchronousCommand wcm:action="add"><Order>8</Order><CommandLine>cmd /c &quot;for %d in (D E F G H I J K L M N O P Q R S T U V W X Y Z) do @if exist %d:\WQMARK.TXT %d:\WA.CMD&quot;</CommandLine></SynchronousCommand>
+        <SynchronousCommand wcm:action="add"><Order>9</Order><CommandLine>shutdown /s /t 5</CommandLine></SynchronousCommand>
       </FirstLogonCommands>
     </component>
   </settings>
