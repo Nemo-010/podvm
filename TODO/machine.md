@@ -4140,7 +4140,7 @@ wrong state falls back to a cold boot. The proof runs on `kvm.yml` (T-1682), bec
 **Milestone:** none
 **Priority:** P2
 **Effort:** L
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4172,6 +4172,30 @@ The host QEMU wins when it is present and passes the doctor checks.
 A clean container with no QEMU: `podvm run windows:dos` works under TCG, and
 `podvm windows doctor` names the store copy. A new experiment (the next free
 number) runs it and prints the sha256 of each fetched tool.
+
+## Done
+
+**Done 2026-11-15.** The source is pinned: the static musl builds of
+QEMU 9.2.0 that pkgforge publishes (`ppkg.qemu`: `qemu-system-x86_64`,
+`qemu-img`, no `PT_INTERP`), and the prebuilt `pc-bios/` files of the
+QEMU tree at `v9.2.0` (SeaBIOS, the VGA BIOS, the iPXE EFI ROMs, edk2 code
+and variables in bzip2). `crates/podvm-windows/src/tools.rs` pins the size
+and sha256 of each of the 19 files; `crates/podvm/src/windows/tools.rs`
+fetches them into `tools/qemu-9.2.0` of the store (a relocatable layout,
+`bin/` and `share/qemu/`, so the emulator finds its firmware with no
+`-L`), checks each one, decompresses edk2 (the crate `bzip2`, its pure
+Rust backend), and renames the directory in one step. `windows/plan.rs`
+takes the host QEMU first, then the store copy, and fetches it where the
+host has no emulator, no `qemu-img` or no UEFI pair; with the store copy,
+/dev/kvm decides the accelerator, as the probe looks on PATH only.
+`THIRD_PARTY.md` names both sources. Experiment 453 hides the QEMU of
+the host in a mount namespace: `podvm run windows:dos ver` fetched 54 MiB,
+booted FreeDOS under TCG and printed the FreeCOM version, exit 0 in 73 s;
+the store held 19 files (`qemu-system-x86_64` sha256 `b0597850...b0a1`,
+`qemu-img` `7311a259...97c6`); `podvm windows doctor` named the store
+copy; outside the namespace it named the QEMU of the host; no emulator
+stayed. The Linux guest of the machine tier does not take the store copy
+yet (`docs/limits.md`).
 
 
 # T-1876: Nothing checks the catalog pins for drift

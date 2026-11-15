@@ -53,6 +53,7 @@ Separate crate: `crates/podvm-interpose`.
 
 | Dependency | Locked versions |
 | --- | --- |
+| `bzip2` | `0.6.1` |
 | `flate2` | `1.1.11` |
 | `pod-broker` | `0.50.0` |
 | `pod-confine` | `0.50.0` |

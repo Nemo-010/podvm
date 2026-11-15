@@ -43,6 +43,17 @@ Private path substitutions in a published result must be stated explicitly.
 Do not describe retained source as the active userland loader.
 The native loader is in `src/userland.rs` of `pod-enter` (PodUtils/podcrates).
 
+## Fetched at run time
+
+podvm does not carry these files. A host with no QEMU fetches them on the
+first Windows or DOS run, and podvm checks each size and sha256
+(`crates/podvm-windows/src/tools.rs`, TODO/machine.md T-1875).
+
+| Material | Source | Licence |
+| --- | --- | --- |
+| `qemu-system-x86_64`, `qemu-img` 9.2.0, static musl builds | pkgforge `bincache`, package `ppkg.qemu` | GPL-2.0 (QEMU) |
+| `pc-bios/` firmware and option ROMs of QEMU `v9.2.0` (SeaBIOS, the VGA BIOS, iPXE EFI ROMs, edk2) | github.com/qemu/qemu at tag `v9.2.0` | SeaBIOS and the VGA BIOS LGPL-3.0; iPXE GPL-2.0; edk2 BSD-2-Clause-Patent; qboot GPL-2.0 |
+
 ## Build dependencies
 
 Cargo resolves registry source through `Cargo.lock`.

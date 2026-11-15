@@ -61,6 +61,9 @@ pub(crate) fn dos_run(
         Ok(b) => b,
         Err(c) => return c,
     };
+    if let Err(c) = plan::provide(verb, false) {
+        return c;
+    }
     let accel = match super::plan::accelerator() {
         Ok(x) => x,
         Err(c) => return c,

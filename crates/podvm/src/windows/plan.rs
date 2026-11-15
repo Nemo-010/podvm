@@ -19,24 +19,61 @@ use podvm_windows::{Accel, Plan};
 
 use super::args::Args;
 
-/// The emulator, from `PODVM_QEMU` or the PATH name.
+/// The program `name`: from the variable `var`, else the PATH name where
+/// the host has it, else the store copy where it is there (T-1875), else
+/// the name (refused by name later).
+fn program(var: &str, name: &str) -> PathBuf {
+    if let Some(p) = std::env::var_os(var) {
+        return PathBuf::from(p);
+    }
+    if crate::tier::which_qemu(name).is_some() {
+        return PathBuf::from(name);
+    }
+    let store = podvm_windows::tools::bin(&podvm_windows::tools::root(), name);
+    if store.is_file() {
+        store
+    } else {
+        PathBuf::from(name)
+    }
+}
+
+/// The emulator, from `PODVM_QEMU`, the PATH or the store copy.
 pub(crate) fn emulator() -> PathBuf {
-    std::env::var_os("PODVM_QEMU")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("qemu-system-x86_64"))
+    program("PODVM_QEMU", "qemu-system-x86_64")
 }
 
 pub(crate) fn qemu_img() -> PathBuf {
-    std::env::var_os("PODVM_QEMU_IMG")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("qemu-img"))
+    program("PODVM_QEMU_IMG", "qemu-img")
 }
 
-/// Where the emulator finds its firmware and option ROMs.
+/// Where the emulator finds its firmware and option ROMs: the data of the
+/// store copy where the emulator is the store copy.
 pub(crate) fn share() -> PathBuf {
-    std::env::var_os("PODVM_QEMU_SHARE")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("/usr/share/qemu"))
+    if let Some(p) = std::env::var_os("PODVM_QEMU_SHARE") {
+        return PathBuf::from(p);
+    }
+    let root = podvm_windows::tools::root();
+    if emulator().starts_with(&root) {
+        podvm_windows::tools::share(&root)
+    } else {
+        PathBuf::from("/usr/share/qemu")
+    }
+}
+
+/// TODO/machine.md T-1875: fetch the store copy of QEMU where the host
+/// has no emulator, no `qemu-img`, or (for `uefi`) no UEFI pair. The host
+/// copy wins where it is present.
+pub(crate) fn provide(verb: &str, uefi: bool) -> Result<(), i32> {
+    let missing = !found(&emulator().to_string_lossy())
+        || !found(&qemu_img().to_string_lossy())
+        || (uefi && {
+            let (c, v) = firmware();
+            !c.is_file() || !v.is_file()
+        });
+    if missing {
+        super::tools::ensure(verb)?;
+    }
+    Ok(())
 }
 
 /// UEFI code and variable store. `(code, vars)`, from the environment or the
@@ -81,11 +118,19 @@ pub(crate) fn firmware() -> (PathBuf, PathBuf) {
             "/usr/share/qemu/edk2-i386-vars.fd",
         ),
     ];
+    // TODO/machine.md T-1875: the pair of the store copy follows the pairs
+    // of the host, and the last pair of the host is the one a refusal names.
+    let store = podvm_windows::tools::firmware(&podvm_windows::tools::root());
     let pair = PAIRS
         .iter()
         .find(|(c, v)| Path::new(c).is_file() && Path::new(v).is_file())
-        .or(PAIRS.last())
         .map(|(c, v)| (PathBuf::from(c), PathBuf::from(v)))
+        .or_else(|| (store.0.is_file() && store.1.is_file()).then_some(store))
+        .or_else(|| {
+            PAIRS
+                .last()
+                .map(|(c, v)| (PathBuf::from(c), PathBuf::from(v)))
+        })
         .unwrap_or_default();
     let code = std::env::var_os("PODVM_OVMF_CODE")
         .map(PathBuf::from)
@@ -119,16 +164,22 @@ pub(crate) fn accelerator() -> Result<Accel, i32> {
     // TODO/machine.md T-1871: `PODVM_MACHINE_ACCEL` as for the Linux guest
     // (call C16): `kvm` with no usable /dev/kvm refuses by name, and never
     // falls back to TCG without a word.
+    let kvm_opens = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open("/dev/kvm")
+        .is_ok();
     if let Ok(want) = std::env::var("PODVM_MACHINE_ACCEL") {
-        let kvm_opens = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open("/dev/kvm")
-            .is_ok();
         return asked(&want, kvm_opens).map_err(|why| {
             eprintln!("podvm windows: {why}");
             podvm_image::error::EXIT_RUNTIME_ERROR
         });
+    }
+    // TODO/machine.md T-1875: the probe looks for the emulator on PATH. The
+    // store copy is not there, and it has both accelerators, so /dev/kvm
+    // decides.
+    if emulator().starts_with(podvm_windows::tools::root()) {
+        return Ok(if kvm_opens { Accel::Kvm } else { Accel::Tcg });
     }
     let findings = podvm_probe::run();
     let assessed = podvm_probe::machine::assess(&findings);
@@ -175,6 +226,7 @@ pub(crate) fn found(name: &str) -> bool {
 /// directory and the per-run copy of the UEFI variable store are created
 /// here, so every caller gets both.
 pub(crate) fn build(a: &Args) -> Result<Plan, i32> {
+    provide("windows", true)?;
     let accel = accelerator()?;
     let (code, vars) = firmware();
     for bin in [emulator(), qemu_img()] {

@@ -12,7 +12,7 @@ They describe their recorded revision, not the current build.
 
 ### Added: `podvm pull windows:2025` installs Windows from its setup ISO, 2026-11-15
 
-Record: T-1867 (partial), T-1861 (partial), T-1871 (partial).
+Record: T-1867 (partial), T-1861 (partial), T-1871 (partial), T-1875.
 Deployed: version 0.2.0-beta.20.
 
 - `podvm pull windows:2025` (also `11` and `10`) fetches the setup ISO,
@@ -26,6 +26,9 @@ Deployed: version 0.2.0-beta.20.
   Validation OS provisions it one time.
 - `podvm windows` takes `PODVM_MACHINE_ACCEL` and names the group `kvm`
   when `/dev/kvm` does not open.
+- A host with no QEMU needs no install for Windows and DOS guests: podvm
+  fetches a pinned static QEMU 9.2.0 and its firmware (54 MiB) into its
+  store on the first run (T-1875). A QEMU of the host still wins.
 
 ### Fixed: `exec` takes the cached probe, and one exec table reaches a confined payload, 2026-11-15
 

@@ -118,23 +118,30 @@ Read the named refusal when a required mechanism is absent.
 ## Windows and DOS guests
 
 The machine tier runs a disposable disk guest through an emulator
-(`qemu-system-x86_64`; KVM where `/dev/kvm` opens, else TCG). `podvm pull
-windows:NAME` fetches a medium of the catalog from its vendor URL and
-checks its pinned sha256; podvm stores no Windows image of its own.
+(`qemu-system-x86_64`; KVM where `/dev/kvm` opens, else TCG). A host with
+no QEMU needs no install: podvm fetches a pinned static QEMU 9.2.0 and its
+firmware (54 MiB) into its store on the first run, and a QEMU of the host
+wins where it is present. `podvm pull windows:NAME` fetches a medium of
+the catalog from its vendor URL and checks its pinned sha256; podvm stores
+no Windows image of its own.
 
 ```sh
-podvm windows doctor
 podvm run windows:dos ver
-podvm pull windows:validationos
-podvm windows setup --image ~/.local/share/podvm/windows/catalog/26100.9818_VALIDATIONOS.vhdx
-podvm windows run --image ~/.local/share/podvm/windows/catalog/26100.9818_VALIDATIONOS.podvm.qcow2 -- ver
+podvm run windows:validationos ver
+podvm pull windows:2025
+podvm run windows:2025 ver
+podvm windows doctor
 podvm images
 ```
 
-`podvm images` lists the Windows names that the store holds, and `podvm
-rmi windows:NAME` removes their files. A full Windows install from a
-setup ISO (`windows:11` and the Server names) is planned (TODO/machine.md
-T-1867). The operator accepts the terms of each medium.
+`podvm pull windows:2025` (also `11` and `10`) installs Windows from its
+setup ISO under KVM into a golden image, with one line for each phase; the
+password of the user `podvm` is in a file of mode 0600 beside the image.
+The first install under KVM is not measured yet (TODO/machine.md T-1867).
+The first run of `windows:validationos` provisions it one time. `podvm
+images` lists the Windows names that the store holds, and `podvm rmi
+windows:NAME` removes their files. The operator accepts the terms of each
+medium.
 A run uses a fresh overlay and a mailbox for command output and exit status.
 The [guest task](TODO/milestones.md) records proof per accelerator and guest flavor.
 
