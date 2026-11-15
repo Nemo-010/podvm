@@ -317,3 +317,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #418 | [gh action] requested | open | T-1747: the job cgroup of kvm.yml after a2227588 |
 | #419 | [gh action] requested | open | T-1867: the job install of kvm.yml with the logs of Setup |
 | #420 | [gh action] requested | open | the release of 0.2.0-beta.23 at 437bd12d |
+| #421 | COORD-137: the answer to PodUtils/podrunner#177: descriptor 17 (to podrunner) | open | T-1914 |
+| #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | open | T-1914 |
+| #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
+| #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |

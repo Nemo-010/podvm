@@ -676,3 +676,37 @@ flag of its own, the nine knob sets with no source of sand-net,
 podcrates@T-586). No new COORD issue is needed: the README of the crate
 answers the ask of the Approach.
 
+
+# T-1916: Lab profiles: each hostile host class as a profile that a project brings up
+
+**Source:** PodUtils/podrunner#180 (COORD-061 of podrunner), COORD-140 (PodUtils/podvm#424)
+**Category:** net
+**Milestone:** none
+**Priority:** P2
+**Effort:** L
+**Status:** blocked
+
+## Problem
+
+The first user runs of podrunner found about 30 defects that CI did not find, because each runner of GitHub allows each operation; the defects come from host classes (no user namespace, a refused bind, inherited descriptors, a small `/tmp`, and others).
+
+## Premise
+
+The init of a guest of the machine tier is podvm, so a guest can set the sysctls, the mounts, a seccomp filter and the user of a profile. podvm's QA fixtures (`experiments/deny-chroot.c`, the fixture `deny-unshare`) are seccomp filters before an exec, and experiments 356 and 443 run on them.
+
+## Approach
+
+`run --podvm-tier=machine --podvm-lab PROFILE` for the full form; `podvm lab run PROFILE -- CMD` for the parts that a host with no root holds; the profiles as data from `pod-lab` of podcrates, else a table of podvm with the same names; `check` from the rows of `pod-hostprobe`.
+
+## Decision
+
+A profile that a host cannot hold is refused by name, part by part; a lab never allows what it names as refused.
+
+## Prove
+
+`podvm lab run userns-off -- unshare -Ur true` exits 1 with EPERM, `podvm lab check userns-off` exits 0, and a guest with `--podvm-lab userns-off` gives `0` for `cat /proc/sys/user/max_user_namespaces`.
+
+## Blocker
+
+**Blocked (2026-11-15).** The shape of the profiles: COORD-140 (PodUtils/podvm#424) asks whether podcrates takes `pod-lab` (PodUtils/podrunner#180, ask 1). Clears when podcrates answers, or when podrunner asks for the podvm form first.
+
