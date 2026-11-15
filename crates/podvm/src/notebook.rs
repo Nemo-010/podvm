@@ -198,10 +198,14 @@ fn run(a: &Args) -> Result<i32, String> {
 }
 
 /// A new, empty directory for the `/workspace` of one kernel.
+///
+/// TODO/gate.md T-1855: the name has a random part, and one `create_dir`
+/// makes it: a path that another user planted in the temporary directory
+/// (a link) is refused, never followed or removed.
 fn workspace(cycle: u32, k: usize) -> Result<PathBuf, String> {
-    let d = std::env::temp_dir().join(format!("podvm-notebook-{}-{cycle}-{k}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&d);
-    std::fs::create_dir_all(&d).map_err(|e| format!("{}: {e}", d.display()))?;
+    let nonce = crate::machine::guest::init::nonce().map_err(|e| e.to_string())?;
+    let d = std::env::temp_dir().join(format!("podvm-notebook-{cycle}-{k}-{nonce}"));
+    std::fs::create_dir(&d).map_err(|e| format!("{}: {e}", d.display()))?;
     Ok(d)
 }
 

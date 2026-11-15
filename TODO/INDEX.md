@@ -517,7 +517,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1852](gate.md) | P1 | M | none | gate | partial | The QA pass of experiment 443 has no row for the 22 defects that the external gate found |
 | [T-1853](gate.md) | P2 | S | none | gate | done | No check proves that each parity row with a value takes `--flag=value`, and that each verb takes `-h` and `--help` |
 | [T-1854](gate.md) | P1 | S | none | gate | done | No test proves that each option of `run` is honoured or refused on each tier |
-| [T-1855](gate.md) | P2 | S | none | gate | open | The gate does not scan for the source patterns behind five defects |
+| [T-1855](gate.md) | P2 | S | none | gate | partial | The gate does not scan for the source patterns behind five defects |
 | [T-1856](gate.md) | P2 | S | none | gate | partial | No test reads the `--report` of each path of a run against its schema and for a secret |
 | [T-1857](gate.md) | P3 | S | none | gate | done | A help text or a document can say "until T-NNNN" after that entry is done |
 | [T-1858](supervise.md) | P3 | S | none | supervise | done | The `ps` table pads by characters, so a wide character puts its row out of line |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 17 open, 13 partial, 2 blocked, 461 done.
+493 entries: 16 open, 14 partial, 2 blocked, 461 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 10 | 4 | 2 | 159 | 175 |
+| P2 | 9 | 5 | 2 | 159 | 175 |
 | P3 | 6 | 2 | 0 | 32 | 40 |
-| **All** | 17 | 13 | 2 | 461 | 493 |
+| **All** | 16 | 14 | 2 | 461 | 493 |
 
 ## Work order
 

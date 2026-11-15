@@ -5326,7 +5326,7 @@ now refuses each by name with 125 before the incusd is reached. By hand:
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -5357,6 +5357,20 @@ A scan of the source is cheap and finds the class, not only the case.
 ## Prove
 
 `./target/x86_64-unknown-linux-musl/release/podvm-gate` exits 0, and exits 1 when `podvm-plant` plants one of the five patterns in a file of `crates/podvm/src`
+
+## Done
+
+**Partial, 2026-11-15.** A count of the five patterns in the product
+sources (no test file, no `podvm-gate`): 13 byte slices, 9 discarded
+writes, 29 temporary names with a pid (most in inline test modules), 2
+`|| exit 125`, and 232 print macros. Two classes are fixed: the sealed
+fragment's `cd W || exit 125` now makes the directory and returns 1, so
+the init gives the exit marker and the reason (T-1823); and the
+workspace of `notebook` is one `create_dir` of a name with a random part,
+not a predictable path that it removed first. The clause that remains:
+the scan in `podvm-gate` with a plant. A scan of print macros needs a
+decision first: 232 sites print through `println!`, and the full-stdout
+case is held by T-1816 (`tests/stdout_full.rs`), not by the sites.
 
 
 # T-1856: No test reads the `--report` of each path of a run against its schema and for a secret

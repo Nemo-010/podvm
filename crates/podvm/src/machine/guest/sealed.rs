@@ -161,7 +161,13 @@ pub fn fragment(run: &Run) -> String {
         }
     }
     if let Some(w) = &run.workdir {
-        s.push_str(&format!("cd {} || exit 125\n", q(w)));
+        // TODO/gate.md T-1855: the fragment is sourced, so `exit` would end
+        // the init with no exit marker; `return 1` lets the init give the
+        // marker and the reason (T-1823). A missing directory is made.
+        s.push_str(&format!(
+            "mkdir -p {0} 2>/dev/null; cd {0} || return 1\n",
+            q(w)
+        ));
     }
     if !run.argv.is_empty() {
         let words: Vec<String> = run.argv.iter().map(|a| q(a)).collect();
@@ -219,7 +225,7 @@ mod tests {
         assert_eq!(run.argv, ["sh", "-c", "echo $X"]);
         let f = fragment(&run);
         assert!(f.contains("export X='can'\\''ary'\n"), "{f}");
-        assert!(f.contains("cd '/w' || exit 125\n"));
+        assert!(f.contains("cd '/w' || return 1\n"), "{f}");
         assert!(f.ends_with("set -- 'sh' '-c' 'echo $X'\n"));
         let root = std::env::temp_dir().join(format!("podvm-sealed-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
