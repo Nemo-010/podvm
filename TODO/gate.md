@@ -5143,7 +5143,7 @@ scripts/common/check-one-home.sh` (67 documents) exit 0, and
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5183,6 +5183,14 @@ release, so that it cannot come back unseen.
 `sh experiments/443-qa-surface.sh` exits 0 with the 22 new rows present and matched, and `PODVM_443_ONLY=machine sh experiments/443-qa-surface.sh` exits 0 on a host with `/dev/kvm`
 
 ## Done
+
+**Done 2026-11-15.** The machine section of experiment 443 passes under
+KVM: `kvm.yml` run 43676508681 (request 388, on `35d5b686`), step
+"experiment 443, the machine section, under KVM", gives `pass 24, fail 0,
+info 0` with QEMU 10.2.1 and `/dev/kvm` present; a boot of the guest
+takes about 760 ms (`machine.exit3`), and no emulator stayed. With the
+full pass on the cloud host (pass 638, fail 0, info 13), each clause of
+the Prove holds.
 
 **Partial 2026-11-14.** Experiment 443 has a row for each check of
 the report that podvm can serve now: `life.missing-name`,

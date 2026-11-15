@@ -7,7 +7,7 @@ start.
 
 ## State
 
-494 entries: 11 open, 15 partial, 2 blocked, 466 done.
+494 entries: 11 open, 14 partial, 2 blocked, 467 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -62,8 +62,8 @@ status with `podvm-count` in the same commit as the work.
    `v0.43.0`); podvm wires them next.
 2. The external QA report of `v0.2.0-beta.14` (2026-11-14): the open
    entries that it gave. Each P0 entry is done. Take the P1
-   entries, each with the guard of its class (the entries of
-   `TODO/gate.md` from T-1852), then P2 and P3.
+   entries, each with the guard of its class (the guard entries of
+   `TODO/gate.md`), then P2 and P3.
 2a. The Windows guest plan of the review of 2026-11-14: T-1861 to T-1878
    (`podvm run windows:NAME`). The owner accepts the vendor terms
    (`docs/decisions.md`, "Windows media"). Take the P1 entries first:
