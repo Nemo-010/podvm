@@ -328,7 +328,8 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #432 | [gh action] requested | closed (run 43740331439) | the kvm.yml run for T-1747, T-1907 and T-1867 from 283e3492 |
 | #433 | [gh action] requested | closed (run 43754060132) | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
 | #434 | [gh action] requested | open | the kvm.yml rerun for T-1747 (swap) and T-1867 (the sampler) from 7a6c1edb |
-| #435 | COORD-145: pod-todo: a kind `reference` for an issue that holds no work (to podcrates) | open | T-1919 |
+| #435 | COORD-145: pod-todo: a kind `reference` for an issue that holds no work (to podcrates) | closed | T-1919 |
+| #436 | [gh action] requested | open | the first dry run of issue-sync.yml (T-1919) |
 
 ## Messages whose title does not start with COORD-NNN
 
