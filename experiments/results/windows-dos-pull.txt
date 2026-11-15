@@ -1,0 +1,8 @@
+date      2026-11-15T03:35:31Z
+podvm     podvm 0.2.0-beta.19
+accel     tcg
+pull      rc 0 in 1 s: /workspace/podvm/.work/exp451/home/.local/share/podvm/windows/freedos-base.img
+images    windows      dos   857dcd2ebf9d   -         48.9 MiB
+run ver   rc 0 in 59 s: FreeCom version 0.86 - WATCOMC - XMS_Swap [Dec 30 2024 22:10:51]
+rmi       rc 0
+PASS

@@ -3280,6 +3280,15 @@ with T-1867 and the store path; `windows:95` lists the names; no
 emulator stays. The clauses that remain: `pull`, `images` and `rmi` for
 the Windows names, the disk of `validationos` (T-1863) and of a setup
 ISO (T-1867), and the experiment of the Prove.
+
+**Partial 2026-11-15.** Experiment 451 (`451-windows-dos-pull.sh`) passes
+on the cloud host under TCG: `pull windows:dos` exits 0 and prints the
+base, `images` lists `windows dos` (48.9 MiB), `run windows:dos ver`
+prints `FreeCom version 0.86` with exit 0 in 59 s, `rmi windows:dos`
+exits 0 and `images` lists it no more, and no emulator stays
+(`experiments/results/windows-dos-pull.txt`). `pull`, `images` and `rmi`
+of the Windows names and the disk of `validationos` (T-1863) are done.
+The clause that remains: the disk of a setup ISO (T-1867).
 parses, each name resolves, an unknown name is refused with the list, and the
 refusal text names the store path. `cargo test -p podvm --bin podvm
 windows_name` exits 0, with new tests that `run windows:dos` and `run
