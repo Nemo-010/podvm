@@ -296,6 +296,6 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #397 | podvm probe takes userland on a host with user namespaces and KVM | open | T-1903 |
 | #398 | podvm load names an image docker.io/library/runner | open | T-1904 |
 | #399 | The release has no attestation in GitHub's store, and its .sigstore cannot be read by gh attestation verify | open | T-1905 |
-| #400 | The store keeps machine/run-PID-* after each guest of the machine tier | open | T-1906 |
+| #400 | The store keeps machine/run-PID-* after each guest of the machine tier | closed (T-1906) | T-1906 |
 | #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | open | T-1907 |
 | #402 | A podvm payload has the host name of the host | open | T-1908 |

@@ -5067,7 +5067,7 @@ boot time.
 **Milestone:** none
 **Priority:** P1
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5088,3 +5088,14 @@ The directory of a running podvm stays.
 ## Prove
 
 `cargo test -p podvm --bin podvm machine_run_dirs` exits 0, with a test that a run directory of a dead PID goes at the next boot and the one of a live PID stays.
+
+## Done
+
+**Done 2026-11-15.** Each boot of the machine tier first removes each
+`run-PID-*` directory of `STORE/machine/` whose PID is not a running
+process (`machine/guest/drive.rs`, `sweep`); a live PID keeps its
+directory. The removal at the end of a boot stays: the sweep serves a
+podvm that was killed before it. `cargo test -p podvm --bin podvm
+machine_run_dirs` exits 0: a directory of a dead PID goes, the one of the
+test's own PID and a file that is no run directory stay.
+

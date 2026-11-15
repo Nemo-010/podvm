@@ -289,6 +289,6 @@
 397 issue open
 398 issue open
 399 issue open
-400 issue open
+400 issue closed
 401 issue open
 402 issue open

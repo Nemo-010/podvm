@@ -323,6 +323,7 @@ pub fn boot(r: &Request) -> i32 {
         Ok(n) => n,
         Err(e) => return fail(e),
     };
+    drive::sweep(&r.store_root.join("machine")); // TODO/machine.md T-1906
     let dir =
         r.store_root
             .join("machine")

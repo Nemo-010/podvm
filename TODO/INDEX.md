@@ -568,13 +568,13 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1903](probe.md) | P2 | S | none | probe | open | `podvm probe` takes userland on a host with user namespaces and KVM, and does not say why |
 | [T-1904](image.md) | P3 | S | none | image | open | `podvm load` names a local image `docker.io/library/runner` |
 | [T-1905](packaging.md) | P2 | S | none | packaging | open | The release has no attestation in GitHub's store |
-| [T-1906](machine.md) | P1 | S | none | machine | open | The store keeps `machine/run-PID-*` after each guest of the machine tier |
+| [T-1906](machine.md) | P1 | S | none | machine | done | The store keeps `machine/run-PID-*` after each guest of the machine tier |
 | [T-1907](probe.md) | P3 | S | none | probe | open | Under QEMU user mode, `probe` says `kvm: yes` for the device of the host |
 | [T-1908](enter.md) | P1 | M | none | enter | open | A payload has the host name of the host: no `--hostname` |
 
 ## Counts
 
-505 entries: 14 open, 11 partial, 2 blocked, 478 done.
+505 entries: 13 open, 11 partial, 2 blocked, 479 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -584,10 +584,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 3 | 4 | 0 | 202 | 209 |
+| P1 | 2 | 4 | 0 | 203 | 209 |
 | P2 | 6 | 5 | 2 | 164 | 177 |
 | P3 | 5 | 2 | 0 | 38 | 45 |
-| **All** | 14 | 11 | 2 | 478 | 505 |
+| **All** | 13 | 11 | 2 | 479 | 505 |
 
 ## Work order
 
