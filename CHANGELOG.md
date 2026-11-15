@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: "a passed descriptor goes onto 17", 2026-11-15
+
+Record: T-1914 (PodUtils/podrunner#177).
+Deployed: none yet.
+
+- `podvm run` and `run -d` from a parent that holds descriptors 3 to 15
+  open (podrunner under `podnet pod`) no longer exit 125: podvm holds the
+  number of the memo (17) from its start.
+
 ## 0.2.0-beta.23 (2026-11-15)
 
 ### Added: `--store DIR`, 2026-11-15

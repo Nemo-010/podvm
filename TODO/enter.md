@@ -4185,3 +4185,37 @@ As uid 1000 on a host where `unshare -Urm true` exits 0: with `podvm run --rm --
 
 **Done (2026-11-15).** Where `exec` or `cp` finds that the running payload of the namespace rung is in another user namespace (`/proc/PID/ns/user` differs), podvm starts itself again with the same arguments and `PODVM_USERNS_JOIN=PID` (`crates/podvm/src/userns.rs`, `rejoin`). First in `main`, with one thread, the new podvm opens a pidfd of the payload, joins its user, UTS and PID namespace with one `setns`, keeps the pidfd for the join of the mount namespace (the host pid of the record names nothing in the PID namespace), and forks: after `setns(CLONE_NEWPID)` a process makes no thread, so a child goes on with the verb as a member of the namespace, and the parent waits and relays the shutdown signals and the exit code. Evidence (kernel 6.18, uid 1000): with `run --rm --name j4 alpine:3.20 sh -c 'echo hi > /tmp/m; sleep 30'` running, `exec j4 sh -c 'cat /tmp/m; id -u'` prints `hi` and `0`, `exec j4 sh -c 'exit 5'` exits 5, `exec` with `--hostname box3` on the run prints `box3`, `ps` in it lists the processes of the run, `cp j4:/tmp/m` copies `hi`, and no podvm stays after `stop`; experiment 458 clause 8.
 
+
+# T-1914: `run -d` refuses "a passed descriptor goes onto 17" when the parent holds descriptors 3 to 15
+
+**Source:** PodUtils/podrunner#177 (COORD-059 of podrunner, podrunner@T-227)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+Under `podnet pod`, `podvm run -d` from podrunner exits 125: "a passed descriptor goes onto 17, the number of the root file system or of the memfd".
+
+## Premise
+
+podvm passes the ownership memo on descriptor 17 of the payload (`MEMO_CHILD_FD`), and pod-enter refuses a root directory whose descriptor in podvm holds that number. `RootDir::open` takes the lowest free number.
+
+## Approach
+
+Hold 17 in each podvm process from its start with a close-on-exec placeholder where it is free, so that no open takes it; the `dup2` of the memo in the child replaces it.
+
+## Decision
+
+podvm keeps the number 17 (the environment of each payload names it, `PODVM_MEMO_FD=17`); a parent that holds 17 itself is untouched.
+
+## Prove
+
+`sh experiments/460-memo-descriptor.sh` exits 0
+
+## Done
+
+**Done (2026-11-15).** `names::start` holds 17 (`hold_memo_number`). Measured with a parent shell that holds descriptors 3 to N (N in 2..16) and `run -d alpine:3.20 true` then `run --rm`: podvm `0.2.0-beta.22` (the release binary) fails exactly at N = 15, where the root opens on 17; this build passes at each N. Experiment 460: PASS (`experiments/results/memo-descriptor.txt`).
+

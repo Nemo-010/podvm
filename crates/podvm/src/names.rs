@@ -311,6 +311,38 @@ pub fn start() {
     const SIG_DFL: usize = 0;
     // SAFETY: SIG_DFL installs no handler of this process.
     unsafe { signal(SIGPIPE, SIG_DFL) };
+    hold_memo_number();
+}
+
+/// PodUtils/podrunner#177 (TODO/enter.md T-1914): the memo goes onto
+/// descriptor 17 of the payload (`MEMO_CHILD_FD`), and pod-enter refuses a
+/// root directory that holds that number in podvm. A parent that leaves 0
+/// to 16 open (podrunner under `podnet pod`) made the root land on 17. A
+/// close-on-exec placeholder holds 17 where it is free, so no open of this
+/// process takes it; the `dup2` of the memo in the child replaces it.
+fn hold_memo_number() {
+    unsafe extern "C" {
+        fn fcntl(fd: i32, cmd: i32, ...) -> i32;
+        fn dup3(old: i32, new: i32, flags: i32) -> i32;
+        fn close(fd: i32) -> i32;
+    }
+    const F_GETFD: i32 = 1;
+    const O_CLOEXEC: i32 = 0o2000000;
+    let n = podvm_supervise::table::MEMO_CHILD_FD as i32;
+    // SAFETY: F_GETFD reads the flags of a descriptor number.
+    if unsafe { fcntl(n, F_GETFD) } >= 0 {
+        return; // held already: by the parent, or by an earlier start
+    }
+    let Ok(null) = std::fs::File::open("/dev/null") else {
+        return;
+    };
+    use std::os::fd::IntoRawFd;
+    let fd = null.into_raw_fd();
+    // SAFETY: two descriptors of this process; fd is closed after the copy.
+    unsafe {
+        dup3(fd, n, O_CLOEXEC);
+        close(fd);
+    }
 }
 
 pub mod stdout;
