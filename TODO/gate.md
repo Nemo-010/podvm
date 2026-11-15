@@ -5421,7 +5421,7 @@ detached report is the test of T-1825.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5450,6 +5450,24 @@ A promise about a future entry is checked when the entry closes.
 
 `./target/x86_64-unknown-linux-musl/release/podvm-gate` exits 0 after T-1831 and T-1832, and exits 1 when `podvm-plant` plants "until TODO/cli.md T-1761" in a help text
 
+## Done
+
+**Done 2026-11-15.** `podvm-gate` has the check `future_promises`
+(`crates/podvm-gate/src/gate/retired.rs`): a sentence with "until",
+"arrives with" or "waits for" and then an entry id (or a file of the
+record and an id) fails once that entry is done, and names the file, the
+line and the entry. It reads the Rust sources of `crates/` and the
+documents of `docs/`, but not `docs/history/`, `docs/decisions.md` (dated
+records) or test files, which may name the sentence that they forbid. The
+check found three texts: the machine refusal of `exec` and `create`
+("arrives with T-1656", `tier.rs`) and the bailey profile ("waits for
+TODO/cli.md T-1761", `profile/builtin.rs`); each now says what the binary
+does. `./target/x86_64-unknown-linux-musl/release/podvm-gate` exits 0,
+and `podvm-plant` case 27e (a help line "until TODO/cli.md T-1761" in
+`run.rs`) turns it red. By hand on the cloud host: the planted line gives exit 1
+with `says "until T-1761", and T-1761 is
+done`, and the gate exits 0 again after the restore. The full plant run
+is the CI step "every check can fail".
 
 # T-1859: Tests leave their stores under `/tmp`, and an interrupted run leaves 1.3 GB each
 

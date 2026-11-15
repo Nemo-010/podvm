@@ -519,7 +519,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1854](gate.md) | P1 | S | none | gate | done | No test proves that each option of `run` is honoured or refused on each tier |
 | [T-1855](gate.md) | P2 | S | none | gate | open | The gate does not scan for the source patterns behind five defects |
 | [T-1856](gate.md) | P2 | S | none | gate | partial | No test reads the `--report` of each path of a run against its schema and for a secret |
-| [T-1857](gate.md) | P3 | S | none | gate | open | A help text or a document can say "until T-NNNN" after that entry is done |
+| [T-1857](gate.md) | P3 | S | none | gate | done | A help text or a document can say "until T-NNNN" after that entry is done |
 | [T-1858](supervise.md) | P3 | S | none | supervise | done | The `ps` table pads by characters, so a wide character puts its row out of line |
 | [T-1859](gate.md) | P2 | S | none | gate | done | Tests leave their stores under `/tmp`, and an interrupted run leaves 1.3 GB each |
 | [T-1860](gate.md) | P2 | S | none | gate | done | The tests of `podvm-interpose` fail when they run in parallel, and CI does not run them |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 24 open, 12 partial, 2 blocked, 455 done.
+493 entries: 23 open, 12 partial, 2 blocked, 456 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 12 | 3 | 2 | 158 | 175 |
-| P3 | 11 | 2 | 0 | 27 | 40 |
-| **All** | 24 | 12 | 2 | 455 | 493 |
+| P3 | 10 | 2 | 0 | 28 | 40 |
+| **All** | 23 | 12 | 2 | 456 | 493 |
 
 ## Work order
 

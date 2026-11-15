@@ -364,5 +364,19 @@ pub(super) fn continue_run(
         },
     );
 
+    // TODO/gate.md T-1857: a help text that waits for a done entry.
+    plant.case_plant(
+        "27e a help text that says until a done entry",
+        "and T-1761 is done",
+        scratch,
+        &|| {
+            let file = "crates/podvm/src/run.rs";
+            let text = read_file(root, file);
+            let planted = concat!("refused on the namespace rung ", "until TODO/cli.md T-1761");
+            write_file(root, file, &format!("{text}// {planted}.\n"));
+            true
+        },
+    );
+
     finish_run(plant, root, scratch)
 }
