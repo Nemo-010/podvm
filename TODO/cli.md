@@ -5526,7 +5526,7 @@ hand: `{{json .StrictOk}} {{json .Verbs}} {{json .VerbsNone}} {{json
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5568,6 +5568,22 @@ Text only.
 ## Prove
 
 `cargo test -p podvm --bin podvm misc_refusal_text` exits 0, with a test for each podvm-owned text above; the knob texts are proved in podcrates
+
+## Done
+
+**Done 2026-11-15.** The knob texts of `lab plan` come from podcrates
+(podcrates@T-586, taken with `v0.45.0` and later): `--loss 101` reads
+"loss 101% is out of its range 0.01% to 20%", a negative value says that
+it is negative, and `--cgnat` names `--nat nat44 or --nat both`. In podvm:
+`windows fetch --url file:///...` is one refusal at the parse (125), not
+five failed tries; a file over the ceiling names RLIMIT_FSIZE and `ulimit
+-f` (`room_for`, already); `probe-inside` names its run after a refusal
+that starts with `podvm run:`; the `tcp` target of the proxy helper and
+`--ready-wait` of the operator name the cause before the usage. The text
+of `doctor store_exec` is in podcrates (`pod-hostprobe`), which names the
+cause of the denial. `cargo test -p podvm --bin podvm misc_refusal_text`
+exits 0, and `cargo test -p podvm-ssh` exits 0 with a test for each
+helper text.
 
 
 # T-1838: The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:`

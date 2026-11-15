@@ -109,7 +109,15 @@ pub(crate) fn parse(args: &[String]) -> Result<Option<Args>, i32> {
                 break;
             }
             "--image" => a.image = Some(PathBuf::from(value(&mut it, "--image")?)),
-            "--url" => a.url = Some(value(&mut it, "--url")?.clone()),
+            "--url" => {
+                let u = value(&mut it, "--url")?.clone();
+                // TODO/cli.md T-1837: one refusal, not five failed tries.
+                if !u.starts_with("https://") && !u.starts_with("http://") {
+                    eprintln!("podvm windows: --url {u:?}: the URL is not http:// or https://");
+                    return Err(EXIT_FLAG_ERROR);
+                }
+                a.url = Some(u);
+            }
             "--extent" => a.extent = Some(value(&mut it, "--extent")?.clone()),
             "--sha256" => {
                 let v = value(&mut it, "--sha256")?;
@@ -274,5 +282,17 @@ mod tests {
         assert!(p(&["run", "--image"]).is_err());
         assert!(p(&["fetch", "--url"]).is_err());
         assert!(p(&["fetch", "--max-bytes"]).is_err());
+    }
+
+    /// TODO/cli.md T-1837: a URL that is not HTTP is one refusal at the
+    /// parse, and a file over the ceiling names RLIMIT_FSIZE and `ulimit -f`.
+    #[test]
+    fn misc_refusal_text_names_the_scheme_and_the_ceiling() {
+        assert_eq!(
+            p(&["fetch", "--url", "file:///etc/hostname"]).err(),
+            Some(EXIT_FLAG_ERROR)
+        );
+        let e = crate::windows::pull::room_for(10, None, 5).unwrap_err();
+        assert!(e.contains("RLIMIT_FSIZE") && e.contains("ulimit -f"), "{e}");
     }
 }

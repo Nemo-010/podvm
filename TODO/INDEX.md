@@ -499,7 +499,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1834](cli.md) | P2 | S | none | cli | done | `system info --format '{{json .X}}'` prints counts and `StrictOk` as strings |
 | [T-1835](probe.md) | P2 | S | none | probe | done | `compare --strict` passes an empty report, an unparsable one, or one that lost whole sections |
 | [T-1836](image.md) | P3 | S | none | image | done | Six image messages name the wrong cause or repeat themselves |
-| [T-1837](cli.md) | P3 | S | none | cli | open | The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb |
+| [T-1837](cli.md) | P3 | S | none | cli | done | The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb |
 | [T-1838](cli.md) | P3 | S | none | cli | done | The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:` |
 | [T-1839](image.md) | P2 | S | none | image | done | `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256` |
 | [T-1840](image.md) | P2 | S | none | image | done | The `images` table cannot tell two platform records apart, `images REPO` shows only `latest`, and `inspect` has no `.Config.Labels` |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 18 open, 13 partial, 2 blocked, 460 done.
+493 entries: 17 open, 13 partial, 2 blocked, 461 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 10 | 4 | 2 | 159 | 175 |
-| P3 | 7 | 2 | 0 | 31 | 40 |
-| **All** | 18 | 13 | 2 | 460 | 493 |
+| P3 | 6 | 2 | 0 | 32 | 40 |
+| **All** | 17 | 13 | 2 | 461 | 493 |
 
 ## Work order
 

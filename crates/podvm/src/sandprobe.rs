@@ -157,7 +157,16 @@ pub fn probe_inside(args: &[String]) -> i32 {
         image,
         inside::ARG.to_string(),
     ]);
-    crate::run::run(&run)
+    let code = crate::run::run(&run);
+    // TODO/cli.md T-1837: the probe is a `podvm run`, so a refusal above
+    // starts with `podvm run:`; this line says whose run it was.
+    if code != 0 {
+        eprintln!(
+            "podvm probe-inside: the run of the probe ended with {code}; each line above \
+             that starts with `podvm run:` is of that run"
+        );
+    }
+    code
 }
 
 /// `podvm compare`.

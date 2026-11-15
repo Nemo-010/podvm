@@ -73,9 +73,14 @@ fn parse_args(argv: &[String]) -> Result<OperatorConfig, Error> {
             "--ready-wait" => {
                 i += 1;
                 let secs = argv.get(i).ok_or_else(usage)?;
-                let n: u64 = secs.parse().map_err(|_| usage())?;
+                // TODO/cli.md T-1837: name the value and its range.
+                let n: u64 = secs.parse().unwrap_or(0);
                 if n == 0 || n > 300 {
-                    return Err(usage());
+                    return Err(Error::new(
+                        Kind::Usage,
+                        "operator args",
+                        format!("--ready-wait takes 1 to 300 seconds, not {secs:?}; {USAGE}"),
+                    ));
                 }
                 ready_wait = Some(Duration::from_secs(n));
             }
@@ -207,5 +212,14 @@ mod tests {
     #[test]
     fn failure_exit_code_is_the_runtime_code() {
         assert_eq!(run(&[]), podvm_ssh::EXIT_RUNTIME_ERROR);
+    }
+
+    /// TODO/cli.md T-1837: the value and the range of --ready-wait.
+    #[test]
+    fn a_ready_wait_of_zero_names_its_range() {
+        let Err(e) = parse_args(&["--ready-wait".to_string(), "0".to_string()]) else {
+            panic!("--ready-wait 0 was taken");
+        };
+        assert!(e.to_string().contains("1 to 300 seconds, not \"0\""), "{e}");
     }
 }

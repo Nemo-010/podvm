@@ -78,7 +78,15 @@ fn parse_args(argv: &[String]) -> Result<ProxyArgs, Error> {
             // is a caller mistake, and ignoring it would dial somewhere the
             // caller did not review.
             let [_, host, port] = argv else {
-                return Err(usage());
+                // TODO/cli.md T-1837: name what is wrong, then the usage.
+                return Err(Error::new(
+                    Kind::Usage,
+                    "proxy args",
+                    format!(
+                        "tcp takes a HOST and a PORT, {} word(s) given; {USAGE}",
+                        argv.len() - 1
+                    ),
+                ));
             };
             if host.trim().is_empty() {
                 return Err(Error::new(Kind::Usage, "proxy args", "tcp needs a host"));
@@ -255,5 +263,12 @@ mod tests {
     #[test]
     fn failure_exit_code_is_the_runtime_code() {
         assert_eq!(run(&[]), podvm_ssh::EXIT_RUNTIME_ERROR);
+    }
+
+    /// TODO/cli.md T-1837: a refusal names what is wrong before the usage.
+    #[test]
+    fn a_tcp_target_with_no_port_says_so() {
+        let e = parse_args(&["tcp".to_string(), "onlyhost".to_string()]).unwrap_err();
+        assert!(e.to_string().contains("tcp takes a HOST and a PORT"), "{e}");
     }
 }
