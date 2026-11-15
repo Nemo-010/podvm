@@ -289,3 +289,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #390 | COORD-125: pod-hostprobe: report a delegated cgroup2 subtree (podvm T-1747) (to podcrates) | open | T-1747 |
 | #391 | COORD-126: the answer to PodUtils/podrunner#111: a :ro volume on the detached run of a static image where chroot is denied (podvm T-1901) (to podrunner) | open | T-1901 |
 | #392 | [gh action] requested | open | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.21` at e4dd9168 (AGENTS.md, section 9) |
+| #393 | COORD-127: a client of the QEMU Guest Agent for a running Windows guest (pod-qga?) (podvm T-1868) (to podcrates) | open | T-1868 |

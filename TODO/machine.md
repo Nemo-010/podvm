@@ -3803,6 +3803,13 @@ podcrates declines, podvm owns it.
 socket. On the golden image of T-1867: `exec -- ver` returns the exit code,
 a `cp` round trip keeps the sha256, and `stop` is graceful. The proof runs on `kvm.yml` (T-1682), because a cloud session has no `/dev/kvm`.
 
+## Correction
+
+**Amended 2026-11-15.** The ask to podcrates is COORD-127 (issue 393): a
+client of the QEMU Guest Agent (`guest-ping`, `guest-exec`, the file calls,
+`guest-shutdown`) and the plan option of its channel. The machines of
+T-1870 are the running guests that it serves.
+
 
 # T-1869: A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds`
 
