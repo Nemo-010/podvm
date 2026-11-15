@@ -399,13 +399,14 @@ jobs:
             apt_qemu: "1"
             hyperv: "1"
             root_bus: nvme
-          # Run 43726557269: the apply of the WIM stopped at 5% for 2 h,
-          # with no error in Panther and the spinner alive. The same leg
-          # with the root disk on SATA tells the NVMe disk from the setup.
-          - leg: ubuntu-qemu-sata
+          # Run 43740331439: the root on SATA stopped as on NVMe (1.53 GiB
+          # on the disk, as each run before), so the bus of the root is not
+          # the cause. This leg puts the setup ISO on a USB CD.
+          - leg: ubuntu-qemu-iso-usb
             apt_qemu: "1"
             hyperv: "1"
-            root_bus: sata
+            root_bus: nvme
+            iso_bus: usb
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -466,6 +467,7 @@ jobs:
           PODVM_WINDOWS_HYPERV: ${{ matrix.hyperv }}
           PODVM_WINDOWS_KEEP_FAILED: /mnt/w/failed
           PODVM_WINDOWS_ROOT_BUS: ${{ matrix.root_bus }}
+          PODVM_WINDOWS_ISO_BUS: ${{ matrix.iso_bus }}
         run: |
           mkdir -p "$HOME"
           rc=0

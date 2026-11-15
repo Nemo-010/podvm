@@ -6,10 +6,34 @@
 /// stalled in the apply of the WIM at 5%, with no error in Panther.
 /// ⛔ A diagnosis only: Windows installed on SATA does not boot from NVMe.
 pub(super) fn root_bus(argv: Vec<String>) -> Vec<String> {
+    let argv = match std::env::var("PODVM_WINDOWS_ISO_BUS").as_deref() {
+        Ok("usb") => iso_on_usb(argv),
+        _ => argv,
+    };
     if std::env::var("PODVM_WINDOWS_ROOT_BUS").as_deref() != Ok("sata") {
         return argv;
     }
     on_sata(argv)
+}
+
+/// TODO/machine.md T-1867: `PODVM_WINDOWS_ISO_BUS=usb` puts the setup ISO on
+/// a USB CD (`usb-bot` and `scsi-cd` on the xHCI bus), not on `ide-cd`.
+/// Run 43740331439: with the root on NVMe and on SATA alike, the apply of
+/// `install.wim` from the ISO stopped with 1.53 GiB on the disk, as in each
+/// run before; the source is the common part.
+fn iso_on_usb(argv: Vec<String>) -> Vec<String> {
+    let mut out = Vec::with_capacity(argv.len() + 2);
+    for a in argv {
+        match a.strip_prefix("ide-cd,drive=cd0,bus=ide.0") {
+            Some(rest) => {
+                out.push("usb-bot,bus=xhci.0,id=isobot".to_string());
+                out.push("-device".to_string());
+                out.push(format!("scsi-cd,bus=isobot.0,drive=cd0{rest}"));
+            }
+            None => out.push(a),
+        }
+    }
+    out
 }
 
 /// The argv with the NVMe device of the root on port 2 of the AHCI bus.
@@ -31,6 +55,25 @@ fn on_sata(argv: Vec<String>) -> Vec<String> {
             None => a,
         })
         .collect()
+}
+
+#[cfg(test)]
+#[test]
+fn the_iso_moves_to_a_usb_cd_with_its_boot_index() {
+    let a = vec![
+        "-device".to_string(),
+        "ide-cd,drive=cd0,bus=ide.0,bootindex=0".to_string(),
+    ];
+    let b = iso_on_usb(a);
+    assert_eq!(
+        b,
+        [
+            "-device",
+            "usb-bot,bus=xhci.0,id=isobot",
+            "-device",
+            "scsi-cd,bus=isobot.0,drive=cd0,bootindex=0"
+        ]
+    );
 }
 
 #[cfg(test)]
