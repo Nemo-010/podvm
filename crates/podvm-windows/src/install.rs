@@ -117,13 +117,17 @@ pub fn elapsed(d: Duration) -> String {
     }
 }
 
-/// The progress line of `name` in `phase` after `spent`.
-pub fn phase_line(verb: &str, name: &str, phase: Phase, spent: Duration) -> String {
-    format!(
-        "podvm {verb}: windows:{name}: {} ({})",
-        phase.words(),
-        elapsed(spent)
-    )
+/// The progress line of `name` in `phase` after `spent`, with the bytes
+/// that the guest wrote to the root disk (TODO/machine.md T-1867: a stall
+/// shows as the same count on two lines).
+pub fn phase_line(verb: &str, name: &str, phase: Phase, spent: Duration, written: u64) -> String {
+    let words = phase.words();
+    let t = elapsed(spent);
+    if written == 0 {
+        return format!("podvm {verb}: windows:{name}: {words} ({t})");
+    }
+    let gib = written as f64 / f64::from(1u32 << 30);
+    format!("podvm {verb}: windows:{name}: {words} ({t}, {gib:.2} GiB on the disk)")
 }
 
 /// The variable that takes TCG for an install.
@@ -214,9 +218,19 @@ mod tests {
             "2025",
             Phase::CopyingFiles,
             Duration::from_secs(192),
+            3 << 29,
         );
-        assert_eq!(l, "podvm pull: windows:2025: copying files (3m12s)");
-        let l = phase_line("pull", "11", Phase::FirstLogon, Duration::from_secs(3725));
+        assert_eq!(
+            l,
+            "podvm pull: windows:2025: copying files (3m12s, 1.50 GiB on the disk)"
+        );
+        let l = phase_line(
+            "pull",
+            "11",
+            Phase::FirstLogon,
+            Duration::from_secs(3725),
+            0,
+        );
         assert_eq!(l, "podvm pull: windows:11: first logon (1h02m05s)");
         assert_eq!(elapsed(Duration::from_secs(7)), "7s");
         for p in [

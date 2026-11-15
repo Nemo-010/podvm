@@ -234,12 +234,13 @@ fn boot_and_convert(
         child: Some(child),
     };
     let start = Instant::now();
-    let say = |phase: Phase| {
+    let say = |phase: Phase, written: u64| {
         if !quiet {
-            eprintln!("{}", inst::phase_line(verb, name, phase, start.elapsed()));
+            let l = inst::phase_line(verb, name, phase, start.elapsed(), written);
+            eprintln!("{l}");
         }
     };
-    say(Phase::Booting);
+    say(Phase::Booting, 0);
     press_keys(&mut guest);
     watch(verb, name, &mut guest, start, &say)?;
     // The answer file shuts the guest down after the marker; the writes
@@ -374,7 +375,7 @@ fn watch(
     name: &str,
     guest: &mut Guest<'_>,
     start: Instant,
-    say: &dyn Fn(Phase),
+    say: &dyn Fn(Phase, u64),
 ) -> Result<(), i32> {
     use std::os::unix::fs::MetadataExt;
     // `PODVM_WINDOWS_INSTALL_DEADLINE` (seconds) bounds an experiment.
@@ -393,7 +394,7 @@ fn watch(
         let now = inst::phase_of(&serial, written);
         if now > phase || last_line.elapsed() >= inst::PROGRESS_EVERY {
             phase = phase.max(now);
-            say(phase);
+            say(phase, written);
             last_line = Instant::now();
             shot(guest.plan, start, phase);
         }
