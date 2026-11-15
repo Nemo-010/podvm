@@ -500,7 +500,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1835](probe.md) | P2 | S | none | probe | done | `compare --strict` passes an empty report, an unparsable one, or one that lost whole sections |
 | [T-1836](image.md) | P3 | S | none | image | done | Six image messages name the wrong cause or repeat themselves |
 | [T-1837](cli.md) | P3 | S | none | cli | open | The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb |
-| [T-1838](cli.md) | P3 | S | none | cli | open | The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:` |
+| [T-1838](cli.md) | P3 | S | none | cli | done | The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:` |
 | [T-1839](image.md) | P2 | S | none | image | done | `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256` |
 | [T-1840](image.md) | P2 | S | none | image | done | The `images` table cannot tell two platform records apart, `images REPO` shows only `latest`, and `inspect` has no `.Config.Labels` |
 | [T-1841](image.md) | P2 | S | none | image | done | `save` advises a `--platform` it does not have, and `pull -a` records the endpoint host, which makes a duplicate record |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 22 open, 12 partial, 2 blocked, 457 done.
+493 entries: 21 open, 12 partial, 2 blocked, 458 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 12 | 3 | 2 | 158 | 175 |
-| P3 | 9 | 2 | 0 | 29 | 40 |
-| **All** | 22 | 12 | 2 | 457 | 493 |
+| P3 | 8 | 2 | 0 | 30 | 40 |
+| **All** | 21 | 12 | 2 | 458 | 493 |
 
 ## Work order
 

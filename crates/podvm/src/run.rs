@@ -23,7 +23,8 @@ use podvm_image::transport::Policy;
 /// cannot be missing from the other verb's help. TODO/cli.md T-0801.
 pub const RUN_OPTIONS: &str = "\
   -d, --detach     start the container and print its id, and do not wait
-  --name NAME      a name for the container. note: Refused if one already has it.
+  --name NAME      a name for the container.
+                   note: Refused if one already has it.
                    A foreground run leaves a record under it: `ps -a` lists
                    it as Exited and `logs` reads its output
                    (TODO/supervise.md T-1421). `container prune` removes
@@ -68,7 +69,8 @@ pub const RUN_OPTIONS: &str = "\
                    is answered through the interposer identity memo for a
                    reachable payload, which the banner names and --strict
                    refuses (TODO/interpose.md T-0711)
-  --entrypoint P   replace the image's entrypoint. note: As docker: this also
+  --entrypoint P   replace the image's entrypoint.
+                   note: As docker: this also
                    drops the image's Cmd, because those were that
                    entrypoint's default arguments
   --add-host N:IP  add a name to the container's /etc/hosts. Repeatable
@@ -80,7 +82,8 @@ pub const RUN_OPTIONS: &str = "\
                    an earlier container made in the same shared rootfs
   --no-host-cas    do not append this machine's announced CA bundle
                    ($SSL_CERT_FILE, $CURL_CA_BUNDLE, $REQUESTS_CA_BUNDLE) to
-                   the image's own trust store. note: Where this machine
+                   the image's own trust store.
+                   note: Where this machine
                    intercepts TLS, an https package source then fails to
                    verify inside the container, exactly as it does under
                    docker
@@ -98,10 +101,12 @@ pub const RUN_OPTIONS: &str = "\
                    too (the raw-syscall escape of the userland rung): the
                    warning names it. --strict=all refuses each one
                    (TODO/cli.md T-1415, T-1831)
-  -q, --quiet      force the banner off. note: Runs are already quiet by
+  -q, --quiet      force the banner off.
+                   note: Runs are already quiet by
                    default; this forces silence under --verbose too
                    (TODO/cli.md T-1416)
-  --verbose        print the banner. note: -v is NOT this flag: -v is
+  --verbose        print the banner.
+                   note: -v is NOT this flag: -v is
                    docker's --volume, so the verbose switch is long-only
                    (TODO/cli.md T-1416)
   --platform P     which platform of a multi-platform image to run

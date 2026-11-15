@@ -127,4 +127,57 @@ mod tests {
         assert_eq!(at(lines[1], "T1"), at(lines[2], "T2"), "{out}");
         assert_eq!(at(lines[0], "CREATED"), at(lines[2], "T2"), "{out}");
     }
+
+    /// TODO/cli.md T-1838: the column where the description of each
+    /// option line and each continuation line of a block starts. A block
+    /// ends at an empty line or at a line with no indent; a line of prose
+    /// (no gap of two spaces in the first 45 columns) belongs to none.
+    fn description_columns(text: &str) -> Vec<Vec<(usize, String)>> {
+        let mut blocks = vec![Vec::new()];
+        for line in text.lines() {
+            if line.trim().is_empty() || !line.starts_with("  ") {
+                blocks.push(Vec::new());
+                continue;
+            }
+            let lead = line.len() - line.trim_start().len();
+            let col = if lead > 4 {
+                Some(lead)
+            } else {
+                let b = line.as_bytes();
+                let mut end = None;
+                let mut i = lead;
+                while i < b.len().min(45) {
+                    if b[i] == b' ' && b.get(i + 1) == Some(&b' ') {
+                        let mut j = i;
+                        while j < b.len() && b[j] == b' ' {
+                            j += 1;
+                        }
+                        end = Some(j);
+                        i = j;
+                    } else {
+                        i += 1;
+                    }
+                }
+                end
+            };
+            if let Some(c) = col {
+                blocks.last_mut().unwrap().push((c, line.to_string()));
+            }
+        }
+        blocks
+    }
+
+    #[test]
+    fn help_columns_are_one_column_in_each_block() {
+        for text in [crate::windows::args::USAGE, crate::machine::ssh::USAGE] {
+            for block in description_columns(text) {
+                let Some((first, _)) = block.first() else {
+                    continue;
+                };
+                for (c, line) in &block {
+                    assert_eq!(c, first, "{line:?} starts at {c}, the block at {first}");
+                }
+            }
+        }
+    }
 }

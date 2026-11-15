@@ -38,10 +38,10 @@ usage: podvm machine ssh --kernel <file> --initramfs <file> --user-key <file> [-
                            its serial console and the account to log in as
   --user-key <file>        the private key the guest authorises for --user
   --user <name>            the guest account (default root)
-  --podvm-mem <size>      guest memory, for example 256M (default 256M)
-  --podvm-timeout <secs>  stop the guest past this long (default 600, and a
+  --podvm-mem <size>       guest memory, for example 256M (default 256M)
+  --podvm-timeout <secs>   stop the guest past this long (default 600, and a
                            stop is a refusal, never an empty success)
-  --podvm-qemu-arg <arg>  one extra emulator argument, repeatable, appended
+  --podvm-qemu-arg <arg>   one extra emulator argument, repeatable, appended
                            last so a caller can override a default
   -h, --help               print this usage and exit 0
 

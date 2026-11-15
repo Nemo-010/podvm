@@ -5577,7 +5577,7 @@ Text only.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -5602,6 +5602,16 @@ The marker stays lowercase: it is the marker of each help text.
 ## Prove
 
 `cargo test -p podvm --bin podvm help_columns` exits 0, with a test that each option line of a usage text starts its description at one column for each block
+
+## Done
+
+**Done 2026-11-15.** The `--podvm-*` lines of `windows --help` and
+`machine ssh --help` start their descriptions one column right, at the
+column of their block (the rename from podbox had made the flags one
+letter shorter). In the help of `run`, each `note:` that followed a full
+stop starts its own line (five texts; no other usage text has one in a
+line). `cargo test -p podvm --bin podvm help_columns` exits 0: a test
+reads each block of the two texts and finds one column.
 
 
 # T-1845: `profile show` writes a part of the document to stdout and then fails

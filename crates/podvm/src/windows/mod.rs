@@ -33,7 +33,7 @@
 //! flags, the acquisition and the run shared locals and a reader could no
 //! longer tell which of them created the per-run directory.
 
-mod args;
+pub(crate) mod args;
 mod doctor;
 mod doctor_more; // TODO/machine.md T-1871
 mod dos;

@@ -29,10 +29,10 @@ options:
   --max-bytes <n>              the download ceiling, over RLIMIT_FSIZE never
   --extent <file>              with fetch: print the byte range of <file> in
                                the UDF image at --url and download nothing
-  --podvm-mem <size>          guest memory, for example 4G
-  --podvm-cpus <n>            guest cpus
-  --podvm-timeout <seconds>   how long a run may take before it is stopped
-  --podvm-qemu-arg <arg>      one extra emulator argument, repeatable
+  --podvm-mem <size>           guest memory, for example 4G
+  --podvm-cpus <n>             guest cpus
+  --podvm-timeout <seconds>    how long a run may take before it is stopped
+  --podvm-qemu-arg <arg>       one extra emulator argument, repeatable
   --guest <dos|windows>        which guest to boot (default windows).
                                dos boots FreeDOS from its own base cache and
                                needs no --image; windows boots the disk image
