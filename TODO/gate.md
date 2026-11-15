@@ -2228,6 +2228,8 @@ Preserve the base and supplied image. Save proof before collecting its session.
 
 ## Done
 
+**Partial (2026-11-16, a regression).** The job `windows` of `kvm.yml` (experiment 392) passed in run 43740331439 (`283e3492`) and failed in runs 43754060132 (`6539446a`) and 43767666467 (`7a6c1edb`), each time at the first `windows run ver` after `windows setup`: the guest boots from the NVMe disk ("UEFI QEMU NVMe Ctrl wqroot"), the screen goes black at 45 s, and the guest powers off with no `WQREADY.TXT` (exit 125). Experiment 450 sets up and runs the same ValidationOS image in the same job and passes (exit 42, 42 and 7). Its setup and runs take `--podvm-mem 6G --podvm-cpus 4`; experiment 392 takes the defaults (4096 MiB, 2 CPUs). The commits between the two runs change no code of the Windows guest (the T-1911 entry of a user namespace, the root of an install on SATA or the ISO on USB under a variable). Remaining: tell a reboot of the first start (which ends the emulator under `-no-reboot`) from a stop of the guest, and the memory of the defaults from the rest.
+
 **Partial 2026-11-12.** The KVM run passes on the hosted runner (T-1641,
 `kvm.yml` run 43171009630). Remaining: the default wrapper of the Windows
 host that exports podvm and four helpers, which belongs to the parked
