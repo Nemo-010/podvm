@@ -18,15 +18,16 @@ Deployed: none yet.
   fetches a pinned static QEMU 9.2.0 and its firmware (54 MiB) into its
   store on the first run (T-1875). A QEMU of the host still wins.
 
-### Added: `podvm run -d windows:dos`, with `ps`, `stop`, `rm` and `logs`, 2026-11-15
+### Added: `podvm run -d windows:dos`, with `ps`, `stop`, `start`, `rm` and `logs -f`, 2026-11-15
 
 Record: T-1870 (partial).
 Deployed: none yet.
 
 - `podvm run -d --name NAME windows:dos` (also `windows:validationos`
   and an installed setup ISO) starts a detached guest; `podvm ps` lists it
-  beside the containers, `podvm stop` powers it off, `podvm rm` removes
-  it, and `podvm logs` prints its serial line. A guest ends at the end of
+  beside the containers, `podvm stop` powers it off, `podvm start` boots
+  it again from its own disk, `podvm rm` removes it, and `podvm logs -f`
+  follows its serial line. A guest ends at the end of
   its lifetime (`--timeout`, else 24 h), and no emulator stays after
   `stop`, `rm -f` or the lifetime. Before this, `run -d windows:dos` asked
   Docker Hub for an image and failed.

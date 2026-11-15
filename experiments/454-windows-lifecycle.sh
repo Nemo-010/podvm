@@ -16,7 +16,9 @@
 #   2. `ps` lists m1 as Up, and an emulator runs;
 #   3. `rm m1` of a running machine exits 125 and removes nothing;
 #   4. `stop m1` exits 0; `ps -a` lists m1 as Exited; no emulator runs;
-#   5. `rm m1` exits 0, and the directory of m1 is gone;
+#   5. `start m1` boots it again (Up), `logs -f m1` ends when `stop`
+#      ends the machine, and then `rm m1` exits 0 and the directory of m1
+#      is gone;
 #   6. the planted fault: the keeper of m2 is killed with SIGKILL, so the
 #      emulator has no owner; `rm -f m2` ends it and removes m2;
 #   7. `run -d --timeout 5`: after 15 s no emulator runs, and `ps -a` names
@@ -59,6 +61,17 @@ timeout 60 "$BIN" stop m1 >/dev/null 2>&1; rc=$?
 say "stop      rc $rc in $(( $(date +%s) - t0 )) s; $("$BIN" ps -a 2>&1 | grep m1)"
 [ "$rc" -eq 0 ] && "$BIN" ps -a 2>&1 | grep -q "m1.*Exited" && ! emu || bad "clause 4"
 
+"$BIN" start m1 >/dev/null 2>&1; rc=$?
+say "start     rc $rc; $("$BIN" ps 2>&1 | grep m1)"
+[ "$rc" -eq 0 ] && "$BIN" ps 2>&1 | grep -q "m1.*Up" && emu || bad "clause 5: start"
+timeout 60 "$BIN" logs -f m1 >/dev/null 2>&1 &
+lf=$!
+sleep 1
+timeout 60 "$BIN" stop m1 >/dev/null 2>&1
+t0=$(date +%s)
+wait "$lf"; lrc=$?
+say "logs -f   rc $lrc, ended $(( $(date +%s) - t0 )) s after stop"
+[ "$lrc" -eq 0 ] || bad "clause 5: logs -f did not end with the machine"
 "$BIN" rm m1 >/dev/null 2>&1; rc=$?
 say "rm        rc $rc"
 [ "$rc" -eq 0 ] && [ ! -e "$MACH/m1" ] || bad "clause 5"

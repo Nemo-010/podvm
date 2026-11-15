@@ -371,6 +371,39 @@ pub(crate) fn detach_if(verb: &str, o: &crate::run::Opts) -> Option<i32> {
     })
 }
 
+/// `start` of `want` where a machine has that name: a running one changes
+/// nothing; a stopped one boots again from its own disk. `None` for no
+/// machine.
+pub(crate) fn start_if(verb: &str, want: &str) -> Option<Result<String, i32>> {
+    let mut r = find(want)?;
+    if r.running() {
+        return Some(Ok(r.name));
+    }
+    if machines::alive(r.keeper_pid, r.keeper_start) {
+        eprintln!("podvm {verb}: the keeper of {want} still runs; wait for it to end");
+        return Some(Err(EXIT_RUNTIME_ERROR));
+    }
+    let started = (|| {
+        super::plan::provide(verb, r.flavor != "dos")?;
+        let accel = super::plan::accelerator()?;
+        r.ended.clear();
+        r.keeper_pid = 0;
+        r.keeper_start = 0;
+        r.emulator_pid = 0;
+        r.emulator_start = 0;
+        let root = machines::root();
+        machines::write(&root, &r).map_err(|e| {
+            eprintln!("podvm {verb}: {want}: {e}");
+            EXIT_RUNTIME_ERROR
+        })?;
+        start_keeper(&r.name, accel, &machines::dir_in(&root, &r.name)).map_err(|why| {
+            eprintln!("podvm {verb}: {want}: {why}");
+            EXIT_RUNTIME_ERROR
+        })
+    })();
+    Some(started.map(|()| r.name.clone()))
+}
+
 /// `podvm rm [-f] NAME` of a machine.
 pub(crate) fn rm(name: &str, force: bool) -> i32 {
     let root = machines::root();
@@ -402,13 +435,31 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
     }
 }
 
-/// `podvm logs NAME` of a machine: the serial line of the guest.
-pub(crate) fn logs(name: &str) -> i32 {
-    let dir = machines::dir_in(&machines::root(), name);
-    let bytes = std::fs::read(dir.join("serial.log")).unwrap_or_default();
-    use std::io::Write;
-    let _ = std::io::stdout().write_all(&bytes);
-    0
+/// `podvm logs [-f] NAME` of a machine: the serial line of the guest; with
+/// `follow`, the new bytes while the machine runs.
+pub(crate) fn logs(name: &str, follow: bool) -> i32 {
+    use std::io::{Read, Seek, Write};
+    let root = machines::root();
+    let path = machines::dir_in(&root, name).join("serial.log");
+    let mut out = std::io::stdout().lock();
+    let mut at = 0u64;
+    loop {
+        if let Ok(mut f) = std::fs::File::open(&path)
+            && f.seek(std::io::SeekFrom::Start(at)).is_ok()
+        {
+            let mut buf = Vec::new();
+            if f.read_to_end(&mut buf).is_ok() && !buf.is_empty() {
+                at += buf.len() as u64;
+                if out.write_all(&buf).and_then(|()| out.flush()).is_err() {
+                    return 0;
+                }
+            }
+        }
+        if !follow || !machines::read(&root, name).is_some_and(|r| r.running()) {
+            return 0;
+        }
+        std::thread::sleep(Duration::from_millis(250));
+    }
 }
 
 /// The rows of `podvm ps` for the machines: each one with `all`, else the

@@ -3932,8 +3932,11 @@ windows_lifecycle` exits 0 with five tests (the record, the start time,
 the names and the status, the list, the socket). Experiment 454 under TCG
 on the cloud host: PASS, each of eight clauses (run -d, ps, the refused
 rm, stop in 11 s, rm, the killed keeper, the lifetime of 5 s, nothing
-stays). The clauses that remain: `start` of a stopped machine, `logs -f`,
-and a Windows machine (`windows:2025`) under KVM.
+stays). `start` boots a stopped machine again from its own disk, and
+`logs -f` follows the serial line until the machine ends; experiment 454
+checks both in clause 5 (PASS: `start` Up, `logs -f` ended 0 s after
+`stop`). The clause that remains: a Windows machine (`windows:2025`) under
+KVM.
 
 
 # T-1871: `podvm windows doctor` is thin

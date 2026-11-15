@@ -220,6 +220,9 @@ pub fn start(args: &[String]) -> i32 {
 /// message, because a restart's start-half failure must not read as a
 /// `start` failure.
 fn start_one(s: &podvm_image::Store, verb: &str, want: &str) -> Result<String, i32> {
+    if let Some(r) = crate::windows::machine::start_if(verb, want) {
+        return r; // TODO/machine.md T-1870: a detached Windows or DOS machine
+    }
     let c = match podvm_supervise::get(s, want) {
         Ok(c) => c,
         Err(e) => return Err(fail(verb, e)),

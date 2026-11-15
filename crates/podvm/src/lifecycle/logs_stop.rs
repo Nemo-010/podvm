@@ -134,7 +134,7 @@ pub fn logs(args: &[String]) -> i32 {
     };
     // TODO/machine.md T-1870: the serial line of a detached machine.
     if crate::windows::machine::find(&o.want).is_some() {
-        return crate::windows::machine::logs(&o.want);
+        return crate::windows::machine::logs(&o.want, o.follow);
     }
     let s = match store() {
         Ok(s) => s,
