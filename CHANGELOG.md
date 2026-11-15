@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `podvm windows view` shows the screen of a guest in a browser, 2026-11-15
+
+Record: T-1899.
+Deployed: none yet.
+
+- `podvm windows view NAME` prints a URL on 127.0.0.1; the page is the
+  noVNC client (fetched once into the store, its digest pinned), connected
+  to the screen of the running guest.
+
 ## 0.2.0-beta.21 (2026-11-15)
 
 ### Fixed: a `:ro` volume holds for a static image where chroot is denied, 2026-11-15

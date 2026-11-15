@@ -197,6 +197,26 @@ pub const TOOLS: &[Tool] = &[
     ),
 ];
 
+/// TODO/machine.md T-1899: the RFB client of the screen viewer, noVNC
+/// 1.7.0 as npm publishes it (`@novnc/novnc`: `core/` and `vendor/pako`,
+/// ES modules, MPL-2.0 and MIT). `podvm windows view` fetches it into
+/// `tools/novnc-1.7.0` of the store and serves it on the loopback.
+pub const NOVNC: Tool = Tool {
+    name: "novnc-1.7.0.tgz",
+    url: "https://registry.npmjs.org/@novnc/novnc/-/novnc-1.7.0.tgz",
+    size: 155_185,
+    sha256: "32689f18d6abe96bc6530828a6bd0b9ae33bda07c083a6575ed255b5a8f2e903",
+    dest: Dest::Share,
+};
+
+/// The directory of the noVNC copy, beside the QEMU copy.
+pub fn novnc_root() -> PathBuf {
+    root()
+        .parent()
+        .unwrap_or(Path::new("."))
+        .join("novnc-1.7.0")
+}
+
 /// The directory of the store copy: `PODVM_TOOLS_DIR` where it is set,
 /// else `tools/qemu-VERSION` beside the Windows catalog.
 pub fn root() -> PathBuf {

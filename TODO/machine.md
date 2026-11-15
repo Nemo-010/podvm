@@ -4875,7 +4875,7 @@ channel.
 **Milestone:** none
 **Priority:** P3
 **Effort:** L
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4909,6 +4909,19 @@ address of the host gets no answer.
 
 ## Done
 
+**Done 2026-11-15, later.** `podvm windows view` fetches the npm package of
+noVNC 1.7.0 (`@novnc/novnc`, 155 185 bytes, its sha256 pinned in
+`podvm_windows::tools::NOVNC`) into `tools/novnc-1.7.0` of the store,
+unpacks the regular files under `package/` with no `..`, and serves them
+at `/novnc/`; the page at `/` imports `core/rfb.js` and connects to
+`/websockify` on the same host. A failed fetch keeps the page of the
+address. Experiment 455, clause 5: the page imports `rfb.js`, and GET
+`/novnc/core/rfb.js` answered 200 with the module (122 306 bytes). In
+Chromium (Playwright) on the cloud host, the page of a `run -d windows:dos`
+machine drew a 720x400 canvas with the live FreeDOS screen. `cargo test -p
+podvm --bin podvm viewer` exits 0 with three tests (a path out of the copy
+is refused).
+
 **Partial 2026-11-15.** The keeper of a machine (T-1870) starts QEMU with
 `-vnc unix:` on a socket in the runtime directory
 (`podvm_windows::machines::vnc_socket`). `podvm windows view NAME [--port
@@ -4921,9 +4934,7 @@ of the example of RFC 6455, the frames). Experiment 455 on the cloud host
 under TCG: PASS; the page answered 200, the WebSocket got 101 with
 `s3pPLMBiTxaQ9kYGzzhZRbK+xOo=` and the first frame `RFB 003.008`, the
 address 192.0.2.2 of the host refused the connection, and `stop` ended the
-viewer. The clause that remains: the page is a pointer to a noVNC client;
-a pinned noVNC page in the store (as the static QEMU of T-1875) makes it
-a viewer with no other program.
+viewer.
 
 
 # T-1900: A Windows guest follows the host architecture, so an arm64 host has no Windows guest

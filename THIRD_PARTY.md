@@ -46,12 +46,13 @@ The native loader is in `src/userland.rs` of `pod-enter` (PodUtils/podcrates).
 ## Fetched at run time
 
 podvm does not carry these files. A host with no QEMU fetches them on the
-first Windows or DOS run, and podvm checks each size and sha256
+first Windows or DOS run (noVNC: on the first `podvm windows view`), and podvm checks each size and sha256
 (`crates/podvm-windows/src/tools.rs`, TODO/machine.md T-1875).
 
 | Material | Source | Licence |
 | --- | --- | --- |
 | `qemu-system-x86_64`, `qemu-img` 9.2.0, static musl builds | pkgforge `bincache`, package `ppkg.qemu` | GPL-2.0 (QEMU) |
+| noVNC 1.7.0 (`core/`, and `vendor/pako`), fetched by `podvm windows view` (T-1899) | registry.npmjs.org, package `@novnc/novnc` | MPL-2.0 (noVNC); MIT (pako) |
 | `pc-bios/` firmware and option ROMs of QEMU `v9.2.0` (SeaBIOS, the VGA BIOS, iPXE EFI ROMs, edk2) | github.com/qemu/qemu at tag `v9.2.0` | SeaBIOS and the VGA BIOS LGPL-3.0; iPXE GPL-2.0; edk2 BSD-2-Clause-Patent; qboot GPL-2.0 |
 
 ## Build dependencies

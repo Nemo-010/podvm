@@ -85,8 +85,20 @@ pub(crate) fn read_frame(r: &mut impl Read) -> Option<(u8, Vec<u8>)> {
     Some((opcode, p))
 }
 
-/// The page at `/`: the address of the bridge for a noVNC client.
-fn page(port: u16, name: &str) -> String {
+/// The page at `/`: the noVNC client of the store where podvm has it, else
+/// the address of the bridge for a client of the user.
+fn page(port: u16, name: &str, novnc: bool) -> String {
+    if novnc {
+        return format!(
+            "<!doctype html><meta charset=utf-8><title>podvm {name}</title>\
+             <style>html,body{{margin:0;height:100%;background:#202020}}#s{{height:100%}}</style>\
+             <div id=s></div><script type=module>\
+             import RFB from './novnc/core/rfb.js';\
+             const r = new RFB(document.getElementById('s'), 'ws://' + location.host + '/websockify');\
+             r.scaleViewport = true; r.focusOnClick = true;\
+             </script>"
+        );
+    }
     format!(
         "<!doctype html><meta charset=utf-8><title>podvm {name}</title>\
          <h1>podvm: the screen of {name}</h1>\
@@ -116,12 +128,25 @@ fn serve(mut c: TcpStream, vnc: &std::path::Path, port: u16, name: &str) {
             .then(|| v.trim().to_string())
     });
     let Some(key) = key else {
-        let body = page(port, name);
+        let path = text.split_whitespace().nth(1).unwrap_or("/");
+        let novnc = podvm_windows::tools::novnc_root();
+        let (status, kind, body) = match path.strip_prefix("/novnc/") {
+            Some(rest) => match static_file(&novnc, rest) {
+                Some((kind, bytes)) => ("200 OK", kind, bytes),
+                None => ("404 Not Found", "text/plain", b"not found\n".to_vec()),
+            },
+            None => (
+                "200 OK",
+                "text/html",
+                page(port, name, novnc.join("core/rfb.js").is_file()).into_bytes(),
+            ),
+        };
         let _ = write!(
             c,
-            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            "HTTP/1.1 {status}\r\nContent-Type: {kind}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
             body.len()
         );
+        let _ = c.write_all(&body);
         return;
     };
     let Ok(mut v) = UnixStream::connect(vnc) else {
@@ -177,6 +202,87 @@ fn serve(mut c: TcpStream, vnc: &std::path::Path, port: u16, name: &str) {
     let _ = down.join();
 }
 
+/// A file of the noVNC copy under `root`: its type and its bytes, or `None`
+/// for a path that leaves the copy or names no file.
+fn static_file(root: &std::path::Path, rest: &str) -> Option<(&'static str, Vec<u8>)> {
+    let rest = rest.split(['?', '#']).next()?;
+    let safe = !rest.is_empty()
+        && rest
+            .split('/')
+            .all(|c| !c.is_empty() && c != "." && c != ".." && !c.contains('\\'));
+    if !safe {
+        return None;
+    }
+    let kind = match rest.rsplit('.').next()? {
+        "js" => "text/javascript",
+        "css" => "text/css",
+        "html" => "text/html",
+        "json" => "application/json",
+        _ => "application/octet-stream",
+    };
+    std::fs::read(root.join(rest)).ok().map(|b| (kind, b))
+}
+
+/// The noVNC copy of the store, fetched where it is not there; a failure
+/// keeps the page of the address only.
+fn ensure_novnc() {
+    let root = podvm_windows::tools::novnc_root();
+    if root.join("core/rfb.js").is_file() {
+        return;
+    }
+    if let Err(why) = fetch_novnc(&root) {
+        eprintln!(
+            "podvm windows view: no noVNC client in the store ({why}); the page names the \
+             address of the bridge"
+        );
+    }
+}
+
+/// Fetch, check and unpack the npm package of noVNC into `root`: the
+/// files under `package/`, regular files only, with no `..`.
+fn fetch_novnc(root: &std::path::Path) -> Result<(), String> {
+    let t = podvm_windows::tools::NOVNC;
+    let part = root.with_extension("part");
+    let _ = std::fs::remove_dir_all(&part);
+    std::fs::create_dir_all(&part).map_err(|e| e.to_string())?;
+    let tgz = part.join(t.name);
+    let mut origin = super::super::origin::Http {
+        url: t.url.to_string(),
+    };
+    let ceiling = podvm_windows::Ceiling {
+        max_bytes: t.size,
+        fsize: u64::MAX,
+    };
+    podvm_windows::fetch::store(&mut origin, &tgz, Some(t.sha256), ceiling, 3)
+        .map_err(|e| e.to_string())?;
+    let f = std::fs::File::open(&tgz).map_err(|e| e.to_string())?;
+    let mut a = tar::Archive::new(flate2::read::GzDecoder::new(f));
+    for e in a.entries().map_err(|e| e.to_string())? {
+        let mut e = e.map_err(|e| e.to_string())?;
+        if !e.header().entry_type().is_file() {
+            continue;
+        }
+        let p = e.path().map_err(|e| e.to_string())?.into_owned();
+        let Ok(rest) = p.strip_prefix("package") else {
+            continue;
+        };
+        if rest
+            .components()
+            .any(|c| !matches!(c, std::path::Component::Normal(_)))
+        {
+            continue;
+        }
+        let dest = part.join(rest);
+        if let Some(d) = dest.parent() {
+            std::fs::create_dir_all(d).map_err(|e| e.to_string())?;
+        }
+        e.unpack(&dest).map_err(|e| e.to_string())?;
+    }
+    let _ = std::fs::remove_file(&tgz);
+    let _ = std::fs::remove_dir_all(root);
+    std::fs::rename(&part, root).map_err(|e| e.to_string())
+}
+
 /// `podvm windows view NAME [--port P]`.
 pub(crate) fn view(args: &[String]) -> i32 {
     let mut name = None;
@@ -206,6 +312,7 @@ pub(crate) fn view(args: &[String]) -> i32 {
         eprintln!("podvm windows view: no running machine {name:?} (`podvm ps` lists them)");
         return EXIT_RUNTIME_ERROR;
     }
+    ensure_novnc();
     let root = machines::root();
     let vnc = machines::vnc_socket(&root, &name);
     let listener = match TcpListener::bind((Ipv4Addr::LOCALHOST, port)) {
@@ -237,6 +344,29 @@ pub(crate) fn view(args: &[String]) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A file of the copy is served by its path; a path with `..` or an
+    /// empty part is not.
+    #[test]
+    fn viewer_static_files_stay_in_the_copy() {
+        let d = std::env::temp_dir().join(format!("podvm-novnc-{}", std::process::id()));
+        std::fs::create_dir_all(d.join("core")).unwrap();
+        std::fs::write(d.join("core/rfb.js"), "export default 1;").unwrap();
+        assert_eq!(
+            static_file(&d, "core/rfb.js?x=1"),
+            Some(("text/javascript", b"export default 1;".to_vec()))
+        );
+        for bad in [
+            "../etc/passwd",
+            "core/../../x",
+            "",
+            "core//rfb.js",
+            "/etc/passwd",
+        ] {
+            assert_eq!(static_file(&d, bad), None, "{bad}");
+        }
+        let _ = std::fs::remove_dir_all(&d);
+    }
 
     /// The example of RFC 6455, section 1.3.
     #[test]

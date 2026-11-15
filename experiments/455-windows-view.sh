@@ -18,7 +18,9 @@
 #   2. a WebSocket client of /websockify gets 101 and a first frame that
 #      starts with `RFB 003.008`;
 #   3. a client on another address of the host gets no connection;
-#   4. `stop m1` ends the viewer, and no emulator stays.
+#   4. `stop m1` ends the viewer, and no emulator stays;
+#   5. the page imports the noVNC client of the store, and GET
+#      /novnc/core/rfb.js answers 200 with its module.
 
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -49,9 +51,17 @@ cat >"$WORK/ws.py" <<'EOF'
 import os, socket, sys
 host, port, mode = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 s = socket.create_connection((host, port), timeout=10)
-if mode == "page":
-    s.sendall(b"GET / HTTP/1.1\r\nHost: x\r\n\r\n")
-    print(s.recv(4096).split(b"\r\n")[0].decode())
+if mode in ("page", "rfb"):
+    path = b"/" if mode == "page" else b"/novnc/core/rfb.js"
+    s.sendall(b"GET " + path + b" HTTP/1.1\r\nHost: x\r\n\r\n")
+    data = b""
+    while True:
+        b = s.recv(65536)
+        if not b:
+            break
+        data += b
+    head, _, body = data.partition(b"\r\n\r\n")
+    print(head.split(b"\r\n")[0].decode(), len(body), "rfb.js" in body.decode(errors="replace"), "export default class RFB" in body.decode(errors="replace"))
     sys.exit(0)
 key = "dGhlIHNhbXBsZSBub25jZQ=="
 s.sendall(("GET /websockify HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\n"
@@ -74,6 +84,10 @@ EOF
 page=$(python3 -I "$WORK/ws.py" 127.0.0.1 "$PORT" page 2>&1)
 say "page      $page"
 printf '%s' "$page" | grep -q "200 OK" || bad "clause 1: GET /"
+printf '%s' "$page" | grep -q "True" || bad "clause 5: the page does not import rfb.js"
+rfb=$(python3 -I "$WORK/ws.py" 127.0.0.1 "$PORT" rfb 2>&1)
+say "rfb.js    $rfb"
+printf '%s' "$rfb" | grep -q "200 OK .* True$" || bad "clause 5: /novnc/core/rfb.js"
 ws=$(python3 -I "$WORK/ws.py" 127.0.0.1 "$PORT" ws 2>&1)
 say "websocket $ws"
 printf '%s' "$ws" | grep -q "101 Switching Protocols" && printf '%s' "$ws" | grep -q "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=" && printf '%s' "$ws" | grep -q "RFB 003.008" || bad "clause 2"
