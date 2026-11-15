@@ -37,6 +37,7 @@ pub(crate) mod args;
 mod doctor;
 mod doctor_more; // TODO/machine.md T-1871
 mod dos;
+mod install; // TODO/machine.md T-1867
 mod origin;
 mod plan;
 pub(crate) mod pull; // TODO/machine.md T-1861
@@ -197,7 +198,7 @@ fn run_named(
         }
         podvm_windows::catalog::Kind::ValidationOs | podvm_windows::catalog::Kind::Iso => {
             let step = if e.kind == podvm_windows::catalog::Kind::Iso {
-                "the install of a setup ISO into a disk (TODO/machine.md T-1867)"
+                "the run of an installed guest (TODO/machine.md T-1868)"
             } else {
                 "the read of its VHDX out of the ISO (TODO/machine.md T-1863)"
             };

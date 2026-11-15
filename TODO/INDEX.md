@@ -529,7 +529,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1864](machine.md) | P1 | S | none | machine | done | The agent of a Windows guest runs the command with `call`, so a payload that ends in `exit` times out |
 | [T-1865](machine.md) | P1 | M | none | machine | done | The plan of a Windows guest has no NIC, no CD-ROM, no USB media, no VNC socket and no serial channel |
 | [T-1866](machine.md) | P1 | M | none | machine | done | There is no generator of the unattended answer file or of the USB FAT media |
-| [T-1867](machine.md) | P1 | L | none | machine | open | `podvm pull windows:11` cannot install a full Windows guest |
+| [T-1867](machine.md) | P1 | L | none | machine | partial | `podvm pull windows:11` cannot install a full Windows guest |
 | [T-1868](machine.md) | P2 | M | none | machine | open | A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe |
 | [T-1869](machine.md) | P2 | M | none | machine | open | A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds` |
 | [T-1870](machine.md) | P2 | L | none | machine | open | A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name` |
@@ -563,7 +563,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-494 entries: 13 open, 14 partial, 2 blocked, 465 done.
+494 entries: 12 open, 15 partial, 2 blocked, 465 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,10 +573,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 1 | 5 | 0 | 199 | 205 |
+| P1 | 0 | 6 | 0 | 199 | 205 |
 | P2 | 8 | 6 | 2 | 159 | 175 |
 | P3 | 4 | 3 | 0 | 33 | 40 |
-| **All** | 13 | 14 | 2 | 465 | 494 |
+| **All** | 12 | 15 | 2 | 465 | 494 |
 
 ## Work order
 

@@ -252,3 +252,87 @@ jobs:
             experiments/results/windows-agent-exit.txt.setup
             ${{ runner.temp }}/shots/
           if-no-files-found: warn
+
+  # TODO/machine.md T-1867: `podvm pull windows:2025` installs the setup
+  # ISO into a golden image under KVM (experiment 452). The clause of a
+  # host with TCG only runs first, while the job has no /dev/kvm. One
+  # guest at a time: the job runs after the ValidationOS guest.
+  install:
+    name: Windows install from a setup ISO under KVM (experiment 452)
+    needs: windows
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: qemu and OVMF
+        run: |
+          sudo apt-get -qq update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-system-x86 qemu-utils ovmf >/dev/null
+          qemu-system-x86_64 --version | head -1
+
+      - name: bootstrap
+        run: ./scripts/common/bootstrap-env.sh rust cc zig tools vmtools
+
+      - name: build podvm
+        run: |
+          cargo build --release -p podvm-gate --bin podvm-interpose-build
+          mkdir -p target/release
+          cp target/x86_64-unknown-linux-musl/release/podvm-interpose-build target/release/
+          ./target/release/podvm-interpose-build
+          cargo build --release -p podvm
+
+      # The ISO, the written disk and its converted copy need about 60 GB.
+      - name: room for the install
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          sudo mkdir -p /mnt/w && sudo chown "$(id -u):$(id -g)" /mnt/w
+          df -h / /mnt
+
+      - name: experiment 452, the refusal under TCG
+        env:
+          HOME: /mnt/w/home-refusal
+        run: |
+          mkdir -p "$HOME"
+          PODVM_452_REFUSAL=1 sh experiments/452-windows-install.sh
+
+      - name: give the job /dev/kvm
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules >/dev/null
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo udevadm settle || true
+          [ -e /dev/kvm ] && sudo chmod 0666 /dev/kvm
+          if [ -w /dev/kvm ] && [ -r /dev/kvm ]; then
+            ls -l /dev/kvm
+          else
+            echo "no usable /dev/kvm on this runner: COULD NOT RUN"
+            exit 2
+          fi
+
+      - name: experiment 452 under KVM
+        env:
+          HOME: /mnt/w/home
+          PODVM_452_NAMES: "2025"
+        run: |
+          mkdir -p "$HOME"
+          rc=0
+          timeout 200m sh experiments/452-windows-install.sh || rc=$?
+          if pgrep -a qemu-system; then
+            echo "an emulator stayed after the run"
+            pkill -9 qemu-system || true
+            rc=1
+          fi
+          exit "$rc"
+
+      - name: keep the transcript
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kvm-install-transcript
+          path: |
+            experiments/results/windows-install.txt
+            experiments/results/windows-install-*.err
+          if-no-files-found: warn

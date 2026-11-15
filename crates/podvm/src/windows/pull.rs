@@ -104,7 +104,10 @@ pub(crate) fn pull_named(verb: &str, name: &str, quiet: bool) -> i32 {
     let path = match e.kind {
         Kind::DosZip => dos_base(verb),
         Kind::ValidationOs => vos_disk(verb, e),
-        _ => fetched(verb, e),
+        // TODO/machine.md T-1867: the ISO is fetched, then installed.
+        Kind::Iso => super::install::preflight(verb, e)
+            .and_then(|()| fetched(verb, e))
+            .and_then(|iso| super::install::install(verb, e, &iso, quiet)),
     };
     match path {
         Ok(p) => {
@@ -200,7 +203,10 @@ pub(crate) fn files_of(e: &Entry) -> Vec<PathBuf> {
             v.push(PathBuf::from(format!("{}.podvm.qcow2", vhdx.display())));
             v.push(vhdx);
         }
-        Kind::Iso => {}
+        Kind::Iso => {
+            v.push(super::install::golden_path(e));
+            v.push(super::install::password_path(e));
+        }
     }
     v.retain(|p| p.is_file());
     v

@@ -3661,7 +3661,7 @@ a test that pins the `-device usb-storage` line.
 **Milestone:** none
 **Priority:** P1
 **Effort:** L
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3709,6 +3709,39 @@ unchanged, that no emulator is left, and that a refusal under TCG names
 The proof runs on `kvm.yml` (T-1682), because a cloud session has no `/dev/kvm`. `cargo test -p podvm-windows install_plan` exits 0, with new tests
 of the phase lines and of the TCG refusal.
 
+## Correction
+
+2026-11-15. The Prove names `--accel tcg`, and `podvm pull` has no
+`--accel` flag: the switch of the accelerator is `PODVM_MACHINE_ACCEL`
+(T-1871, call C16). The refusal names `PODVM_MACHINE_ACCEL=tcg` and the
+`--accel tcg` of this entry. The first run of experiment 452 installs
+`windows:2025` only; `windows:11` follows when 2025 passes, on its own
+runner (the room of one runner is for one install).
+
+## Done
+
+**Partial 2026-11-15.** `podvm pull windows:2025` (and `11`, `10`)
+checks the answer file, the accelerator and the room before the download
+(`crates/podvm/src/windows/install.rs`, `preflight`), then fetches the
+ISO and installs it: a blank sparse 64 GiB qcow2, the ISO as the boot
+CD-ROM, the answer stick on USB, the desktop options (T-1865), Enter each
+500 ms for 20 s through QMP, and a watch from outside that prints the
+phases `booting the setup ISO`, `copying files` (the root disk holds
+256 MiB), `installing` (the specialize pass writes
+`PODVM-WINDOWS-SPECIALIZE` on COM1), `first logon` and `ready`, each
+with the elapsed time. After the guest powers off, `qemu-img convert`
+writes `windows-NAME.golden.qcow2` with no backing file into the store,
+and the random password goes beside it (mode 0600). TCG is refused unless
+asked, with the bound (16 h, estimate). The answer file writes no empty
+`RunSynchronous` now (the golden files changed). `cargo test -p
+podvm-windows install_plan` exits 0 with five tests (the phases, the
+lines, the refusal, the bounds, the markers). On the cloud host, a stand-in
+ISO of 10 MiB under TCG booted the emulator line to the shell of the
+firmware, the deadline override stopped it at 45 s, and no emulator
+stayed. `kvm.yml` has the job `install` (experiment 452: the refusal
+under TCG before the job gets /dev/kvm, then the install). The clauses
+that remain: the run of the job under KVM, the first real install time
+(a dash until then), and `windows:11`.
 
 # T-1868: A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe
 

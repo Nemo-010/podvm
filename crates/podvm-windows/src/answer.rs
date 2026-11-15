@@ -59,6 +59,14 @@ pub struct Answer {
 /// The marker that the first logon writes on COM1 when the install ended.
 pub const READY: &str = "PODVM-WINDOWS-READY";
 
+/// TODO/machine.md T-1867: the marker that the specialize pass writes on
+/// COM1, after the first reboot of Setup.
+pub const SPECIALIZE: &str = "PODVM-WINDOWS-SPECIALIZE";
+
+/// TODO/machine.md T-1867: the marker that the first logon writes on COM1
+/// before its other commands.
+pub const LOGON: &str = "PODVM-WINDOWS-LOGON";
+
 /// The name of the file that Setup reads at the root of a removable drive.
 pub const FILE: &str = "autounattend.xml";
 
@@ -109,7 +117,16 @@ pub fn xml(a: &Answer) -> String {
     } else {
         String::new()
     };
+    // TODO/machine.md T-1867: Setup reads no empty `RunSynchronous`, so
+    // the element is written only with a command in it.
+    let labconfig = if labconfig.is_empty() {
+        labconfig
+    } else {
+        format!("      <RunSynchronous>\n{labconfig}      </RunSynchronous>\n")
+    };
+    let logon = format!("cmd /c echo {LOGON}> COM1");
     let first = [
+        logon.as_str(),
         r#"reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f"#,
         r#"netsh advfirewall firewall set rule group="Remote Desktop" new enable=Yes"#,
         "powercfg /change standby-timeout-ac 0",
@@ -137,9 +154,7 @@ pub fn xml(a: &Answer) -> String {
       <InputLocale>{loc}</InputLocale><SystemLocale>{loc}</SystemLocale><UILanguage>{loc}</UILanguage><UserLocale>{loc}</UserLocale>
     </component>
     <component name="Microsoft-Windows-Setup" {ARCH}>
-      <RunSynchronous>
-{labconfig}      </RunSynchronous>
-      <DiskConfiguration>
+{labconfig}      <DiskConfiguration>
         <Disk wcm:action="add">
           <DiskID>0</DiskID><WillWipeDisk>true</WillWipeDisk>
           <CreatePartitions>
@@ -165,6 +180,11 @@ pub fn xml(a: &Answer) -> String {
   <settings pass="specialize">
     <component name="Microsoft-Windows-Shell-Setup" {ARCH}>
       <ComputerName>{host}</ComputerName>
+    </component>
+    <component name="Microsoft-Windows-Deployment" {ARCH}>
+      <RunSynchronous>
+        <RunSynchronousCommand wcm:action="add"><Order>1</Order><Path>cmd /c echo {SPECIALIZE}&gt; COM1</Path></RunSynchronousCommand>
+      </RunSynchronous>
     </component>
   </settings>
   <settings pass="oobeSystem">
