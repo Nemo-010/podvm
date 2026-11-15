@@ -684,7 +684,7 @@ answers the ask of the Approach.
 **Milestone:** none
 **Priority:** P2
 **Effort:** L
-**Status:** blocked
+**Status:** partial
 
 ## Problem
 
@@ -706,9 +706,11 @@ A profile that a host cannot hold is refused by name, part by part; a lab never 
 
 `podvm lab run userns-off -- unshare -Ur true` exits 1 with EPERM, `podvm lab check userns-off` exits 0, and a guest with `--podvm-lab userns-off` gives `0` for `cat /proc/sys/user/max_user_namespaces`.
 
-## Blocker
+## Done
 
 **Blocked (2026-11-15).** The shape of the profiles: COORD-140 (PodUtils/podvm#424) asks whether podcrates takes `pod-lab` (PodUtils/podrunner#180, ask 1).
 
 **Blocked, amended (2026-11-15, later).** podcrates takes `pod-lab` (COORD-107, PodUtils/podcrates#180, podcrates@T-692): part 1, in the tag after `v0.53.0`, gives the profiles as data, `check`, `run` with no root, and the binary `podlab`; part 2 gives the step of Actions and the machine-tier form that podvm drives (`--podvm-lab PROFILE`, the profiles from `pod-lab`). The table is the profiles of PodUtils/podrunner#180 with the six of PodUtils/podvm#424. Clears when a tag of podcrates carries part 1.
+
+**Partial (2026-11-15).** The host form, as PodUtils/podrunner#182 asks before the crate (`crates/podvm/src/lab/host.rs`, `host/probe.rs`): `podvm lab profiles`, `podvm lab run PROFILE[,PROFILE...] -- CMD` and `podvm lab check PROFILE[,...]` for `bind-denied` (a seccomp filter: `bind` and `connect` with the length of a `sockaddr_in` or `sockaddr_in6` give EACCES; a filter cannot read the family, so an `AF_UNIX` path of exactly 13 or 25 bytes is refused too), `getsockname-denied` (EOPNOTSUPP), `userns-off` (`unshare` and `clone` with `CLONE_NEWUSER` give EPERM, `clone3` ENOSYS), `small-tmp` and `noexec-tmp` (a user and a mount namespace that keep the ids, a tmpfs of 1 GiB on `/tmp`, `TMPDIR=/tmp`), and `inherited-fds` (3 to 20 open with no `FD_CLOEXEC`). The rules compile with `pod_confine::deny::program`. `check` runs podvm's own probe in the lab through `/proc/self/exe`. Where the host refuses a user namespace, `small-tmp` refuses by name with exit 125 (measured under the `deny-unshare` fixture). Evidence (kernel 6.18, uid 1000): `experiments/462-lab-profiles.sh` PASS (`experiments/results/lab-profiles.txt`): each part of the six profiles holds, the control outside a lab does not hold, `unshare -Ur true` fails in `userns-off`, a copy of `true` in `/tmp` exits 126 in `noexec-tmp`. Remaining: the guest form (`--podvm-lab PROFILE` of the machine tier) and the profiles as data of `pod-lab`, after the tag of podcrates that carries part 1 (the blocker above).
 

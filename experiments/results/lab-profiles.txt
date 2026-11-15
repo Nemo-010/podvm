@@ -1,0 +1,21 @@
+date      2026-11-15T15:59:48Z
+podvm     podvm 0.2.0-beta.23
+uid       1000
+bind-denied: bind 127.0.0.1: holds
+bind-denied: bind ::1: holds
+bind-denied: connect 127.0.0.1: holds
+bind-denied: bind AF_UNIX: holds
+getsockname-denied: getsockname: holds
+userns-off: unshare(CLONE_NEWUSER): holds
+small-tmp: /tmp: holds
+small-tmp: TMPDIR: holds
+noexec-tmp: /tmp: holds
+noexec-tmp: TMPDIR: holds
+inherited-fds: descriptors 3 to 20: holds
+clause 1 PASS
+clause 2 PASS
+clause 3 PASS
+clause 4 PASS
+clause 5 PASS
+clause 6 PASS
+PASS

@@ -8,10 +8,33 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.24 (2026-11-15)
+
+### Added: `podvm lab run` and `podvm lab check` of hostile host classes, 2026-11-15
+
+Record: T-1916 (PodUtils/podrunner#180, #182).
+Deployed: version 0.2.0-beta.24.
+
+- `podvm lab run PROFILE[,PROFILE...] -- CMD` runs CMD in a hostile host
+  class with no root: `bind-denied`, `getsockname-denied`, `userns-off`,
+  `small-tmp`, `noexec-tmp` and `inherited-fds`. `podvm lab check` proves
+  each part on this host; `podvm lab profiles` lists them. A part that the
+  host cannot give refuses with exit 125.
+
+### Fixed: `kvm` under QEMU user mode, 2026-11-15
+
+Record: T-1907 (PodUtils/podvm#401).
+Deployed: version 0.2.0-beta.24.
+
+- The machine tier and the Windows guest use KVM only where `/dev/kvm`
+  runs a guest of podvm's architecture. An aarch64 podvm in an emulated
+  container on an x86_64 host now runs TCG, or refuses
+  `PODVM_MACHINE_ACCEL=kvm` by name.
+
 ### Fixed: `tar -x` of a link before its target on the userland rung, 2026-11-15
 
 Record: T-1915 (PodUtils/podrunner#178).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.24.
 
 - `utimensat` and `fchmodat` with `AT_SYMLINK_NOFOLLOW` act on the link,
   so GNU tar extracts a link that comes before its target, or a dangling
@@ -20,7 +43,7 @@ Deployed: none yet.
 ### Fixed: "a passed descriptor goes onto 17", 2026-11-15
 
 Record: T-1914 (PodUtils/podrunner#177).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.24.
 
 - `podvm run` and `run -d` from a parent that holds descriptors 3 to 15
   open (podrunner under `podnet pod`) no longer exit 125: podvm holds the

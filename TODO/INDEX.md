@@ -578,12 +578,12 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1913](cli.md) | P3 | S | none | cli | done | The store of a verb has no flag, only `PODVM_STORE` |
 | [T-1914](enter.md) | P1 | S | none | enter | done | `run -d` refuses "a passed descriptor goes onto 17" when the parent holds descriptors 3 to 15 |
 | [T-1915](interpose.md) | P1 | S | none | interpose | done | On the userland rung, `tar -x` fails when a symbolic link comes before its target |
-| [T-1916](net.md) | P2 | L | none | net | blocked | Lab profiles: each hostile host class as a profile that a project brings up |
+| [T-1916](net.md) | P2 | L | none | net | partial | Lab profiles: each hostile host class as a profile that a project brings up |
 | [T-1917](cli.md) | P3 | M | none | cli | blocked | The help and the manual on the shared crate of PodUtils |
 
 ## Counts
 
-514 entries: 7 open, 13 partial, 5 blocked, 489 done.
+514 entries: 7 open, 14 partial, 4 blocked, 489 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -594,9 +594,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 207 | 211 |
-| P2 | 4 | 5 | 4 | 168 | 181 |
+| P2 | 4 | 6 | 3 | 168 | 181 |
 | P3 | 3 | 4 | 1 | 40 | 48 |
-| **All** | 7 | 13 | 5 | 489 | 514 |
+| **All** | 7 | 14 | 4 | 489 | 514 |
 
 ## Work order
 

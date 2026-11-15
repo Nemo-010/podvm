@@ -43,6 +43,8 @@ pod-link = { git = "https://github.com/PodUtils/podcrates", tag = "v0.52.0" }
 pod-services = { git = "https://github.com/PodUtils/podcrates", tag = "v0.52.0" }
 # The offline part of a network lab: knobs, plan, verdicts (TODO/net.md T-1662).
 pod-netlab = { git = "https://github.com/PodUtils/podcrates", tag = "v0.52.0" }
+# TODO/net.md T-1916: the seccomp program of the host lab profiles.
+pod-confine = { git = "https://github.com/PodUtils/podcrates", tag = "v0.52.0" }
 # TODO/net.md T-1665: the egress broker of `--net broker`, chained to the
 # host's proxy through `pod-proxy`.
 pod-broker = { git = "https://github.com/PodUtils/podcrates", tag = "v0.52.0" }

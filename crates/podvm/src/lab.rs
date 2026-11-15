@@ -10,6 +10,7 @@
 //! (the probe program, the world and the run: podcrates@T-345 to
 //! podcrates@T-347).
 
+pub mod host;
 #[cfg(test)]
 mod tests;
 
@@ -17,9 +18,16 @@ use pod_netlab::{scenario, scenarios, Bound, Expect, Knobs, Lab, Must, Seen, Set
 use podvm_image::error::EXIT_FLAG_ERROR;
 
 const USAGE: &str = "\
-usage: podvm lab scenarios
+usage: podvm lab profiles
+       podvm lab run PROFILE[,PROFILE...] -- CMD [ARG...]
+       podvm lab check PROFILE[,PROFILE...]
+       podvm lab scenarios
        podvm lab plan SCENARIO
        podvm lab plan [--stack S] [--nat N] [--policy P] [KNOB-FLAG]...
+
+A hostile host class on this host, with no root (TODO/net.md T-1916):
+`profiles` lists them, `run` runs CMD in them, and `check` proves that
+each part holds here.
 
 A network lab inside one guest: a guest, a router and a world namespace,
 with NAT, a policy and impairment (TODO/net.md T-1662). `scenarios` lists
@@ -57,6 +65,16 @@ pub fn main(args: &[String]) -> i32 {
             print!("{}", verb_usage(v));
             0
         }
+        // TODO/net.md T-1916: the host form of the lab profiles.
+        Some("profiles") => {
+            print!("{}", host::profiles_text());
+            0
+        }
+        Some("run") => host::run(&args[1..]),
+        Some("check") if args.get(1).is_some_and(|p| host::is_profile(p)) => {
+            host::check(&args[1..])
+        }
+        Some(host::PROBE_VERB) => host::probe_main(&args[1..]),
         Some("scenarios") => {
             print!("{}", scenarios_text());
             0
@@ -87,6 +105,8 @@ pub fn main(args: &[String]) -> i32 {
 /// The usage of one verb of lab (TODO/cli.md T-1833).
 pub fn verb_usage(verb: &str) -> String {
     match verb {
+        "profiles" => "usage: podvm lab profiles\n\nList the hostile host classes that `lab run` and `lab check` make on this host.\n".into(),
+        "run" => host::RUN_USAGE.into(),
         "scenarios" => "usage: podvm lab scenarios\n\nList the offline scenarios of the lab with their knobs.\n".into(),
         "plan" => "usage: podvm lab plan SCENARIO\n       podvm lab plan [--stack S] [--nat N] [--policy P] [KNOB-FLAG]...\n\nCheck the knobs of a scenario, or of the flags of sand-net, and print the\nsteps that build and remove the lab and the verdict of each probe.\n".into(),
         v if GUEST_VERBS.contains(&v) => format!(
