@@ -72,7 +72,7 @@ impl From<pod_core::Failure> for Error {
         match pod_oci::refusal(&f) {
             Some(pod_oci::Refusal::NoPlatform { want, offered }) => Error::NoPlatform {
                 want: want.clone(),
-                offered: offered.clone(),
+                offered: offered_list(offered),
             },
             Some(pod_oci::Refusal::Digest { what, want, got }) => Error::DigestMismatch {
                 what: what.clone(),
@@ -126,12 +126,9 @@ impl fmt::Display for Error {
         match self {
             Error::Usage(m) => write!(f, "{m}"),
             Error::Reference(m) => write!(f, "invalid reference: {m}"),
-            Error::PlainHttpRefused(m) => write!(
-                f,
-                "{m}: podvm speaks HTTPS only and will not downgrade. \
-                 tcp/80 egress is broken on the runtime podvm targets, so a \
-                 plain-HTTP fallback hangs instead of failing (TODO/image.md T-0201)"
-            ),
+            // TODO/image.md T-1836: the message of the refusal explains
+            // T-0201 once; the Display adds nothing to it.
+            Error::PlainHttpRefused(m) => write!(f, "{m}"),
             Error::Http { what, detail } => write!(f, "{what}: {detail}"),
             Error::DigestMismatch { what, want, got } => write!(
                 f,
@@ -147,6 +144,13 @@ impl fmt::Display for Error {
             Error::Store(m) => write!(f, "store: {m}"),
             Error::Io { path, source } => write!(f, "{path}: {source}"),
             Error::NoSuchImage(r) => write!(f, "no such image: {r}"),
+            // TODO/image.md T-1836: a registry answers 401 for a repository
+            // that does not exist as for a private one.
+            Error::Image(failure) if failure.to_string().contains("HTTP 401") => write!(
+                f,
+                "{failure}: the repository does not exist, or it is private \
+                 (`podvm login` for a private one)"
+            ),
             Error::Image(failure) => write!(f, "{failure}"),
         }
     }
@@ -163,3 +167,37 @@ impl std::error::Error for Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+/// TODO/image.md T-1836: the platforms of an index as a caller reads them:
+/// the attestation manifests (`unknown/unknown`) out, and each platform
+/// once, in the order of the index.
+fn offered_list(offered: &str) -> String {
+    let mut seen: Vec<&str> = Vec::new();
+    for p in offered.split(',').map(str::trim) {
+        if !p.is_empty() && p != "unknown/unknown" && !seen.contains(&p) {
+            seen.push(p);
+        }
+    }
+    if seen.is_empty() {
+        offered.to_string()
+    } else {
+        seen.join(", ")
+    }
+}
+
+#[cfg(test)]
+mod messages_tests {
+    use super::*;
+
+    /// TODO/image.md T-1836: the attestations go and each platform shows
+    /// once; the plain-HTTP refusal explains T-0201 once.
+    #[test]
+    fn messages_list_each_platform_once_and_explain_once() {
+        assert_eq!(
+            offered_list("windows/amd64, windows/amd64, unknown/unknown, linux/arm64"),
+            "windows/amd64, linux/arm64"
+        );
+        let e = Error::PlainHttpRefused("x names http:// (T-0201)".into()).to_string();
+        assert_eq!(e.matches("T-0201").count(), 1, "{e}");
+    }
+}

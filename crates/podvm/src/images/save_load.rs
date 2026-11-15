@@ -220,13 +220,7 @@ pub fn save(verb: &str, args: &[String]) -> i32 {
         };
         match podvm_image::layout::save_for(&store, &o.want, platform.as_ref(), &mut file) {
             Ok(done) => {
-                eprintln!(
-                    "podvm save: saved {} as {} blobs ({} bytes), digest {}",
-                    o.want,
-                    done.blobs,
-                    podvm_image::space::mib(done.bytes),
-                    done.record.manifest_digest
-                );
+                eprintln!("{}", saved_line(&o.want, &done));
                 println!("{path}");
                 0
             }
@@ -242,13 +236,7 @@ pub fn save(verb: &str, args: &[String]) -> i32 {
         let mut out = std::io::stdout().lock();
         match podvm_image::layout::save_for(&store, &o.want, platform.as_ref(), &mut out) {
             Ok(done) => {
-                eprintln!(
-                    "podvm save: saved {} as {} blobs ({} bytes), digest {}",
-                    o.want,
-                    done.blobs,
-                    podvm_image::space::mib(done.bytes),
-                    done.record.manifest_digest
-                );
+                eprintln!("{}", saved_line(&o.want, &done));
                 0
             }
             Err(e) => {
@@ -462,4 +450,15 @@ pub fn verify(verb: &str, args: &[String]) -> i32 {
     }
     println!("verify: {checked} blobs checked, {mismatched} mismatched");
     code
+}
+
+/// TODO/image.md T-1836: the line of a save, with the size once
+/// ("3.2 MiB", not "3.2 MiB bytes").
+pub(crate) fn saved_line(want: &str, done: &podvm_image::layout::Saved) -> String {
+    format!(
+        "podvm save: saved {want} as {} blobs ({}), digest {}",
+        done.blobs,
+        podvm_image::space::mib(done.bytes),
+        done.record.manifest_digest
+    )
 }

@@ -498,7 +498,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1833](cli.md) | P2 | S | none | cli | done | Twelve commands refuse `-h` and `--help`, and `system df --help` prints the usage of `system info` |
 | [T-1834](cli.md) | P2 | S | none | cli | done | `system info --format '{{json .X}}'` prints counts and `StrictOk` as strings |
 | [T-1835](probe.md) | P2 | S | none | probe | done | `compare --strict` passes an empty report, an unparsable one, or one that lost whole sections |
-| [T-1836](image.md) | P3 | S | none | image | open | Six image messages name the wrong cause or repeat themselves |
+| [T-1836](image.md) | P3 | S | none | image | done | Six image messages name the wrong cause or repeat themselves |
 | [T-1837](cli.md) | P3 | S | none | cli | open | The refusals of `lab`, `windows fetch`, `remote ssh` and `probe-inside` do not name the value, the unit or the verb |
 | [T-1838](cli.md) | P3 | S | none | cli | open | The help of `windows` and `machine ssh` does not align its columns, and 21 sentences start with a lowercase `note:` |
 | [T-1839](image.md) | P2 | S | none | image | done | `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256` |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 25 open, 12 partial, 2 blocked, 454 done.
+493 entries: 24 open, 12 partial, 2 blocked, 455 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 12 | 3 | 2 | 158 | 175 |
-| P3 | 12 | 2 | 0 | 26 | 40 |
-| **All** | 25 | 12 | 2 | 454 | 493 |
+| P3 | 11 | 2 | 0 | 27 | 40 |
+| **All** | 24 | 12 | 2 | 455 | 493 |
 
 ## Work order
 

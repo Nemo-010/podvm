@@ -254,7 +254,10 @@ pub fn prune(verb: &str, args: &[String]) -> i32 {
                     containers.join(", ")
                 );
             }
-            println!("\nTotal reclaimed space: {}", space::mib(done.freed_bytes));
+            print!(
+                "{}",
+                prune_total(!done.deleted.is_empty(), done.freed_bytes)
+            );
             0
         }
         Err(e) => fail(e),
@@ -431,4 +434,15 @@ pub fn extract(verb: &str, args: &[String]) -> i32 {
             podvm_image::error::EXIT_RUNTIME_ERROR
         }
     }
+}
+
+/// TODO/image.md T-1836: the total of `image prune`; the blank line parts
+/// a list of deleted images from it, and there is no list when nothing
+/// went.
+pub(crate) fn prune_total(deleted: bool, bytes: u64) -> String {
+    format!(
+        "{}Total reclaimed space: {}\n",
+        if deleted { "\n" } else { "" },
+        space::mib(bytes)
+    )
 }

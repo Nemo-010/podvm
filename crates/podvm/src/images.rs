@@ -346,7 +346,9 @@ mod table_tests;
 #[cfg(test)]
 mod exit_tests;
 #[cfg(test)]
-mod tests; // TODO/image.md T-1842
+mod messages_tests;
+#[cfg(test)]
+mod tests; // TODO/image.md T-1842 // TODO/image.md T-1836
 
 /// docker's `image` sub-command group.
 pub fn group(args: &[String]) -> i32 {

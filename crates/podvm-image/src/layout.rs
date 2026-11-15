@@ -108,6 +108,8 @@ fn append(archive: &mut tar::Builder<&mut dyn Write>, path: &str, data: &[u8]) -
 /// decides where it goes.
 struct StagedBlob {
     digest: Digest,
+    /// The name of the entry in the tarball (untrusted; for the refusal).
+    entry: String,
     path: PathBuf,
     // ⭐ The in-store staging handle, held until commit or cleanup. Its
     // exclusive lock is what tells `sweep_staging` this file is being
@@ -170,7 +172,9 @@ fn load_inner(
             *index_bytes = Some(bytes);
             continue;
         }
-        staged.push(stage_entry(store, src, &mut entry)?);
+        let mut blob = stage_entry(store, src, &mut entry)?;
+        blob.entry = name.to_string();
+        staged.push(blob);
     }
     let Some(index_bytes) = index_bytes else {
         return Err(Error::Oci(format!(
@@ -287,6 +291,7 @@ fn stage_entry(store: &Store, src: &Path, entry: &mut dyn Read) -> Result<Staged
     let hex = crate::digest::hex_of(&hasher.finalize());
     Ok(StagedBlob {
         digest: Digest::parse(&format!("sha256:{hex}"))?,
+        entry: String::new(),
         path,
         _guard: out,
     })
@@ -302,10 +307,19 @@ fn commit_staged(
     src: &Path,
 ) -> Result<()> {
     let Some(pos) = staged.iter().position(|b| b.digest == *want) else {
+        // TODO/image.md T-1836: the entry of that name and its computed
+        // digest, or that no entry holds the blob.
+        let hex = want.to_string();
+        let hex = hex.trim_start_matches("sha256:");
+        let got = staged
+            .iter()
+            .find(|b| b.entry.ends_with(hex))
+            .map(|b| format!("{} for the entry {}", b.digest, b.entry))
+            .unwrap_or_else(|| "no entry of the tarball".to_string());
         return Err(Error::DigestMismatch {
             what: format!("tarball {}", src.display()),
             want: want.to_string(),
-            got: "absent".to_string(),
+            got,
         });
     };
     let blob = staged.remove(pos);

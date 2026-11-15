@@ -3984,7 +3984,7 @@ their platform after the tag, and the TAG column fits its longest value.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4023,6 +4023,21 @@ Text only; each exit code stays.
 ## Prove
 
 `cargo test -p podvm-image messages` exits 0 and `cargo test -p podvm --bin podvm image_messages` exits 0, with a test for each of the six texts
+
+## Done
+
+**Done 2026-11-15.** A 401 of a registry adds "the repository does not
+exist, or it is private (`podvm login` for a private one)"
+(`podvm-image/src/error.rs`). The platforms of `NoPlatform` drop the
+attestation manifests and show each platform once (`offered_list`);
+`pod-oci` already names the `os.version` of a Windows entry. `save`
+prints the size once (`saved_line`). A changed blob names its entry and
+its computed digest (`layout.rs`, `commit_staged`). The plain-HTTP
+refusal explains T-0201 once. `image prune` prints its blank line only
+after a list (`prune_total`). `cargo test -p podvm-image messages` and
+`cargo test -p podvm --bin podvm image_messages` exit 0. Live on the
+cloud host: `pull nosuchrepo-t1836/none:1` and `pull --platform
+bogus/bogus` of `hello-world` give the new texts.
 
 
 # T-1839: `load` takes an index with `schemaVersion` 9 and names an image with no ref-name annotation `sha256`

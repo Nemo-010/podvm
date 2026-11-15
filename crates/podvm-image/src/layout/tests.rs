@@ -154,3 +154,40 @@ fn layout_index_import_refuses_an_escaping_member() {
     }
     let _ = std::fs::remove_dir_all(s.root());
 }
+
+/// TODO/image.md T-1836: a blob whose bytes changed is refused with the
+/// entry of the tarball and its computed digest, not "absent".
+#[test]
+fn messages_name_the_entry_of_a_changed_blob() {
+    let s = scratch("changed");
+    let saved = saved_with_index(&s, "chg", |_| {});
+    let mut a = tar::Archive::new(std::fs::File::open(&saved).unwrap());
+    let mut b = tar::Builder::new(Vec::new());
+    let mut changed = false;
+    for e in a.entries().unwrap() {
+        let mut e = e.unwrap();
+        let path = e.path().unwrap().to_string_lossy().to_string();
+        let mut bytes = Vec::new();
+        std::io::Read::read_to_end(&mut e, &mut bytes).unwrap();
+        // The layer: the largest blob; one byte of it changes.
+        if path.starts_with("blobs/sha256/") && bytes.len() > 512 && !changed {
+            bytes[100] ^= 0xff;
+            changed = true;
+        }
+        let mut h = tar::Header::new_gnu();
+        h.set_size(bytes.len() as u64);
+        h.set_mode(0o644);
+        h.set_entry_type(e.header().entry_type());
+        h.set_cksum();
+        b.append_data(&mut h, &path, &bytes[..]).unwrap();
+    }
+    assert!(changed, "no blob to change");
+    std::fs::write(&saved, b.into_inner().unwrap()).unwrap();
+    let fresh = scratch("changed-load");
+    let e = load(&fresh, &saved).unwrap_err().to_string();
+    assert!(e.contains("for the entry blobs/sha256/"), "{e}");
+    assert!(!e.contains("absent"), "{e}");
+    let _ = std::fs::remove_file(&saved);
+    let _ = std::fs::remove_dir_all(s.root());
+    let _ = std::fs::remove_dir_all(fresh.root());
+}
