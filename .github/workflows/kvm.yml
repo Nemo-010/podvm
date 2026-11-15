@@ -316,6 +316,7 @@ jobs:
         env:
           HOME: /mnt/w/home
           PODVM_452_NAMES: "2025"
+          PODVM_WINDOWS_SHOTS: ${{ runner.temp }}/install-shots
         run: |
           mkdir -p "$HOME"
           rc=0
@@ -335,4 +336,5 @@ jobs:
           path: |
             experiments/results/windows-install.txt
             experiments/results/windows-install-*.err
+            ${{ runner.temp }}/install-shots/
           if-no-files-found: warn

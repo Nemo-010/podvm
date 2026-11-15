@@ -262,8 +262,10 @@ fn doctor_unused(a: &args::Args) -> Option<&'static str> {
 pub fn windows(args: &[String]) -> i32 {
     // TODO/machine.md T-1870: the keeper of a detached machine, which `run
     // -d` starts; no person types it.
-    if args.first().map(String::as_str) == Some("keeper") {
-        return machine::keeper(&args[1..]);
+    match args.first().map(String::as_str) {
+        Some("keeper") => return machine::keeper(&args[1..]),
+        Some("screenshot") => return machine::screenshot(&args[1..]), // T-1869
+        _ => {}
     }
     let a = match args::parse(args) {
         Ok(Some(a)) => a,

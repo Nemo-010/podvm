@@ -531,7 +531,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1866](machine.md) | P1 | M | none | machine | done | There is no generator of the unattended answer file or of the USB FAT media |
 | [T-1867](machine.md) | P1 | L | none | machine | partial | `podvm pull windows:11` cannot install a full Windows guest |
 | [T-1868](machine.md) | P2 | M | none | machine | open | A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe |
-| [T-1869](machine.md) | P2 | M | none | machine | open | A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds` |
+| [T-1869](machine.md) | P2 | M | none | machine | partial | A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds` |
 | [T-1870](machine.md) | P2 | L | none | machine | partial | A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name` |
 | [T-1871](machine.md) | P1 | M | none | machine | partial | `podvm windows doctor` is thin |
 | [T-1872](machine.md) | P2 | M | none | machine | open | A Windows guest has no `-v`: no way to bring a folder in or out |
@@ -563,7 +563,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-494 entries: 10 open, 15 partial, 2 blocked, 467 done.
+494 entries: 9 open, 16 partial, 2 blocked, 467 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,9 +574,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 200 | 205 |
-| P2 | 6 | 7 | 2 | 160 | 175 |
+| P2 | 5 | 8 | 2 | 160 | 175 |
 | P3 | 4 | 3 | 0 | 33 | 40 |
-| **All** | 10 | 15 | 2 | 467 | 494 |
+| **All** | 9 | 16 | 2 | 467 | 494 |
 
 ## Work order
 

@@ -3811,7 +3811,7 @@ a `cp` round trip keeps the sha256, and `stop` is graceful. The proof runs on `k
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3849,6 +3849,18 @@ After `run -d -p 3389:3389 windows:2025` the host sees the RDP confirm,
 `curl` in the guest fail. `cargo test -p podvm windows_ports` exits 0, with new
 tests of the `hostfwd` line and of the loopback default. The proof runs on `kvm.yml` (T-1682), because a cloud session has no `/dev/kvm`. It needs
 T-1865, T-1867 and T-1870.
+
+## Done
+
+**Partial 2026-11-15.** `podvm windows screenshot NAME FILE` writes a
+screen dump (PPM) of a running machine of T-1870 through QMP `screendump`
+(`crates/podvm/src/windows/machine/view.rs`); on the cloud host it gave a
+720x400 dump of the FreeDOS screen of a `run -d windows:dos` machine, and
+refused a machine that was removed (exit 125). The install of T-1867
+writes a dump into `PODVM_WINDOWS_SHOTS` at each progress line and at the
+deadline, and the job `install` of `kvm.yml` keeps them. The clauses that
+remain: `-p` (the parity row refuses it today), `podvm port`, the RDP
+check, VNC, `creds`, and the policy of 10.0.2.2.
 
 
 # T-1870: A Windows guest has no lifecycle: no `run -d`, `ps`, `stop`, `start`, `rm`, `logs` or `--name`

@@ -435,48 +435,6 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
     }
 }
 
-/// `podvm logs [-f] NAME` of a machine: the serial line of the guest; with
-/// `follow`, the new bytes while the machine runs.
-pub(crate) fn logs(name: &str, follow: bool) -> i32 {
-    use std::io::{Read, Seek, Write};
-    let root = machines::root();
-    let path = machines::dir_in(&root, name).join("serial.log");
-    let mut out = std::io::stdout().lock();
-    let mut at = 0u64;
-    loop {
-        if let Ok(mut f) = std::fs::File::open(&path)
-            && f.seek(std::io::SeekFrom::Start(at)).is_ok()
-        {
-            let mut buf = Vec::new();
-            if f.read_to_end(&mut buf).is_ok() && !buf.is_empty() {
-                at += buf.len() as u64;
-                if out.write_all(&buf).and_then(|()| out.flush()).is_err() {
-                    return 0;
-                }
-            }
-        }
-        if !follow || !machines::read(&root, name).is_some_and(|r| r.running()) {
-            return 0;
-        }
-        std::thread::sleep(Duration::from_millis(250));
-    }
-}
-
-/// The rows of `podvm ps` for the machines: each one with `all`, else the
-/// running ones. The columns are those of the containers.
-pub(crate) fn ps_rows(all: bool) -> Vec<Vec<String>> {
-    machines::list(&machines::root())
-        .into_iter()
-        .filter(|r| all || r.running())
-        .map(|r| {
-            vec![
-                r.name.clone(),
-                r.image.clone(),
-                format!("({} guest)", r.flavor),
-                podvm_image::clock::iso8601(std::time::UNIX_EPOCH + Duration::from_secs(r.created)),
-                r.status(),
-                r.name.clone(),
-            ]
-        })
-        .collect()
-}
+// TODO/machine.md T-1869, T-1870: the verbs that read a machine.
+mod view;
+pub(crate) use view::{logs, ps_rows, screenshot};

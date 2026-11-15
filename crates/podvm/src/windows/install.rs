@@ -282,6 +282,24 @@ fn agent_installed(plan: &Plan) -> bool {
         .is_some_and(|m| m.get(podvm_windows::agent::SETUP).is_some())
 }
 
+/// A screen dump of the guest into `PODVM_WINDOWS_SHOTS` where it names a
+/// directory: the evidence of an install that hangs. Named by the elapsed
+/// time and the phase; a failure of the dump changes nothing.
+fn shot(plan: &Plan, start: Instant, phase: Phase) {
+    let Some(dir) = std::env::var_os("PODVM_WINDOWS_SHOTS").map(PathBuf::from) else {
+        return;
+    };
+    let file = dir.join(format!(
+        "{:05}s-{}.ppm",
+        start.elapsed().as_secs(),
+        phase.words().replace(' ', "-")
+    ));
+    if let Ok(mut m) = podvm_windows::qmp::Monitor::connect(&plan.monitor, Duration::from_secs(1)) {
+        let _ = std::fs::create_dir_all(&dir);
+        let _ = m.screendump(&file);
+    }
+}
+
 /// The last lines of the error stream of the emulator, as `; the
 /// emulator said: ...`, or nothing.
 fn log_tail(plan: &Plan) -> String {
@@ -362,6 +380,7 @@ fn watch(
             phase = phase.max(now);
             say(phase);
             last_line = Instant::now();
+            shot(guest.plan, start, phase);
         }
         if phase == Phase::Ready {
             return Ok(());
@@ -378,6 +397,7 @@ fn watch(
             ));
         }
         if start.elapsed() >= deadline {
+            shot(guest.plan, start, phase);
             return Err(fail(
                 verb,
                 name,
