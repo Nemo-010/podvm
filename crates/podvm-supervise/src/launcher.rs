@@ -117,6 +117,16 @@ fn enter_in_launcher(
         die_with_parent: true,
         // TODO/enter.md T-1658: the confine layer of `run -d`.
         confine: container.of.hardening.confine_spec(&container.rootfs)?,
+        // TODO/enter.md T-1908: `--hostname` names a UTS namespace of the
+        // namespace rung (podcrates v0.52.0, `Plan::hostname`); each other
+        // entry refuses a plan with a name and holds it by its env.
+        hostname: (container.rung == "namespace")
+            .then(|| {
+                env.iter()
+                    .find_map(|e| e.strip_prefix("PODVM_HOSTNAME="))
+                    .map(str::to_string)
+            })
+            .flatten(),
     };
 
     // ⭐ TODO/image.md T-0204 and T-0211. The image lock is taken here and

@@ -392,6 +392,7 @@ pub fn exec(args: &[String]) -> i32 {
         no_new_privs: false,
         die_with_parent: false,
         confine: None,
+        hostname: None, // T-1908: the name rides in the env of the record
     };
     if let Err(c) = serve_devices(&mut plan, &mut err) {
         drop(memo);

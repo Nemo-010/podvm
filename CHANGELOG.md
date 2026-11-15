@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: podvm takes podcrates `v0.52.0`, 2026-11-15
+
+Record: T-1908, T-1912.
+Deployed: none yet.
+
+- `run -d --hostname` names the UTS namespace of the namespace rung
+  through `Plan::hostname` of pod-enter; the probe of KVM checks the
+  architecture of the guest that the device runs (PodUtils/podvm#407).
+
 ### Added: `--memory`, `--cpus` and `--pids-limit` in a delegated cgroup2 subtree, 2026-11-15
 
 Record: T-1747 (PodUtils/podrunner#110).

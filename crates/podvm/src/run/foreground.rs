@@ -220,6 +220,17 @@ fn run_inner(args: &[String], r: &mut super::report::Report) -> i32 {
         // follows the creating thread (T-0603).
         die_with_parent: true,
         confine: p.confine.clone(),
+        // TODO/enter.md T-1908: pod-enter names a UTS namespace of the
+        // namespace rung (podcrates v0.52.0), unless podvm owns one already.
+        hostname: (p.rung.as_str() == podvm_probe::select::Rung::Namespace.word()
+            && !crate::userns::owns_uts())
+        .then(|| {
+            p.env
+                .iter()
+                .find_map(|e| e.strip_prefix("PODVM_HOSTNAME="))
+                .map(str::to_string)
+        })
+        .flatten(),
     };
     // ⭐ T-0204 and T-0211. The lock is handed to the payload immediately
     // before the fork that leads to its exec, and to nothing else.

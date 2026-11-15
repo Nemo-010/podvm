@@ -1955,3 +1955,37 @@ A one-line map stays the default until the store rule holds for each verb.
 
 As uid 1000 on a host with `newuidmap` and a range of `/etc/subuid`: `run --rm -u 1000 public.ecr.aws/docker/library/alpine:3.20 sh -c 'echo x > /root/qa'` fails with `Permission denied`, `run --rm public.ecr.aws/docker/library/alpine:3.20 stat -c %g /etc/shadow` prints 42, and after `run -d` and `rm -f` of the same image no file of the store is owned by a subordinate id.
 
+
+# T-1912: `run -d` and `create` of an unprivileged caller do not use the user namespace of pod-enter
+
+**Source:** podcrates `v0.52.0` (PodUtils/podcrates#176, podcrates@T-670 to podcrates@T-672, the answer to COORD-132), T-1909
+**Category:** probe
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** blocked
+
+## Problem
+
+podcrates `v0.52.0` enters the namespace rung through a user namespace with no PID namespace (`pod-hostprobe`'s leg `mount(tmpfs,/tmp) in unshare(NEWUSER+maps,NEWNS)`, and the selection reads `user+mount`). podvm's entry decision asks `chroot_usable`, which is false for such a caller outside a namespace, so `run -d` and `create` still enter the userland rung.
+
+## Premise
+
+Each caller of `podvm_probe::probes::chroot_usable` that decides between the rungs (lifecycle `entry.rs`, `prepare.rs`, `df_info.rs`, `exec`, `ladder.rs`) can take the leg as a way to the namespace rung. The foreground `run` keeps its own entry (T-1909).
+
+## Approach
+
+A helper "the namespace rung is reachable": `chroot_usable` or the leg passes; each deciding caller takes it. Then run experiments 443 and 458 as uid 1000.
+
+## Decision
+
+Not before the rung has the device nodes of the host: in the user namespace `mknod` is refused, and `/dev/urandom` of the fixups ends after 1 MiB, where the userland rung serves the device through the interposer.
+
+## Prove
+
+As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm run -d public.ecr.aws/docker/library/alpine:3.20 sh -c 'id -u; head -c 2000000 /dev/urandom | wc -c; sleep 5'` logs `0` and `2000000`, and `inspect` names the namespace rung.
+
+## Blocker
+
+**Blocked (2026-11-15).** The device nodes on the rung: COORD-135 (PodUtils/podvm#414) asks pod-enter for the binds. Clears when a tag of podcrates carries them.
+

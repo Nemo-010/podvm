@@ -310,3 +310,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #411 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the install in three legs |
 | #412 | [gh action] requested | open | the release of 0.2.0-beta.23 at 86574c96 |
 | #413 | COORD-134: podvm took podcrates v0.51.0 (to podcrates) | open | T-1890, T-1747, T-1868 |
+| #414 | COORD-135: pod-enter: the device nodes of the host on the namespace rung through a user namespace (to podcrates) | open | T-1912 |

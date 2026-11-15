@@ -574,10 +574,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1909](probe.md) | P2 | M | none | probe | done | The namespace rung does not enter through a user namespace |
 | [T-1910](enter.md) | P2 | M | none | enter | done | `exec` and `cp` do not join a run that podvm put in a user namespace |
 | [T-1911](probe.md) | P3 | M | none | probe | open | In the user namespace of a run, `-u UID` is faked: the map holds the caller only |
+| [T-1912](probe.md) | P2 | S | none | probe | blocked | `run -d` and `create` of an unprivileged caller do not use the user namespace of pod-enter |
 
 ## Counts
 
-508 entries: 8 open, 12 partial, 2 blocked, 486 done.
+509 entries: 8 open, 12 partial, 3 blocked, 486 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -588,9 +589,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 205 | 209 |
-| P2 | 4 | 5 | 2 | 168 | 179 |
+| P2 | 4 | 5 | 3 | 168 | 180 |
 | P3 | 4 | 3 | 0 | 39 | 46 |
-| **All** | 8 | 12 | 2 | 486 | 508 |
+| **All** | 8 | 12 | 3 | 486 | 509 |
 
 ## Work order
 
