@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: `podvm probe` names why a stronger rung is not taken, 2026-11-15
+
+Record: T-1903 (PodUtils/podvm#397).
+Deployed: none yet.
+
+- `podvm probe` names on stderr the call that keeps the namespace rung and
+  the chroot rung from the run, and says when the host opens a user
+  namespace that the namespace rung does not use yet (T-1909).
+
 ### Fixed: name resolution under `--podvm-confine`, 2026-11-15
 
 Record: T-1902 (PodUtils/podvm#396).

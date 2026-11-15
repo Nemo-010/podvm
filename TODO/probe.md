@@ -1831,7 +1831,7 @@ reference with no record here: proxy"; the report against itself exits
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1852,6 +1852,10 @@ A probe that does not take a stronger rung says which leg stopped it.
 ## Prove
 
 `podvm probe` on a host where the namespace rung is refused names the failed leg in its summary; a test of the summary holds it.
+
+## Done
+
+**Done (2026-11-15).** `podvm probe` names on stderr the leg that keeps each stronger rung from the run (`crates/podvm/src/system/rung_why.rs`), from the census rows: `unshare(CLONE_NEWNS)` for the namespace rung, with the answer of `unshare(CLONE_NEWUSER)`, and `chroot(2)` for the chroot rung. The cause on such a host: the namespace rung of pod-enter calls `unshare(CLONE_NEWNS)` in the namespace of the caller and never opens a user namespace, so an unprivileged caller gets `EPERM` where `unshare -Urm` works. The entry through a user namespace is T-1909 (COORD-132, PodUtils/podvm#406). Evidence (cloud host, kernel 6.18, uid 1000): `podvm probe` prints "the namespace rung needs unshare(CLONE_NEWNS) in the namespace of the caller, and it gives EPERM; a user namespace opens on this host (unshare(CLONE_NEWUSER) ok), and the namespace rung does not enter one yet" and "the chroot rung needs chroot(2), and it gives EPERM". The test `each_weaker_rung_names_the_leg_that_stopped_the_stronger_ones` holds the summary.
 
 
 # T-1907: Under QEMU user mode, `probe` says `kvm: yes` for the device of the host
@@ -1882,3 +1886,34 @@ Ask podcrates for a leg that checks that the device runs a guest of the architec
 ## Prove
 
 `podvm-aarch64 probe` in an arm64 container on an x86_64 host says `kvm: no` with the reason.
+
+
+# T-1909: The namespace rung does not enter through a user namespace
+
+**Source:** PodUtils/podvm#397 (T-1903), COORD-132 (PodUtils/podvm#406)
+**Category:** probe
+**Milestone:** none
+**Priority:** P2
+**Effort:** M
+**Status:** open
+
+## Problem
+
+On a host where an unprivileged user opens a user namespace (`unshare -Urm` works), podvm enters the userland rung: the namespace rung of pod-enter calls `unshare(CLONE_NEWNS)` in the namespace of the caller, which needs `CAP_SYS_ADMIN` there.
+
+## Premise
+
+A user namespace gives the caller the mount and chroot rights inside it. `unshare(CLONE_NEWUSER | CLONE_NEWNS)`, a one-line `uid_map` and `gid_map`, then the mount steps and the `chroot` of the rung, give the namespace rung to such a caller. The launch and the probe legs are in pod-enter and pod-hostprobe (podcrates).
+
+## Approach
+
+Take the tag of podcrates that answers COORD-132, select the rung where its new leg works, and run the namespace experiments as uid 1000 on such a host.
+
+## Decision
+
+The ownership view follows the map; the interposer view (T-0711) keeps each id that the map does not hold.
+
+## Prove
+
+As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm system info --format '{{.EnteredRung}}'` prints `namespace`, and `podvm run --rm IMAGE sh -c 'cat /proc/self/uid_map'` shows the map of the user namespace.
+

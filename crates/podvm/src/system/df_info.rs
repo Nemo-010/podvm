@@ -370,6 +370,9 @@ pub fn to_entered(f: &podvm_probe::Findings, s: &mut podvm_probe::select::Select
         );
         s.rung = entered;
     }
+    for why in super::rung_why::why_not(f, entered) {
+        eprintln!("podvm probe: {why} (TODO/probe.md T-1903)");
+    }
 }
 
 pub(super) fn fields_from(
