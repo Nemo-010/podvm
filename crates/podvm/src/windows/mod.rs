@@ -265,6 +265,7 @@ pub fn windows(args: &[String]) -> i32 {
     match args.first().map(String::as_str) {
         Some("keeper") => return machine::keeper(&args[1..]),
         Some("screenshot") => return machine::screenshot(&args[1..]), // T-1869
+        Some("view") => return machine::view(&args[1..]),             // T-1899
         _ => {}
     }
     let a = match args::parse(args) {

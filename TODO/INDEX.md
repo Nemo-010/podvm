@@ -561,12 +561,12 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1896](enter.md) | P1 | S | none | enter | done | `run -d` of a static image where chroot is denied refuses: the native-static rung has no detached driver |
 | [T-1897](machine.md) | P1 | M | none | machine | done | The incus tier and the native tiers hold no limit of memory, CPU or processes for a detached run |
 | [T-1898](machine.md) | P3 | L | none | machine | open | A Windows guest has no terminal and no streamed output: `run -it windows:11 -- powershell` and `logs -f` of the console |
-| [T-1899](machine.md) | P3 | L | none | machine | open | A Windows guest has no viewer of its screen in a browser |
+| [T-1899](machine.md) | P3 | L | none | machine | partial | A Windows guest has no viewer of its screen in a browser |
 | [T-1900](machine.md) | P3 | L | none | machine | open | A Windows guest follows the host architecture, so an arm64 host has no Windows guest |
 
 ## Counts
 
-497 entries: 11 open, 16 partial, 2 blocked, 468 done.
+497 entries: 10 open, 17 partial, 2 blocked, 468 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -578,8 +578,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 200 | 205 |
 | P2 | 5 | 8 | 2 | 160 | 175 |
-| P3 | 6 | 3 | 0 | 34 | 43 |
-| **All** | 11 | 16 | 2 | 468 | 497 |
+| P3 | 5 | 4 | 0 | 34 | 43 |
+| **All** | 10 | 17 | 2 | 468 | 497 |
 
 ## Work order
 

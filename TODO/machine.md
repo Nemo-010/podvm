@@ -4868,7 +4868,7 @@ channel.
 **Milestone:** none
 **Priority:** P3
 **Effort:** L
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -4899,6 +4899,24 @@ On the cloud host under TCG, with a `run -d windows:dos` machine: `podvm
 windows view` prints a URL, a WebSocket client of the experiment gets the
 RFB greeting `RFB 003.008` through it, and a second client on another
 address of the host gets no answer.
+
+## Done
+
+**Partial 2026-11-15.** The keeper of a machine (T-1870) starts QEMU with
+`-vnc unix:` on a socket in the runtime directory
+(`podvm_windows::machines::vnc_socket`). `podvm windows view NAME [--port
+P]` (`crates/podvm/src/windows/machine/viewer.rs`) listens on 127.0.0.1,
+prints the URL, serves a page at `/`, and bridges each WebSocket of
+`/websockify` (RFC 6455, the accept key from `sha1` and `base64`, which
+the tree had already) to the VNC socket, byte for byte; it ends with the
+machine. `cargo test -p podvm --bin podvm viewer` exits 0 (the accept key
+of the example of RFC 6455, the frames). Experiment 455 on the cloud host
+under TCG: PASS; the page answered 200, the WebSocket got 101 with
+`s3pPLMBiTxaQ9kYGzzhZRbK+xOo=` and the first frame `RFB 003.008`, the
+address 192.0.2.2 of the host refused the connection, and `stop` ended the
+viewer. The clause that remains: the page is a pointer to a noVNC client;
+a pinned noVNC page in the store (as the static QEMU of T-1875) makes it
+a viewer with no other program.
 
 
 # T-1900: A Windows guest follows the host architecture, so an arm64 host has no Windows guest

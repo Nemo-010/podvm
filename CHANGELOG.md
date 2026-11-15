@@ -35,6 +35,8 @@ Deployed: none yet.
   on 127.0.0.1 (an address in the value changes it), `podvm port NAME`
   prints the forwards, and `podvm windows
   screenshot NAME FILE` writes a screen dump of a running guest.
+- `podvm windows view NAME` serves the VNC stream of a running guest as a
+  WebSocket on 127.0.0.1 for a noVNC client (T-1899).
 
 ## 0.2.0-beta.20 (2026-11-15)
 

@@ -261,6 +261,9 @@ pub(crate) fn keeper(args: &[String]) -> i32 {
     };
     let dir = machines::dir_in(&root, name);
     let plan = plan_of(&r, &dir, accel);
+    // TODO/machine.md T-1899: the screen on a VNC socket, for `windows view`.
+    let vnc = machines::vnc_socket(&root, name);
+    let _ = std::fs::remove_file(&vnc);
     let argv = if r.flavor == "dos" {
         podvm_windows::dos::argv(
             accel,
@@ -269,9 +272,11 @@ pub(crate) fn keeper(args: &[String]) -> i32 {
             &plan.serial,
             &plan.monitor,
             plan.memory_mib,
-            &[],
+            &["-vnc".to_string(), format!("unix:{}", vnc.display())],
         )
     } else {
+        let mut plan = plan.clone();
+        plan.options.vnc = Some(vnc.clone());
         podvm_windows::argv(&plan)
     };
     let log = std::fs::OpenOptions::new()
@@ -314,6 +319,7 @@ pub(crate) fn keeper(args: &[String]) -> i32 {
     }
     let _ = machines::write(&root, &now);
     let _ = std::fs::remove_file(&plan.monitor);
+    let _ = std::fs::remove_file(&vnc);
     0
 }
 
@@ -467,3 +473,5 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
 // TODO/machine.md T-1869, T-1870: the verbs that read a machine.
 mod view;
 pub(crate) use view::{logs, port, ps_rows, screenshot};
+mod viewer; // TODO/machine.md T-1899
+pub(crate) use viewer::view;

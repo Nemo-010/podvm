@@ -53,6 +53,7 @@ Separate crate: `crates/podvm-interpose`.
 
 | Dependency | Locked versions |
 | --- | --- |
+| `base64` | `0.22.1`, `0.23.1` |
 | `bzip2` | `0.6.1` |
 | `flate2` | `1.1.11` |
 | `pod-broker` | `0.50.0` |
@@ -80,6 +81,7 @@ Separate crate: `crates/podvm-interpose`.
 | `rustls-pki-types` | `1.15.1` |
 | `serde` | `1.0.229` |
 | `serde_json` | `1.0.154` |
+| `sha1` | `0.11.0` |
 | `sha2` | `0.10.9`, `0.11.1` |
 | `tar` | `0.4.46` |
 | `tokio` | `1.54.1` |

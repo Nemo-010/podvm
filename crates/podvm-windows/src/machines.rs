@@ -103,6 +103,18 @@ pub fn start_of(pid: u32) -> Option<u64> {
 /// directory), as a socket path holds at most 107 bytes and the directory
 /// of a machine can be longer. A digest of `root` keeps two stores apart.
 pub fn socket(root: &Path, name: &str) -> PathBuf {
+    runtime_path(root, name, "qmp")
+}
+
+/// TODO/machine.md T-1899: the VNC socket of the machine `name`, beside
+/// its QMP socket.
+pub fn vnc_socket(root: &Path, name: &str) -> PathBuf {
+    runtime_path(root, name, "vnc")
+}
+
+/// A file of the machine `name` in the runtime directory, with the
+/// extension `ext`.
+fn runtime_path(root: &Path, name: &str, ext: &str) -> PathBuf {
     let dir = std::env::var_os("XDG_RUNTIME_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(std::env::temp_dir);
@@ -111,7 +123,7 @@ pub fn socket(root: &Path, name: &str) -> PathBuf {
     for b in root.as_os_str().as_encoded_bytes() {
         h = (h ^ u32::from(*b)).wrapping_mul(0x0100_0193);
     }
-    dir.join(format!("podvm-m-{h:08x}-{name}.qmp"))
+    dir.join(format!("podvm-m-{h:08x}-{name}.{ext}"))
 }
 
 /// True when `pid` runs and started at `start`: the process of the record.
