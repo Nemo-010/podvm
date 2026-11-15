@@ -540,7 +540,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1875](machine.md) | P2 | L | none | machine | done | podvm needs `qemu-system-x86_64`, `qemu-img` and OVMF on the host |
 | [T-1876](machine.md) | P2 | S | none | machine | done | Nothing checks the catalog pins for drift |
 | [T-1877](machine.md) | P2 | M | none | machine | open | A Windows desktop has no Hyper-V enlightenments, and no one measured its boot time |
-| [T-1878](machine.md) | P3 | L | none | machine | open | `podvm run -it windows:11 -- powershell`, streamed logs, a web viewer and Windows ARM64 are not planned in detail |
+| [T-1878](machine.md) | P3 | L | none | machine | done | `podvm run -it windows:11 -- powershell`, streamed logs, a web viewer and Windows ARM64 are not planned in detail |
 | [T-1879](machine.md) | P2 | S | none | machine | done | The messages of `dos.rs` and `doctor.rs` and the premise of T-1112 still say that podvm fetches no image |
 | [T-1880](interpose.md) | P1 | M | none | interpose | done | The glibc object needs `libdl.so.2`, so the loader family refuses a glibc 2.34 image that ships none |
 | [T-1881](extract.md) | P0 | M | none | extract | done | pod-extract masks the mode of a directory, keeps the first layer's mode, and its widening can chmod a directory outside the tree through a symlink |
@@ -560,10 +560,13 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1895](image.md) | P1 | S | none | image | done | A reference by an index digest finds a tag record and a digest record of one manifest, and `save` calls them two images |
 | [T-1896](enter.md) | P1 | S | none | enter | done | `run -d` of a static image where chroot is denied refuses: the native-static rung has no detached driver |
 | [T-1897](machine.md) | P1 | M | none | machine | done | The incus tier and the native tiers hold no limit of memory, CPU or processes for a detached run |
+| [T-1898](machine.md) | P3 | L | none | machine | open | A Windows guest has no terminal and no streamed output: `run -it windows:11 -- powershell` and `logs -f` of the console |
+| [T-1899](machine.md) | P3 | L | none | machine | open | A Windows guest has no viewer of its screen in a browser |
+| [T-1900](machine.md) | P3 | L | none | machine | open | A Windows guest follows the host architecture, so an arm64 host has no Windows guest |
 
 ## Counts
 
-494 entries: 9 open, 16 partial, 2 blocked, 467 done.
+497 entries: 11 open, 16 partial, 2 blocked, 468 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -575,8 +578,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 200 | 205 |
 | P2 | 5 | 8 | 2 | 160 | 175 |
-| P3 | 4 | 3 | 0 | 33 | 40 |
-| **All** | 9 | 16 | 2 | 467 | 494 |
+| P3 | 6 | 3 | 0 | 34 | 43 |
+| **All** | 11 | 16 | 2 | 468 | 497 |
 
 ## Work order
 

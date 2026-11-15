@@ -4358,7 +4358,7 @@ T-1869.
 **Milestone:** none
 **Priority:** P3
 **Effort:** L
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4387,6 +4387,14 @@ This entry is a holder. It closes when each part has an entry.
 
 `./target/x86_64-unknown-linux-musl/release/podvm-gate` exits 0 and the record
 holds one entry for each part, each with a Prove that a session can run.
+
+## Done
+
+**Done 2026-11-15.** Each part has its own entry with a Prove that a
+session can run: T-1898 (a terminal and streamed output, by an own agent of
+podcrates), T-1899 (a viewer of the screen in a browser, by VNC on a Unix
+socket), and T-1900 (a Windows guest on an arm64 host). T-1867 and T-1868
+are not done; the split comes first so that each part has its own proof.
 
 
 # T-1879: The messages of `dos.rs` and `doctor.rs` and the premise of T-1112 still say that podvm fetches no image
@@ -4808,4 +4816,128 @@ keys. `cargo test -p podvm --bin podvm incus_limits` exits 0, the
 stand-in test of `incus/tests.rs` finds `limits.processes` = 64 in the
 config of the created instance, and on the cloud host `run --memory 512m`
 exits 125 with the refusal.
+
+
+# T-1898: A Windows guest has no terminal and no streamed output: `run -it windows:11 -- powershell` and `logs -f` of the console
+
+**Source:** the split of T-1878 (2026-11-15)
+**Category:** machine
+**Milestone:** none
+**Priority:** P3
+**Effort:** L
+**Status:** open
+
+## Problem
+
+The mailbox agent runs one command and gives its output at the end
+(`WQOUT.TXT`). `run -it windows:NAME -- powershell` has no terminal, and
+`logs -f` of a machine (T-1870) follows only the serial line, which
+Windows does not write to.
+
+## Premise
+
+A terminal needs an agent of its own in the guest: a small Windows
+program, cross-built with `x86_64-pc-windows-gnu` through zig, that opens
+a ConPTY (`CreatePseudoConsole`) and joins it to a virtio-serial channel of
+the plan (`pod-guest`, T-1865). The agent is generic, so it belongs to
+podcrates.
+
+## Approach
+
+Ask podcrates for the agent and its host half by a COORD issue. podvm then
+embeds the program in the answer file of T-1867 (the first logon installs
+it, as it installs the mailbox agent), and `run -it` and `exec -it` of a
+machine join the terminal of the host to the channel.
+
+## Decision
+
+The mailbox stays the path of a command with no terminal.
+
+## Prove
+
+On `kvm.yml`, after `podvm pull windows:2025`: `podvm run -it windows:2025
+-- cmd /c "echo hi & exit 3"` under `script(1)` prints `hi` and exits 3,
+and `logs -f` of a machine prints a line that the guest writes to the
+channel.
+
+
+# T-1899: A Windows guest has no viewer of its screen in a browser
+
+**Source:** the split of T-1878 (2026-11-15)
+**Category:** machine
+**Milestone:** none
+**Priority:** P3
+**Effort:** L
+**Status:** open
+
+## Problem
+
+A user of a machine (T-1870) sees its screen only through `podvm windows
+screenshot` (T-1869) or an RDP client of their own. There is no live view.
+
+## Premise
+
+QEMU serves VNC on a Unix socket (`-vnc unix:PATH`, the option `vnc` of
+the plan). A browser viewer needs a WebSocket bridge to that socket and
+the noVNC page, served on the loopback. A static noVNC copy adds about
+1 MiB (estimate) to the binary, or is fetched into the store with a pin, as
+the static QEMU of T-1875 is.
+
+## Approach
+
+`podvm windows view NAME [--port P]` starts the bridge on 127.0.0.1 and
+prints the URL. The page and the bridge are a separate module; the
+WebSocket half can be a crate of podcrates.
+
+## Decision
+
+The viewer listens on the loopback only.
+
+## Prove
+
+On the cloud host under TCG, with a `run -d windows:dos` machine: `podvm
+windows view` prints a URL, a WebSocket client of the experiment gets the
+RFB greeting `RFB 003.008` through it, and a second client on another
+address of the host gets no answer.
+
+
+# T-1900: A Windows guest follows the host architecture, so an arm64 host has no Windows guest
+
+**Source:** the split of T-1878 (2026-11-15)
+**Category:** machine
+**Milestone:** none
+**Priority:** P3
+**Effort:** L
+**Status:** open
+
+## Problem
+
+`run windows:NAME` on an aarch64 host refuses: the catalog has x86_64
+media only, and the guest follows the host (`crates/podvm/src/windows/mod.rs`,
+`run_windows`).
+
+## Premise
+
+Microsoft publishes Windows 11 on Arm as an evaluation VHDX and as an ISO
+for Insiders (an estimate of the source; not checked). The boot needs
+`qemu-system-aarch64` with `-M virt`, edk2 for aarch64 and a
+virtio-capable driver set, as Windows on Arm has no inbox driver for the
+devices of the x86_64 plan. `arm.yml` has an arm64 runner with KVM where
+the runner image allows it (not measured).
+
+## Approach
+
+Find and pin a medium, add an aarch64 plan to `pod-guest` (podcrates), and
+add the static `qemu-system-aarch64` to the store of T-1875.
+
+## Decision
+
+An x86_64 host keeps refusing an arm64 Windows guest: emulation is a
+different product at a different speed.
+
+## Prove
+
+On an arm64 runner: `podvm run windows:11-arm64 cmd /c ver` prints a
+version string of Windows and exits 0, and a new experiment records the
+boot time.
 

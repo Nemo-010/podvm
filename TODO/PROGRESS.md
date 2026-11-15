@@ -7,7 +7,7 @@ start.
 
 ## State
 
-494 entries: 9 open, 16 partial, 2 blocked, 467 done.
+497 entries: 11 open, 16 partial, 2 blocked, 468 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -64,12 +64,12 @@ status with `podvm-count` in the same commit as the work.
    entries that it gave. Each P0 entry is done. Take the P1
    entries, each with the guard of its class (the guard entries of
    `TODO/gate.md`), then P2 and P3.
-2a. The Windows guest plan of the review of 2026-11-14: T-1861 to T-1878
+2a. The Windows guest plan of the review of 2026-11-14: T-1861 to T-1877 and T-1898 to T-1900
    (`podvm run windows:NAME`). The owner accepts the vendor terms
    (`docs/decisions.md`, "Windows media"). Take the P1 entries first:
    [T-1861](machine.md), [T-1867](machine.md) (partial: the install of a
    setup ISO is built; the job `install` of `kvm.yml` proves it) and
-   [T-1871](machine.md); then the P2 entries and T-1878 (P3). podcrates
+   [T-1871](machine.md); then the P2 entries and T-1898 to T-1900 (P3). podcrates
    `v0.45.0` carries the parts of the crates that they asked for
    (podcrates@T-590 to podcrates@T-595, podcrates@T-610; issues 350 and
    360), and podvm takes that tag: no entry of the plan waits for
