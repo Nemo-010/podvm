@@ -72,8 +72,8 @@ impl<R> Progress<R> {
 pub(crate) fn line(seen: u64, total: Option<u64>) -> String {
     let mib = |b: u64| b / (1 << 20);
     match total {
-        Some(t) => format!("podvm windows: {} MiB of {} MiB", mib(seen), mib(t)),
-        None => format!("podvm windows: {} MiB", mib(seen)),
+        Some(t) => format!("podvm: {} MiB of {} MiB", mib(seen), mib(t)),
+        None => format!("podvm: {} MiB", mib(seen)),
     }
 }
 
@@ -206,10 +206,7 @@ mod tests {
 
     #[test]
     fn windows_origin_progress_line_names_the_mib() {
-        assert_eq!(
-            line(3 << 20, Some(10 << 20)),
-            "podvm windows: 3 MiB of 10 MiB"
-        );
-        assert_eq!(line(3 << 20, None), "podvm windows: 3 MiB");
+        assert_eq!(line(3 << 20, Some(10 << 20)), "podvm: 3 MiB of 10 MiB");
+        assert_eq!(line(3 << 20, None), "podvm: 3 MiB");
     }
 }
