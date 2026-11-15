@@ -708,5 +708,7 @@ A profile that a host cannot hold is refused by name, part by part; a lab never 
 
 ## Blocker
 
-**Blocked (2026-11-15).** The shape of the profiles: COORD-140 (PodUtils/podvm#424) asks whether podcrates takes `pod-lab` (PodUtils/podrunner#180, ask 1). Clears when podcrates answers, or when podrunner asks for the podvm form first.
+**Blocked (2026-11-15).** The shape of the profiles: COORD-140 (PodUtils/podvm#424) asks whether podcrates takes `pod-lab` (PodUtils/podrunner#180, ask 1).
+
+**Blocked, amended (2026-11-15, later).** podcrates takes `pod-lab` (COORD-107, PodUtils/podcrates#180, podcrates@T-692): part 1, in the tag after `v0.53.0`, gives the profiles as data, `check`, `run` with no root, and the binary `podlab`; part 2 gives the step of Actions and the machine-tier form that podvm drives (`--podvm-lab PROFILE`, the profiles from `pod-lab`). The table is the profiles of PodUtils/podrunner#180 with the six of PodUtils/podvm#424. Clears when a tag of podcrates carries part 1.
 
