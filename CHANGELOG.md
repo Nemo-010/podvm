@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: name resolution under `--podvm-confine`, 2026-11-15
+
+Record: T-1902 (PodUtils/podvm#396).
+Deployed: none yet.
+
+- Under `--podvm-confine`, a musl payload on the userland rung resolves
+  names again. musl reads `/etc/resolv.conf` with a raw system call, and
+  the confine layer refused that file, so each name failed with
+  `EAI_AGAIN`.
+
 ### Added: `--hostname` for `run` and `create`, 2026-11-15
 
 Record: T-1908 (PodUtils/podvm#402, PodUtils/podrunner#115).

@@ -4090,7 +4090,7 @@ field `rung` of `--report` (ask 2).
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4111,6 +4111,10 @@ The confine layer never breaks name resolution silently: it allows it, or it ref
 ## Prove
 
 On a host with Landlock ABI 6 or more: `podvm run --rm --podvm-confine "read=/;write=/tmp" IMAGE getent hosts github.com` prints an address and exits 0; a new test of the ruleset holds the case.
+
+## Done
+
+**Done (2026-11-15).** The premise was wrong: no network right refused the resolver. musl opens `/etc/resolv.conf` (and `/etc/hosts`, `/etc/services`) in `__fopen_rb_ca` with its own `syscall` instruction, past each symbol of the interposer, so on the loader family the kernel resolves the host path. The confine layer of the userland rung allows only the host paths of the spec (the tree), so Landlock refused that open with `EACCES`; musl then found no name server, asked 127.0.0.1 and failed with `EAI_AGAIN`. `crates/podvm/src/lifecycle/confine.rs` (`raw_reads`) now gives read on each of the three host files (link resolved) where the spec lets the payload read the guest path; podvm writes the same `resolv.conf` and `hosts` into the tree. A spec that does not cover `/etc` still denies them, as on the namespace rung. Evidence (Landlock ABI 7, kernel 6.18, uid 1000, userland rung): `run --rm --podvm-confine "read=/;write=/tmp"` resolves github.com with alpine 3.20 (`getent hosts`), debian bookworm-slim (`getent hosts`) and busybox 1.36-musl (`nslookup`), each exit 0; before the change alpine exited 2 and strace showed `open("/etc/resolv.conf") = -1 EACCES` and `sendto(... 127.0.0.1:53)`. The test `a_rule_over_etc_reads_the_raw_files_of_musl` holds the rule.
 
 
 # T-1908: A payload has the host name of the host: no `--hostname`

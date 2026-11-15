@@ -564,7 +564,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1899](machine.md) | P3 | L | none | machine | done | A Windows guest has no viewer of its screen in a browser |
 | [T-1900](machine.md) | P3 | L | none | machine | open | A Windows guest follows the host architecture, so an arm64 host has no Windows guest |
 | [T-1901](enter.md) | P1 | M | none | enter | done | A `:ro` volume is refused on the native-static rung, so a static job container of the runner fails where chroot is denied |
-| [T-1902](enter.md) | P1 | M | none | enter | open | `--podvm-confine` stops name resolution in the payload, while TCP to an address works |
+| [T-1902](enter.md) | P1 | M | none | enter | done | `--podvm-confine` stops name resolution in the payload, while TCP to an address works |
 | [T-1903](probe.md) | P2 | S | none | probe | open | `podvm probe` takes userland on a host with user namespaces and KVM, and does not say why |
 | [T-1904](image.md) | P3 | S | none | image | done | `podvm load` names a local image `docker.io/library/runner` |
 | [T-1905](packaging.md) | P2 | S | none | packaging | partial | The release has no attestation in GitHub's store |
@@ -574,7 +574,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-505 entries: 10 open, 13 partial, 2 blocked, 480 done.
+505 entries: 9 open, 13 partial, 2 blocked, 481 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -584,10 +584,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 1 | 5 | 0 | 203 | 209 |
+| P1 | 0 | 5 | 0 | 204 | 209 |
 | P2 | 5 | 6 | 2 | 164 | 177 |
 | P3 | 4 | 2 | 0 | 39 | 45 |
-| **All** | 10 | 13 | 2 | 480 | 505 |
+| **All** | 9 | 13 | 2 | 481 | 505 |
 
 ## Work order
 
