@@ -4990,7 +4990,7 @@ forces it off".
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5031,6 +5031,19 @@ both clauses. The clause of the detached run needs the launcher of
 change.
 
 ## Done
+
+**Done 2026-11-15.** The record of a detached run keeps the absolute
+path of its report (`Hardening::report`). `pod_supervise` drops
+`Payload::keep` after it wrote the end into the record, so a guard in it
+(`launcher.rs`, `Finish`) writes the end into the report:
+`podvm_supervise::report::finish` sets `exit_code`, `signal`,
+`timed_out`, `ended` and the times, by an atomic rename. `run -d` calls
+it again after its own write of the start, so a payload that ended first
+gets its end too. `cargo test -p podvm --test report_paths` exits 0: the
+unwritable directory (125, before the run), and `run -d --timeout 1`,
+after `wait`, gives `timed_out: true`, `signal: 9` and `exit_code: 137`.
+By hand on the cloud host: five `run -d ... sh -c 'exit N'` reports hold
+N and an end time.
 
 **Partial 2026-11-15.** The foreground half: `--report PATH` is refused
 with 125 at the parse when the directory of a new PATH takes no file, or

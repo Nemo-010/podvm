@@ -80,6 +80,10 @@ pub struct Hardening {
     /// --filter label=` and `inspect` read them.
     #[serde(default)]
     pub labels: Vec<String>,
+    /// The absolute path of `--report` of a detached run (TODO/cli.md
+    /// T-1825): the launcher writes the end of the payload into it.
+    #[serde(default)]
+    pub report: Option<String>,
 }
 
 impl Hardening {

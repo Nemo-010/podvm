@@ -24,6 +24,7 @@
 #![forbid(unsafe_op_in_unsafe_fn)]
 
 pub mod launcher;
+pub mod report; // TODO/cli.md T-1825
 pub mod table;
 
 use podvm_image::Store;

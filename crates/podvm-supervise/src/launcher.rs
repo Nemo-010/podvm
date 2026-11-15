@@ -25,10 +25,33 @@ use crate::table::{self, Container};
 
 /// What the launcher keeps open while the payload runs, and drops after it.
 struct Kept {
+    // TODO/cli.md T-1825: first, so that it drops first, with the lock of
+    // the image still held.
+    _report: Option<Finish>,
     _memo: std::fs::File,
     _held: podvm_image::store::Lock,
     _root: RootDir,
     _child: podvm_enter::Child,
+}
+
+/// TODO/cli.md T-1825: `pod_supervise` drops `Payload::keep` after it
+/// wrote the end into the record, so the drop writes that end into the
+/// `--report` of the detached run.
+struct Finish {
+    store: std::path::PathBuf,
+    id: String,
+    report: std::path::PathBuf,
+}
+
+impl Drop for Finish {
+    fn drop(&mut self) {
+        let Ok(s) = Store::open(&self.store) else {
+            return;
+        };
+        if let Ok(c) = crate::get(&s, &self.id) {
+            let _ = crate::report::finish(&self.report, &c);
+        }
+    }
 }
 
 /// podvm's entry for `pod_supervise::start`: it runs in the launcher, and
@@ -141,6 +164,11 @@ fn enter_in_launcher(
     Ok(Payload {
         pid,
         keep: Box::new(Kept {
+            _report: container.of.hardening.report.as_ref().map(|r| Finish {
+                store: store.root().to_path_buf(),
+                id: container.id.clone(),
+                report: r.into(),
+            }),
             _memo: memo,
             _held: held,
             _root: root,

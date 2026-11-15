@@ -5410,8 +5410,8 @@ the logs or the reports holds it, but for the container table, which
 keeps the environment for `start` and has mode 0600. `refused` is null
 exactly when the payload ran. `cargo test -p podvm --test
 report_paths_meaning` exits 0. The clause that remains: the machine path
-with a fake boot. The detached case checks the start record only, until
-T-1825 finishes the report of a detached run.
+with a fake boot. The detached case checks the start record; the end of a
+detached report is the test of T-1825.
 
 
 # T-1857: A help text or a document can say "until T-NNNN" after that entry is done

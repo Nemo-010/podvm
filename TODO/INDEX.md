@@ -487,7 +487,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1822](supervise.md) | P2 | S | none | supervise | done | `cp` of a file onto a directory fails and blames the source, `cp -r` drops directory modes, and the containment refusals name the wrong operation |
 | [T-1823](machine.md) | P2 | M | none | machine | open | An early end of the guest init reads "the guest gave no exit marker" with the socket of QEMU |
 | [T-1824](cli.md) | P2 | S | none | cli | done | The machine notice ignores `-q`, and the banner is said to print "on every run" where runs are quiet by default |
-| [T-1825](cli.md) | P2 | M | none | cli | partial | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
+| [T-1825](cli.md) | P2 | M | none | cli | done | A `--report` that cannot be written exits 0, and the report of a detached run is never finished |
 | [T-1826](complete.md) | P2 | S | none | complete | done | `--no-steps` leaves no line and no report row that says what the caller gave up |
 | [T-1827](cli.md) | P2 | S | none | cli | done | A repeated `--ulimit` that raises a hard limit, `--ulimit nofile=-1` and a hard value over podvm's own all fail with a bare EPERM |
 | [T-1828](cli.md) | P2 | S | none | cli | done | `--add-host` takes a non-address, `-e =V` is dropped, `--env-file` removes quotes, and a repeated `--label` key keeps both values |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 32 open, 13 partial, 2 blocked, 446 done.
+493 entries: 32 open, 12 partial, 2 blocked, 447 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 15 | 4 | 2 | 154 | 175 |
+| P2 | 15 | 3 | 2 | 155 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 32 | 13 | 2 | 446 | 493 |
+| **All** | 32 | 12 | 2 | 447 | 493 |
 
 ## Work order
 

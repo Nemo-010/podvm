@@ -471,7 +471,7 @@ pub(crate) fn prepare(
         rm: o.rm,
         tty: o.tty,
         wall_ms: o.timeout.map(|s| s * 1000),
-        hardening: o.hardening.clone(),
+        hardening: super::report::with_detached_path(o.hardening.clone(), o.detach),
         memo_host_path,
         ladder,
         findings,

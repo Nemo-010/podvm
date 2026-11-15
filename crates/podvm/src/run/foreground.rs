@@ -38,6 +38,16 @@ pub fn run(args: &[String]) -> i32 {
             );
             return podvm_image::error::EXIT_RUNTIME_ERROR;
         }
+        // TODO/cli.md T-1825: a detached payload that ended before this
+        // write left its end in the record; the launcher finishes the
+        // report when the payload ends later.
+        if let (true, Some(id)) = (r.detached, r.container.as_deref())
+            && let Ok(s) = podvm_image::open_store()
+            && let Ok(c) = podvm_supervise::get(&s, id)
+        {
+            let abs = std::path::absolute(&path).unwrap_or(path.clone());
+            let _ = podvm_supervise::report::finish(&abs, &c);
+        }
     }
     code
 }
