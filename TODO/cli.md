@@ -5785,3 +5785,36 @@ The flag and the variable have one meaning; the flag wins, as it sets the variab
 
 **Done (2026-11-15).** `crates/podvm/src/names/store.rs` (`take`, first in `main`). On the cloud host: `podvm --store S pull alpine:3.20`, then `podvm images --store S` lists it, `podvm images` with no flag does not, `PODVM_STORE=S podvm images` does; `podvm --store=S run --rm alpine:3.20 echo --store kept` prints `--store kept`; `podvm images --store` with no value exits 125 by name. The test passes.
 
+
+# T-1917: The help and the manual on the shared crate of PodUtils
+
+**Source:** PodUtils/podnet#584 (COORD-090 of podnet), COORD-141 (PodUtils/podvm#425)
+**Category:** cli
+**Milestone:** none
+**Priority:** P3
+**Effort:** M
+**Status:** blocked
+
+## Problem
+
+The owner ruled on 2026-11-15 that each command line of PodUtils shares one crate for its help and its manual (PodUtils/podnet#584). podvm's `man.rs` (T-1332) has its own text writer and pager, and no man(7) or JSON writer.
+
+## Premise
+
+podvm's manual has no hand-kept text: the parity table gives the verbs and the summaries, and each verb's `--help` gives its section. These stay podvm's facts; only the writers move.
+
+## Approach
+
+Fill the crate's model from the parity table and the usage strings (no clap), with the status of each flag against docker and podman, the names by argv0, docker's exit codes and the `PODVM_*` variables in groups. Move `podvm man` onto the crate's text writer and pager, and add its man(7) and JSON writers.
+
+## Decision
+
+podvm keeps the parity table as the one source of the flags; the crate renders it and adds no second list.
+
+## Prove
+
+`podvm man --no-pager run` prints the bytes of `podvm run --help`, the release carries a `podvm.1` that `mandoc -Tlint` passes with no warning, and `podvm man --json` lists each implemented verb of the parity table.
+
+## Blocker
+
+**Blocked (2026-11-15).** podcrates has not named the crate and its tag (PodUtils/podnet#584). Clears when a tag of podcrates carries the crate.

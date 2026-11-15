@@ -321,3 +321,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | open | T-1914 |
 | #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
 | #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |
+| #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | open | T-1917 |

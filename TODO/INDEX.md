@@ -579,10 +579,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1914](enter.md) | P1 | S | none | enter | done | `run -d` refuses "a passed descriptor goes onto 17" when the parent holds descriptors 3 to 15 |
 | [T-1915](interpose.md) | P1 | S | none | interpose | done | On the userland rung, `tar -x` fails when a symbolic link comes before its target |
 | [T-1916](net.md) | P2 | L | none | net | blocked | Lab profiles: each hostile host class as a profile that a project brings up |
+| [T-1917](cli.md) | P3 | M | none | cli | blocked | The help and the manual on the shared crate of PodUtils |
 
 ## Counts
 
-513 entries: 8 open, 12 partial, 4 blocked, 489 done.
+514 entries: 8 open, 12 partial, 5 blocked, 489 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -594,8 +595,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 207 | 211 |
 | P2 | 4 | 5 | 4 | 168 | 181 |
-| P3 | 4 | 3 | 0 | 40 | 47 |
-| **All** | 8 | 12 | 4 | 489 | 513 |
+| P3 | 4 | 3 | 1 | 40 | 48 |
+| **All** | 8 | 12 | 5 | 489 | 514 |
 
 ## Work order
 
