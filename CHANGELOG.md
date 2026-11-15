@@ -8,10 +8,35 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.20 (2026-11-15)
+
+### Fixed: `exec` takes the cached probe, and one exec table reaches a confined payload, 2026-11-15
+
+Record: T-1850 (partial), T-1892, T-1823, T-1849, T-1845, T-1858, T-1837, T-1846 (partial).
+Deployed: version 0.2.0-beta.20.
+
+- `exec IMAGE true` read the full probe on each call: 77 ms here, now 14
+  ms, as `run` reads the cache.
+- The interposer checks a confined exec against the one table of host
+  paths that `pod-enter` writes (`PODVM_EXEC_HOST`).
+- The incus tier deletes the instance of a failed start, `rm` names the
+  state of an instance, and `system info` refuses a `tier` value that
+  `run` refuses.
+
+### Changed: podcrates `v0.50.0`; the Windows guest under KVM, 2026-11-15
+
+Record: T-1864, T-1894, T-1873 (partial), T-1861 (partial), T-1876.
+Deployed: version 0.2.0-beta.20.
+
+- `kvm.yml` run 43672193303: `windows setup` of Validation OS and the
+  exit codes of `windows run` pass under KVM.
+- `podvm run windows:dos ver` works end to end under TCG (experiment
+  451), and a weekly job checks the pins of the Windows catalog.
+
 ### Fixed: a quiet run prints no line of the extraction, 2026-11-15
 
 Record: T-1852 (partial).
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.20.
 
 - The first run of an image printed `<layer>: Extracted (N entries, M
   whiteouts)` on stderr also with no `--verbose`. It now prints the line
@@ -20,7 +45,7 @@ Deployed: not deployed; no version change.
 ### Added: limits of memory, CPU and processes on the incus tier, 2026-11-15
 
 Record: T-1897 (PodUtils/podrunner#110).
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.20.
 
 - `--memory`, `--cpus` and `--pids-limit` become the limits of the incus
   instance (`limits.memory`, `limits.cpu`, `limits.processes`), and the
@@ -30,7 +55,7 @@ Deployed: not deployed; no version change.
 ### Fixed: refusals and help texts name the cause and what the binary does, 2026-11-15
 
 Record: T-1829, T-1832, T-1836, T-1838, T-1851, T-1857.
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.20.
 
 - `run` with no image prints the usage line and the cause (exit 1); a
   flag with no value names the spelling of the caller; `logs --tail -1`
