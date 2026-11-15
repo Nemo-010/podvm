@@ -8,6 +8,25 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: `podvm lab` runs the profiles of `pod-lab`, 2026-11-15
+
+Record: T-1916 (PodUtils/podcrates#188).
+Deployed: none yet.
+
+- `podvm lab profiles`, `run` and `check` take the 16 profiles of podcrates
+  `pod-lab`. The lab checks the profile from inside before CMD runs.
+- `podvm lab check` measures this host: exit 0 holds, 1 fails, 3 unseen.
+- `inherited-fds` holds descriptors 3 to 9.
+
+### Changed: `run -d` and `create` enter the namespace rung with no root, 2026-11-15
+
+Record: T-1912.
+Deployed: none yet.
+
+- Where an unprivileged user can open a user namespace, `run -d` and
+  `create` enter the namespace rung through pod-enter (podcrates
+  `v0.53.0`), with the host's device nodes.
+
 ## 0.2.0-beta.24 (2026-11-15)
 
 ### Added: `podvm lab run` and `podvm lab check` of hostile host classes, 2026-11-15

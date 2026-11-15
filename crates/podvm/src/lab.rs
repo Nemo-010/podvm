@@ -74,7 +74,6 @@ pub fn main(args: &[String]) -> i32 {
         Some("check") if args.get(1).is_some_and(|p| host::is_profile(p)) => {
             host::check(&args[1..])
         }
-        Some(host::PROBE_VERB) => host::probe_main(&args[1..]),
         Some("scenarios") => {
             print!("{}", scenarios_text());
             0

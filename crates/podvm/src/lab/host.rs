@@ -1,122 +1,169 @@
-//! `podvm lab run PROFILE -- CMD` and `podvm lab check PROFILE`: a hostile
-//! host class as a lab on this host, with no root and no guest
-//! (TODO/net.md T-1916, PodUtils/podrunner#182).
+//! `podvm lab profiles`, `podvm lab run PROFILE[,PROFILE...] -- CMD` and
+//! `podvm lab check PROFILE[,PROFILE...]`: a hostile host class as a lab on
+//! this host, with no root and no guest (TODO/net.md T-1916).
 //!
-//! Each profile is a part that a process with no privilege sets on itself
-//! before the exec of CMD: a seccomp filter (`bind-denied`,
-//! `getsockname-denied`, `userns-off`), a tmpfs on `/tmp` in a user and a
-//! mount namespace (`small-tmp`, `noexec-tmp`), or open descriptors
-//! (`inherited-fds`). `check` runs podvm's own probe inside the same lab,
-//! so a lab that allows what it names as refused fails its own check.
+//! The profiles and the labs are `pod-lab` of podcrates (podcrates@T-692,
+//! `v0.54.0`): its table of profiles, its check against the rows of
+//! `pod-hostprobe`, and its run, which sets each part that a host with no
+//! root can hold, checks the profile from inside the lab, and only then
+//! runs CMD. podvm gives it its own probe children (`--probe-child`) and a
+//! lab flag of its own, and keeps the list of profiles: a list runs as
+//! nested labs, the first one outermost.
 //!
-//! ⛔ A part that the host cannot give refuses by name (exit 125). The lab
-//! never runs CMD with a part missing.
-//!
-//! The names follow the table of PodUtils/podrunner#180; the profiles of
-//! `pod-lab` (podcrates@T-692) replace this table when a tag carries them.
+//! ⛔ A part that does not hold stops the run with exit 125, and CMD does
+//! not run.
 
-mod probe;
+use std::ffi::OsString;
 
-use std::os::unix::process::CommandExt;
+use pod_lab::codes::{
+    EXIT_CANNOT_EXEC, EXIT_FAILS, EXIT_HOLDS, EXIT_NOT_FOUND, EXIT_REFUSED, EXIT_UNSEEN,
+};
+use pod_lab::{Options, Profile, RunError, Settings, State, Verdict};
+use podvm_image::error::EXIT_FLAG_ERROR;
 
-use pod_confine::Deny;
-use podvm_image::error::{EXIT_FLAG_ERROR, EXIT_RUNTIME_ERROR};
-use podvm_probe::sys as k;
+/// The private argument with which the lab process starts.
+pub const LAB_FLAG: &str = "--podvm-lab-process";
 
-pub use probe::{check, main as probe_main, PROBE_VERB};
-
-/// One profile: its name, what it gives, and the source of the class.
-pub struct Profile {
-    pub name: &'static str,
-    pub gives: &'static str,
-    pub source: &'static str,
+/// The settings of a lab of podvm: podvm's probe children, its lab flag,
+/// and the table of `pod-lab`.
+pub fn settings() -> Settings {
+    Settings {
+        hostprobe: podvm_probe::settings(),
+        lab_flag: LAB_FLAG.to_string(),
+        profiles: pod_lab::PROFILES,
+    }
 }
 
-pub const PROFILES: &[Profile] = &[
-    Profile {
-        name: "bind-denied",
-        gives: "bind(2) and connect(2) of an AF_INET or AF_INET6 address give EACCES, the loopback too; AF_UNIX holds",
-        source: "PodUtils/podrunner#162, #167",
-    },
-    Profile {
-        name: "getsockname-denied",
-        gives: "getsockname(2) and getpeername(2) give EOPNOTSUPP, as under `podnet pod`",
-        source: "PodUtils/podrunner#167",
-    },
-    Profile {
-        name: "userns-off",
-        gives: "unshare(2) and clone(2) with CLONE_NEWUSER give EPERM; clone3(2) gives ENOSYS, so the C library uses clone(2)",
-        source: "PodUtils/podrunner#142",
-    },
-    Profile {
-        name: "small-tmp",
-        gives: "/tmp is a tmpfs of 1 GiB and TMPDIR=/tmp (a user and a mount namespace; the ids stay)",
-        source: "PodUtils/podrunner#174",
-    },
-    Profile {
-        name: "noexec-tmp",
-        gives: "/tmp is a tmpfs mounted noexec and TMPDIR=/tmp (a user and a mount namespace; the ids stay)",
-        source: "PodUtils/podrunner#182",
-    },
-    Profile {
-        name: "inherited-fds",
-        gives: "descriptors 3 to 20 are open with no FD_CLOEXEC: /dev/null and the two ends of a pipe",
-        source: "PodUtils/podrunner#176",
-    },
-];
-
-/// The size of the tmpfs of `small-tmp`, in bytes.
-pub const TMP_BYTES: u64 = 1 << 30;
-/// The descriptors of `inherited-fds`: 3 to this number.
-pub const LAST_FD: i32 = 20;
-
-/// Is NAME a profile of the host form?
-pub fn is_profile(name: &str) -> bool {
-    name.split(',')
-        .all(|n| PROFILES.iter().any(|p| p.name == n))
+/// The lab process: first in `main`, with one thread. Returns where the
+/// arguments do not ask for it.
+pub fn dispatch() {
+    if std::env::args_os().nth(1).is_some_and(|a| a == LAB_FLAG) {
+        pod_lab::dispatch(&settings());
+    }
 }
 
-/// The profiles of a list `A,B`, in the order of [`PROFILES`]. A name that
-/// is not a profile refuses by name.
-pub fn parse(list: &str) -> Result<Vec<&'static str>, String> {
-    let mut out = Vec::new();
-    for n in list.split(',') {
-        if !PROFILES.iter().any(|p| p.name == n) {
-            return Err(format!(
-                "{n} is not a profile; `podvm lab profiles` lists them"
-            ));
-        }
-    }
-    for p in PROFILES {
-        if list.split(',').any(|n| n == p.name) {
-            out.push(p.name);
-        }
-    }
-    Ok(out)
+/// Is each name of the list `A,B` a profile?
+pub fn is_profile(list: &str) -> bool {
+    parse(list).is_ok()
+}
+
+/// The profiles of a list `A,B`, in its order.
+pub fn parse(list: &str) -> Result<Vec<&'static Profile>, String> {
+    list.split(',')
+        .map(|n| {
+            pod_lab::find(pod_lab::PROFILES, n)
+                .ok_or_else(|| format!("{n} is not a profile; `podvm lab profiles` lists them"))
+        })
+        .collect()
 }
 
 pub const RUN_USAGE: &str = "usage: podvm lab run PROFILE[,PROFILE...] -- CMD [ARG...]\n\n\
 Run CMD in a hostile host class on this host, with no root and no guest.\n\
-`podvm lab profiles` lists the profiles. A part that this host cannot give\n\
-refuses with exit 125; CMD never runs with a part missing. The exit code\n\
-is the code of CMD (127: CMD was not found, 126: it did not run).\n\
-small-tmp and noexec-tmp mount a new /tmp: a CMD under /tmp is hidden.\n";
+`podvm lab profiles` lists the profiles. The lab sets each part, checks the\n\
+profile from inside, and only then runs CMD; a part that does not hold\n\
+stops the run with exit 125. A list runs as nested labs, the profiles of a\n\
+tmpfs outermost. The exit code is\n\
+the code of CMD (127: CMD was not found, 126: it did not run).\n";
 
 pub const CHECK_USAGE: &str = "usage: podvm lab check PROFILE[,PROFILE...]\n\n\
-Prove that each part of the profiles holds on this host: podvm runs its own\n\
-probe in the lab and prints one line for each part. Exit 0 when each part\n\
-holds, 1 when one does not, 125 when the lab cannot be made.\n";
+Measure this host against each profile: one line for each part (holds,\n\
+fails, or unseen) with the rows of the probe. Exit 0 when each part holds,\n\
+1 when one fails, 3 when one cannot be seen here.\n";
 
-/// The list of `podvm lab profiles`.
+/// The list of `podvm lab profiles`: each profile and its parts.
 pub fn profiles_text() -> String {
     let mut s = String::new();
-    for p in PROFILES {
-        s.push_str(&format!(
-            "{:<20} {}\n{:<20} ({})\n",
-            p.name, p.gives, "", p.source
-        ));
+    for p in pod_lab::PROFILES {
+        s.push_str(&format!("{:<20} {} ({})\n", p.name, p.about, p.source));
+        for part in p.parts {
+            s.push_str(&format!(
+                "  {:<22} {} [{}]\n",
+                part.name,
+                part.about,
+                part.hold.words()
+            ));
+        }
     }
     s
+}
+
+fn print(v: &Verdict) {
+    for p in &v.parts {
+        println!("{:<7} {}/{}", p.state.word(), v.profile, p.part);
+        for s in &p.seen {
+            let errno = s.errno.map(|e| format!(" errno={e}")).unwrap_or_default();
+            println!(
+                "        {:<7} {}{errno}: {}",
+                s.state.word(),
+                s.what,
+                s.detail
+            );
+        }
+    }
+}
+
+fn code(v: &Verdict) -> i32 {
+    if v.fails() {
+        EXIT_FAILS
+    } else if v.parts.iter().any(|p| p.state == State::Unseen) {
+        EXIT_UNSEEN
+    } else {
+        EXIT_HOLDS
+    }
+}
+
+/// `podvm lab check`.
+pub fn check(args: &[String]) -> i32 {
+    let [list] = args else {
+        eprintln!("{CHECK_USAGE}");
+        return EXIT_FLAG_ERROR;
+    };
+    let profiles = match parse(list) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("podvm lab check: {e}");
+            return EXIT_FLAG_ERROR;
+        }
+    };
+    let s = settings();
+    let mut worst = EXIT_HOLDS;
+    for p in profiles {
+        let v = pod_lab::check(p, &pod_lab::measure(&s.hostprobe, &pod_lab::rows(p)));
+        print(&v);
+        worst = match (worst, code(&v)) {
+            (EXIT_FAILS, _) | (_, EXIT_FAILS) => EXIT_FAILS,
+            (EXIT_UNSEEN, _) | (_, EXIT_UNSEEN) => EXIT_UNSEEN,
+            _ => EXIT_HOLDS,
+        };
+    }
+    worst
+}
+
+/// The order of the nested labs: a profile that holds a tmpfs opens a user
+/// namespace, which an outer `userns-off` refuses (EPERM), so each such
+/// profile is outermost; the others keep the order of the list.
+pub fn nest_order(mut p: Vec<&'static Profile>) -> Vec<&'static Profile> {
+    p.sort_by_key(|p| {
+        !p.parts
+            .iter()
+            .any(|x| matches!(x.hold, pod_lab::Hold::Tmpfs { .. }))
+    });
+    p
+}
+
+/// The command of the outermost lab: CMD itself, or for a list, podvm
+/// again with the rest of the list. `/proc/self/exe` is podvm in the lab
+/// process, also where a tmpfs of `small-tmp` hides a podvm under `/tmp`.
+pub fn inner(rest: &[&Profile], cmd: &[String]) -> Vec<OsString> {
+    let mut v: Vec<OsString> = Vec::new();
+    if !rest.is_empty() {
+        let names: Vec<&str> = rest.iter().map(|p| p.name).collect();
+        v.extend(["/proc/self/exe", "lab", "run"].map(OsString::from));
+        v.push(names.join(",").into());
+        v.push("--".into());
+    }
+    v.extend(cmd.iter().map(OsString::from));
+    v
 }
 
 /// `podvm lab run`.
@@ -135,156 +182,38 @@ pub fn run(args: &[String]) -> i32 {
             return EXIT_FLAG_ERROR;
         }
     };
-    if let Err(e) = enter(&profiles) {
-        eprintln!("podvm lab run: {e}");
-        return EXIT_RUNTIME_ERROR;
-    }
-    let mut c = std::process::Command::new(&cmd[0]);
-    c.args(&cmd[1..]);
-    if profiles.iter().any(|p| p.ends_with("-tmp")) {
-        c.env("TMPDIR", "/tmp");
-    }
-    let err = c.exec();
-    eprintln!("podvm lab run: {}: {err}", cmd[0]);
-    if err.kind() == std::io::ErrorKind::NotFound {
-        127
-    } else {
-        126
-    }
-}
-
-/// Set each part of the profiles on this process, in order: the
-/// namespaces and the tmpfs, the descriptors, then the seccomp filter (the
-/// filter last, so that it does not refuse a step of the lab itself).
-pub fn enter(profiles: &[&str]) -> Result<(), String> {
-    let has = |n: &str| profiles.contains(&n);
-    if has("small-tmp") || has("noexec-tmp") {
-        tmp(has("noexec-tmp"))?;
-    }
-    if has("inherited-fds") {
-        fds()?;
-    }
-    let deny = denials(profiles);
-    if !deny.is_empty() {
-        let prog =
-            pod_confine::deny::program(&deny).map_err(|f| format!("the seccomp program: {f}"))?;
-        k::set_no_new_privs().map_err(|e| format!("PR_SET_NO_NEW_PRIVS: errno {}", e.0))?;
-        k::seccomp_set_filter(&prog, 0)
-            .map_err(|e| format!("the seccomp filter: errno {}", e.0))?;
-    }
-    Ok(())
-}
-
-/// `getsockname` and `getpeername` of each architecture that podvm builds
-/// (the kernel's tables; aarch64, riscv64 and loongarch64 share the
-/// generic one).
-#[cfg(target_arch = "x86_64")]
-const SOCKNAME: (i64, i64) = (51, 52);
-#[cfg(any(
-    target_arch = "aarch64",
-    target_arch = "riscv64",
-    target_arch = "loongarch64"
-))]
-const SOCKNAME: (i64, i64) = (204, 205);
-#[cfg(target_arch = "x86")]
-const SOCKNAME: (i64, i64) = (367, 368);
-#[cfg(target_arch = "arm")]
-const SOCKNAME: (i64, i64) = (286, 287);
-#[cfg(target_arch = "powerpc64")]
-const SOCKNAME: (i64, i64) = (331, 332);
-const SYS_GETSOCKNAME: i64 = SOCKNAME.0;
-const SYS_GETPEERNAME: i64 = SOCKNAME.1;
-
-const EPERM: u16 = 1;
-const EACCES: u16 = 13;
-const ENOSYS: u16 = 38;
-const EOPNOTSUPP: u16 = 95;
-/// The length of a `sockaddr_in` and of a `sockaddr_in6`. A filter cannot
-/// read the family behind the pointer; the length tells them from an
-/// `AF_UNIX` address, but for a path of exactly 13 or 25 bytes.
-const INET_LENGTHS: [u32; 2] = [16, 28];
-
-/// The seccomp rules of the profiles.
-pub fn denials(profiles: &[&str]) -> Vec<Deny> {
-    let mut d = Vec::new();
-    if profiles.contains(&"bind-denied") {
-        for (name, nr) in [("bind", k::SYS_BIND), ("connect", k::SYS_CONNECT)] {
-            for len in INET_LENGTHS {
-                d.push(Deny::call(name, nr, EACCES).when_equal(2, u32::MAX, len));
+    let profiles = nest_order(profiles);
+    let (first, rest) = (profiles[0], &profiles[1..]);
+    let opts = Options {
+        partial: false,
+        stdout: None,
+    };
+    match pod_lab::run(&settings(), first, &inner(rest, cmd), opts) {
+        Ok(ran) => pod_lab::exit_code(ran.status),
+        Err(RunError::Refused(v)) => {
+            print(&v);
+            eprintln!(
+                "podvm lab run: the lab {} does not hold here; the command did not run",
+                first.name
+            );
+            EXIT_REFUSED
+        }
+        Err(RunError::Exec { errno, .. }) => {
+            eprintln!(
+                "podvm lab run: {}: the command did not start: errno {errno}",
+                cmd[0]
+            );
+            if errno == 2 {
+                EXIT_NOT_FOUND
+            } else {
+                EXIT_CANNOT_EXEC
             }
         }
+        Err(e) => {
+            eprintln!("podvm lab run: {e}");
+            EXIT_REFUSED
+        }
     }
-    if profiles.contains(&"getsockname-denied") {
-        d.push(Deny::call("getsockname", SYS_GETSOCKNAME, EOPNOTSUPP));
-        d.push(Deny::call("getpeername", SYS_GETPEERNAME, EOPNOTSUPP));
-    }
-    if profiles.contains(&"userns-off") {
-        let newuser = k::CLONE_NEWUSER as u32;
-        d.push(Deny::call("unshare", k::SYS_UNSHARE, EPERM).when_flags(0, newuser));
-        d.push(Deny::call("clone", k::SYS_CLONE, EPERM).when_flags(0, newuser));
-        d.push(Deny::call("clone3", k::SYS_CLONE3, ENOSYS));
-    }
-    d
-}
-
-/// A user and a mount namespace that keep the ids of the caller, and a
-/// tmpfs on `/tmp`.
-fn tmp(noexec: bool) -> Result<(), String> {
-    use std::os::unix::fs::MetadataExt;
-    let me = std::fs::metadata("/proc/self").map_err(|e| format!("/proc/self: {e}"))?;
-    let (uid, gid) = (me.uid(), me.gid());
-    k::unshare(k::CLONE_NEWUSER | k::CLONE_NEWNS).map_err(|e| {
-        format!("small-tmp and noexec-tmp need a user namespace, and unshare(CLONE_NEWUSER|CLONE_NEWNS) gave errno {}: this host cannot give them with no root", e.0)
-    })?;
-    for (path, line) in [
-        ("/proc/self/setgroups", "deny".to_string()),
-        ("/proc/self/uid_map", format!("{uid} {uid} 1")),
-        ("/proc/self/gid_map", format!("{gid} {gid} 1")),
-    ] {
-        std::fs::write(path, line).map_err(|e| format!("{path}: {e}"))?;
-    }
-    let c = |s: &str| k::CBuf::new(s).ok_or_else(|| format!("{s}: a NUL byte"));
-    let none = c("none")?;
-    k::mount(&none, &c("/")?, &none, k::MS_REC | k::MS_PRIVATE)
-        .map_err(|e| format!("make / private: errno {}", e.0))?;
-    let mut flags = k::MS_NOSUID | k::MS_NODEV;
-    if noexec {
-        flags |= k::MS_NOEXEC;
-    }
-    let data = c(&format!("size={TMP_BYTES},mode=1777"))?;
-    k::mount_data(&c("tmpfs")?, &c("/tmp")?, &c("tmpfs")?, flags, &data)
-        .map_err(|e| format!("mount a tmpfs on /tmp: errno {}", e.0))?;
-    Ok(())
-}
-
-/// Descriptors 3 to [`LAST_FD`], open with no `FD_CLOEXEC`.
-///
-/// The three sources move above the range first (`F_DUPFD_CLOEXEC` from
-/// 64), so that a copy into the range never closes a source that it needs.
-fn fds() -> Result<(), String> {
-    use std::os::fd::IntoRawFd;
-    const F_DUPFD_CLOEXEC: u64 = 1030;
-    let null = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open("/dev/null");
-    let null = null.map_err(|e| format!("/dev/null: {e}"))?.into_raw_fd();
-    let mut ends = [0i32; 2];
-    k::pipe2(&mut ends, 0).map_err(|e| format!("pipe: errno {}", e.0))?;
-    let mut high = [0i64; 3];
-    for (h, fd) in high.iter_mut().zip([ends[0], ends[1], null]) {
-        *h = k::fcntl(i64::from(fd), F_DUPFD_CLOEXEC, 64)
-            .map_err(|e| format!("F_DUPFD_CLOEXEC: errno {}", e.0))?;
-        let _ = k::close(i64::from(fd));
-    }
-    for n in 3..=LAST_FD {
-        let from = high[(n as usize - 3).min(2)];
-        k::dup2(from, i64::from(n)).map_err(|e| format!("dup2 to {n}: errno {}", e.0))?;
-    }
-    for h in high {
-        let _ = k::close(h);
-    }
-    Ok(())
 }
 
 #[cfg(test)]

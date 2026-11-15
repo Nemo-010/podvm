@@ -305,6 +305,7 @@ fn trial(uid: u32, gid: u32) -> bool {
 ///
 /// ⛔ Call it first in `main`, with one thread.
 pub fn enter_if(argv: &[String]) {
+    crate::lab::host::dispatch(); // TODO/net.md T-1916: the lab process of pod-lab
     if argv.get(1).map(String::as_str) == Some(sweep::REAPER_ARG) {
         sweep::reap_all();
     }
