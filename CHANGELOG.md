@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.23 (2026-11-15)
+
 ### Changed: podvm takes podcrates `v0.51.0`, 2026-11-15
 
 Record: T-1890, T-1875, T-1909.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.23.
 
 - An arm64 guest of the machine tier fetches its pinned kernel itself
   (`alpine-netboot-aarch64` of `pod-services`); `PODVM_MACHINE_KERNEL_ARM64`
@@ -30,7 +32,7 @@ Deployed: none yet.
 ### Added: `exec` and `cp` join a run in a user namespace, 2026-11-15
 
 Record: T-1910.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.23.
 
 - `podvm exec` and `podvm cp` into a foreground run that podvm put in a
   user namespace (T-1909) join its user, UTS, PID and mount namespace:
