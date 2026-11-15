@@ -5366,7 +5366,7 @@ A scan of the source is cheap and finds the class, not only the case.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -5397,6 +5397,21 @@ A report is checked for what it says, not only for its form.
 ## Prove
 
 `cargo test -p podvm --test report_paths_meaning` exits 0, with one case for each of the nine paths above
+
+## Done
+
+**Partial, 2026-11-15.** `tests/report_paths_meaning.rs` runs eight of
+the nine paths on an imported one-file image (the static test binary,
+whose tests are the payloads): success, exit 3, SIGABRT (134), a
+timeout, a refusal in the parse (an unknown flag), a refusal after the
+parse (no such image), a detached run, and an unwritable path. Each run
+passes `-e K=VALUE` with a value made at run time; no file of the store,
+the logs or the reports holds it, but for the container table, which
+keeps the environment for `start` and has mode 0600. `refused` is null
+exactly when the payload ran. `cargo test -p podvm --test
+report_paths_meaning` exits 0. The clause that remains: the machine path
+with a fake boot. The detached case checks the start record only, until
+T-1825 finishes the report of a detached run.
 
 
 # T-1857: A help text or a document can say "until T-NNNN" after that entry is done
