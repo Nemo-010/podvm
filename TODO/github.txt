@@ -291,11 +291,13 @@
 399 issue open
 400 issue closed
 401 issue open
-402 issue open
+402 issue closed
 403 issue closed
 404 issue open
-405 issue open
+405 issue closed
 406 issue open
 407 issue open
 408 issue closed
-409 issue open
+409 issue closed
+410 issue open
+411 issue open
