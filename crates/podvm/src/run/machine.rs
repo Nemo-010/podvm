@@ -74,10 +74,17 @@ pub(super) fn prepare_image(
         workdir
     };
     let env = Plan::env_for(&podvm_enter::NAMES, &cfg.config.env, &o.env);
-    let stdin = crate::machine::guest::read_stdin().map_err(|e| {
-        eprintln!("podvm {verb}: {tier} tier: {e}");
-        podvm_image::error::EXIT_RUNTIME_ERROR
-    })?;
+    // TODO/machine.md T-1885: with -t the guest's terminal takes stdin
+    // live (`machine/guest/tty.rs`); a read here left the pump nothing but
+    // the end of input.
+    let stdin = if o.tty && tier == "machine" {
+        None
+    } else {
+        crate::machine::guest::read_stdin().map_err(|e| {
+            eprintln!("podvm {verb}: {tier} tier: {e}");
+            podvm_image::error::EXIT_RUNTIME_ERROR
+        })?
+    };
     Ok(Prepared {
         digest: record.manifest_digest.clone(),
         rootfs,

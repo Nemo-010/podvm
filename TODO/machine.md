@@ -4263,7 +4263,7 @@ not needed: the kernel ends the emulator with podvm.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4292,6 +4292,27 @@ A `-t` run gets each byte of its stdin, as a run without `-t` does.
 ## Prove
 
 `printf 'machine-in\n' | podvm run --rm --podvm-tier=machine -t mirror.gcr.io/library/alpine:3.20 cat` prints `machine-in` and exits 0 under TCG on the cloud host
+
+## Correction
+
+**Corrected 2026-11-15.** The Premise named the wrong cause. A `-t` run
+also lost stdin that arrived late, so the order of the pump and of
+`guest-tty` was not the cause. `run/machine.rs` read a piped stdin to its
+end for the run archive (`/podvm/stdin`, the input of a run without
+`-t`) before the boot, and the pump of the terminal then read nothing but
+the end of input, and sent only `^D`.
+
+## Done
+
+**Done 2026-11-15.** A machine run with `-t` reads no stdin for the run
+archive, so the pump of `machine/guest/tty.rs` relays it live. The pump
+also holds stdin until `podvm guest-tty` writes a marker on its terminal
+(`OPEN_MARKER`, stripped from the output), so no byte reaches a console
+that no reader holds. On the cloud host under TCG: `printf 'machine-in\n' | podvm run --rm
+--podvm-tier=machine -t mirror.gcr.io/library/alpine:3.20 cat` prints
+`machine-in` (the echo of the terminal, then the output of `cat`) and
+exits 0; input that arrives 4 s late arrives too; a run without `-t`
+still prints its input; no emulator stays.
 
 # T-1889: The machine tier boots an image of another architecture and ends with "no exit marker"
 

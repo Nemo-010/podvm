@@ -547,7 +547,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1882](extract.md) | P2 | S | none | extract | done | pod-extract counts the `./` archive root as an entry it could not make |
 | [T-1883](image.md) | P2 | S | none | image | done | `create` and `run` do not report the entries that the extraction could not make |
 | [T-1884](machine.md) | P1 | S | none | machine | done | A machine run that podvm ends on SIGTERM leaves its emulator running |
-| [T-1885](machine.md) | P2 | S | none | machine | open | Piped input to a machine run with `-t` is lost before the guest terminal opens |
+| [T-1885](machine.md) | P2 | S | none | machine | done | Piped input to a machine run with `-t` is lost before the guest terminal opens |
 | [T-1886](image.md) | P1 | S | none | image | done | Concurrent extractions of one image write one tree, and the first to fail removes it under the others |
 | [T-1887](enter.md) | P1 | S | none | enter | done | `--podvm-confine` on the userland rung resolves an absolute link of the image against the host root |
 | [T-1888](enter.md) | P2 | S | none | enter | done | A required confine path whose link leaves the tree still grants a host inode |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 31 open, 12 partial, 2 blocked, 448 done.
+493 entries: 30 open, 12 partial, 2 blocked, 449 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 14 | 3 | 2 | 156 | 175 |
+| P2 | 13 | 3 | 2 | 157 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 31 | 12 | 2 | 448 | 493 |
+| **All** | 30 | 12 | 2 | 449 | 493 |
 
 ## Work order
 

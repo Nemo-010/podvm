@@ -89,7 +89,16 @@ Deployed: version 0.2.0-beta.19.
 - `load` refuses an unknown `schemaVersion`, and the `images` table
   shows the platform where two records share a tag.
 
-### Changed: podcrates `v0.48.0`, 2026-11-15
+### Fixed: piped input to a machine run with `-t`, 2026-11-15
+
+Record: T-1885.
+Deployed: version 0.2.0-beta.19.
+
+- `printf 'x\n' | podvm run --podvm-tier=machine -t IMAGE cat` printed
+  nothing: podvm read the input for the run archive, and the terminal of
+  the guest got only the end of input. It now gets each byte.
+
+### Changed: podcrates `v0.49.0`, 2026-11-15
 
 Record: T-1893, T-1894 (partial).
 Deployed: version 0.2.0-beta.19.
