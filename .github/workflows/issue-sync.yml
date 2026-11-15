@@ -2,12 +2,18 @@
 # TODO/cli.md T-1919): the reusable workflow of podcrates writes a status
 # block into each issue, and closes or opens it to match TODO/github.txt.
 #
-# Dispatch only, with a dry run by default, until the first dry run is
-# read; then `push` to main and a daily schedule follow
-# (PodUtils/podcrates#194).
+# The first dry run (run 43775969796, request 438) wrote a block into 291
+# issues, closed #395 (open on GitHub, closed in the record), and left
+# each issue from outside the team with no label `confirmed`. So the sync
+# runs on each push to main and each day; a dispatch is a dry run by
+# default (PodUtils/podcrates#194).
 name: issue-sync
 
 on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -23,4 +29,4 @@ jobs:
     uses: PodUtils/podcrates/.github/workflows/issue-sync.yml@0d6421c0036093a30e2e30d8cbd7903d00585313 # v0.57.0
     with:
       podcrates_ref: v0.57.0
-      dry_run: ${{ inputs.dry_run }}
+      dry_run: ${{ inputs.dry_run || false }}

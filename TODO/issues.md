@@ -331,7 +331,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #435 | COORD-145: pod-todo: a kind `reference` for an issue that holds no work (to podcrates) | closed | T-1919 |
 | #436 | [gh action] requested | closed (run 43770947835) | the first dry run of issue-sync.yml (T-1919) |
 | #437 | COORD-146: issue-sync.yml builds pod-todo under the consumer's .cargo/config.toml (to podcrates) | closed | T-1919 |
-| #438 | [gh action] requested | open | the dry run of issue-sync.yml at podcrates v0.57.0 (T-1919) |
+| #438 | [gh action] requested | closed (run 43775969796) | the dry run of issue-sync.yml at podcrates v0.57.0 (T-1919) |
 
 ## Messages whose title does not start with COORD-NNN
 
