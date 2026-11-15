@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.23 (2026-11-15)
+
 ### Added: `--store DIR`, 2026-11-15
 
 Record: T-1913 (PodUtils/podrunner#168).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.23.
 
 - `podvm --store DIR VERB` (or `podvm VERB --store DIR`) uses DIR as the
   store, with the meaning of `PODVM_STORE`.
@@ -19,7 +21,7 @@ Deployed: none yet.
 ### Changed: podvm takes podcrates `v0.52.0`, 2026-11-15
 
 Record: T-1908, T-1912.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.23.
 
 - `run -d --hostname` names the UTS namespace of the namespace rung
   through `Plan::hostname` of pod-enter; the probe of KVM checks the
@@ -30,14 +32,12 @@ Deployed: none yet.
 ### Added: `--memory`, `--cpus` and `--pids-limit` in a delegated cgroup2 subtree, 2026-11-15
 
 Record: T-1747 (PodUtils/podrunner#110).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.23.
 
 - Where the host delegates a cgroup v2 subtree to the user (a systemd user
   session, for example), `podvm run` and `podvm run -d` hold `--memory`,
   `--cpus` and `--pids-limit` in a leaf of the run, and name an OOM kill.
   Elsewhere each flag still refuses with exit 125 and the reason.
-
-## 0.2.0-beta.23 (2026-11-15)
 
 ### Changed: podvm takes podcrates `v0.51.0`, 2026-11-15
 
