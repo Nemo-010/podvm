@@ -8,10 +8,98 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.19 (2026-11-15)
+
+### Added: `container prune` and the `container` group, 2026-11-15
+
+Record: T-1848.
+Deployed: version 0.2.0-beta.19.
+
+- `podvm container prune` removes each exited or dead container and its
+  rootfs tree, and prints the bytes that the trees held. A created or
+  running container stays.
+- `podvm container ls|rm|start|stop|...` runs the top-level verb of the
+  same name.
+
+### Fixed: a detached run of a static image where chroot is denied, 2026-11-15
+
+Record: T-1896 (PodUtils/podrunner#100, case 2).
+Deployed: version 0.2.0-beta.19.
+
+- `run -d` and `create` of a static image (`busybox:1.37.0-musl`) on a
+  host that denies chroot refused with "the memfd family has no detached
+  driver". The native-static rung now has a detached driver; `wait`,
+  `logs` and `stop` work.
+
+### Fixed: `save` by an index digest after a pull by tag, 2026-11-15
+
+Record: T-1895 (PodUtils/podrunner#104), T-1841.
+Deployed: version 0.2.0-beta.19.
+
+- A pull by tag and a pull by the index digest gave two records of one
+  manifest, and `save` of the digest refused them as two images. They are
+  now one image.
+- `save` takes `--platform`, which its refusal named.
+
+### Fixed: each long flag takes `--flag=value`, 2026-11-15
+
+Record: T-1853, T-1833.
+Deployed: version 0.2.0-beta.19.
+
+- 50 long flags refused `--flag=value` as a bug in podvm, for example
+  `stop --time=1`, `kill --signal=KILL` and `ps --all=true`. A valued
+  flag takes `=VALUE`, and a boolean takes docker's `=true` and `=false`.
+- `run --attach` and `--expose` take their value, as docker's do; `run
+  --expose 80 alpine` read `80` as the image.
+- Each command answers `-h` and `--help` with exit 0.
+
+### Fixed: `cp` onto a directory, and the modes of `cp -r`, 2026-11-15
+
+Record: T-1822.
+Deployed: version 0.2.0-beta.19.
+
+- `cp FILE NAME:/etc` put nothing and blamed the source. A file onto a
+  directory now goes into it under its own name, in both directions.
+- `cp -r` keeps the modes 700 and 711 of the directories.
+
+### Changed: the banner and the report, 2026-11-15
+
+Record: T-1824, T-1826, T-1825 (partial), T-1834, T-1835.
+Deployed: version 0.2.0-beta.19.
+
+- The notice of the machine tier follows `-q` and `--verbose`, as the
+  banner does; a default run prints nothing.
+- `--no-steps` and an image with no `pacman-key` leave a row in the
+  `degradations` of the report.
+- A `--report` that cannot be written exits 125.
+- `system info --format '{{json .X}}'` prints counts and `StrictOk` as
+  numbers and booleans, and `compare --strict` refuses an empty or
+  partial report.
+
+### Fixed: the parse of `run` and the help of its options, 2026-11-15
+
+Record: T-1828, T-1831, T-1839, T-1840.
+Deployed: version 0.2.0-beta.19.
+
+- `--add-host` refuses a value that is not an address, `-e =V` is
+  refused, `--env-file` keeps the quotes of a value, and the help of
+  `run` and `create` says only what the verbs do.
+- `load` refuses an unknown `schemaVersion`, and the `images` table
+  shows the platform where two records share a tag.
+
+### Changed: podcrates `v0.48.0`, 2026-11-15
+
+Record: T-1893, T-1894 (partial).
+Deployed: version 0.2.0-beta.19.
+
+- A provision of a Windows guest stops its emulator on each error.
+- A provision types after a fixed wait (TCG), or when the screen settles
+  (KVM). Under KVM, `windows setup` of Validation OS passed in 37 s.
+
 ### Added: `images` and `rmi` know the Windows names, 2026-11-14
 
 Record: T-1861 (partial), T-1864 (partial).
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.19.
 
 - `podvm images` lists each Windows name that the store holds, and
   `podvm rmi windows:NAME` removes its files.
@@ -21,7 +109,7 @@ Deployed: not deployed; no version change.
 ### Added: `windows:validationos` fetches only its disk, by a UDF reader, 2026-11-14
 
 Record: T-1863.
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.19.
 
 - `podvm pull windows:validationos` reads the UDF directory of the ISO by
   range requests and fetches only the VHDX (900 MiB of 2.4 GiB), checked
@@ -32,7 +120,7 @@ Deployed: not deployed; no version change.
 ### Added: `podvm pull windows:NAME`, a resumable download with progress, and a test of the broker, 2026-11-14
 
 Record: T-1820, T-1861 (partial), T-1862.
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.19.
 
 - `podvm pull windows:NAME` fetches and checks the medium of the catalog
   (and makes the DOS base) instead of asking a registry; an unknown name
@@ -45,7 +133,7 @@ Deployed: not deployed; no version change.
 ### Added: the answer-file stick and the boot options of a Windows guest, 2026-11-14
 
 Record: T-1865, T-1866, T-1883.
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.19.
 
 - `podvm-windows` writes `autounattend.xml` into a FAT stick (mode 0600)
   and gives its read-only USB medium; golden files pin the answer file
@@ -59,7 +147,7 @@ Deployed: not deployed; no version change.
 ### Changed: podcrates `v0.45.0`, 2026-11-14
 
 Record: T-1827, T-1842, T-1881, T-1882, T-1891, T-1862 (partial).
-Deployed: not deployed; no version change.
+Deployed: version 0.2.0-beta.19.
 
 - Extraction keeps the exact mode of each directory of the image, also
   0555, and makes a directory where an earlier layer had a link.
