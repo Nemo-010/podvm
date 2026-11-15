@@ -3914,6 +3914,16 @@ install line where `PODVM_QEMU` names no emulator. The clauses that
 remain: the end of the evaluation period of a golden image (T-1867
 writes its `meta.json`), and `PODVM_MACHINE_ACCEL=kvm` for `podvm
 windows`.
+
+**Partial 2026-11-15.** `podvm windows` takes `PODVM_MACHINE_ACCEL` by
+the rule of the Linux guest (`plan::asked`): `kvm` with no usable
+`/dev/kvm` refuses with 125, says that podvm does not fall back to TCG,
+and names the group kvm; `tcg` takes TCG; another value is refused.
+`cargo test -p podvm --bin podvm windows_doctor` exits 0 with the new
+test `windows_doctor_takes_the_asked_accelerator`. By hand on the cloud
+host: `PODVM_MACHINE_ACCEL=kvm podvm windows doctor` exits 125 with the
+refusal. The clause that remains: the end of the evaluation period of a
+golden image (T-1867 writes its `meta.json`).
 and for the `kvm` refusal. A plant that breaks one check turns the gate red
 (`podvm-plant`).
 

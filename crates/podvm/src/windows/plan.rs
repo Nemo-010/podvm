@@ -116,6 +116,20 @@ pub(crate) fn ceiling() -> Result<u64, i32> {
 
 /// The machine tier's accelerator, or the refusal that names why not.
 pub(crate) fn accelerator() -> Result<Accel, i32> {
+    // TODO/machine.md T-1871: `PODVM_MACHINE_ACCEL` as for the Linux guest
+    // (call C16): `kvm` with no usable /dev/kvm refuses by name, and never
+    // falls back to TCG without a word.
+    if let Ok(want) = std::env::var("PODVM_MACHINE_ACCEL") {
+        let kvm_opens = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open("/dev/kvm")
+            .is_ok();
+        return asked(&want, kvm_opens).map_err(|why| {
+            eprintln!("podvm windows: {why}");
+            podvm_image::error::EXIT_RUNTIME_ERROR
+        });
+    }
     let findings = podvm_probe::run();
     let assessed = podvm_probe::machine::assess(&findings);
     match podvm_windows::accel_for(assessed.profile) {
@@ -128,6 +142,18 @@ pub(crate) fn accelerator() -> Result<Accel, i32> {
             Err(podvm_image::error::EXIT_RUNTIME_ERROR)
         }
     }
+}
+
+/// The accelerator that `PODVM_MACHINE_ACCEL` asks for, by the rule of the
+/// Linux guest, with the remedy of a closed /dev/kvm.
+pub(crate) fn asked(want: &str, kvm_opens: bool) -> Result<Accel, String> {
+    crate::machine::guest::accel(Some(want), kvm_opens).map_err(|e| {
+        if want == "kvm" {
+            format!("{e}; a user in the group kvm opens it (`sudo usermod -aG kvm $USER`)")
+        } else {
+            e
+        }
+    })
 }
 
 /// True where the driver can find `name`.
@@ -263,5 +289,20 @@ mod tests {
         // refusal above keys on.
         assert!(crate::tier::which_qemu("definitely-not-an-emulator-xyz").is_none());
         assert!(crate::tier::which_qemu("sh").is_some());
+    }
+
+    /// TODO/machine.md T-1871: `PODVM_MACHINE_ACCEL` for `podvm windows`:
+    /// `kvm` with no usable /dev/kvm refuses and names the group kvm,
+    /// `tcg` takes TCG, and another value is refused.
+    #[test]
+    fn windows_doctor_takes_the_asked_accelerator() {
+        assert_eq!(asked("kvm", true), Ok(Accel::Kvm));
+        let e = asked("kvm", false).unwrap_err();
+        assert!(
+            e.contains("does not fall back to TCG") && e.contains("group kvm"),
+            "{e}"
+        );
+        assert_eq!(asked("tcg", true), Ok(Accel::Tcg));
+        assert!(asked("hvf", true).is_err());
     }
 }
