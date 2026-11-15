@@ -290,10 +290,13 @@ toolkit does not install it. `base ensure --repair` reports the condition
 and does not repair it (T-1610). No task owns it, because only a change
 to the host clears it.
 
-⚠ **`podvm` does not depend on cgroup delegation and does not enforce it either way.** The CLI
-refuses `--memory` and `--cpus` on its own parity table
-([cli](../TODO/cli.md) T-0804, `resource limits need a cgroup this runtime does
-not grant`), so a caller gets exit 125 and a named reason instead of an accepted
-flag that does nothing. The hazard is the engine underneath podvm, which
+⚠ **`podvm` does not depend on cgroup delegation and does not enforce it either way.**
+`--memory` (`-m`), `--cpus` and `--pids-limit` hold on the incus tier only,
+as the keys `limits.memory`, `limits.cpu` (or `limits.cpu.allowance`) and
+`limits.processes` of the instance; each other tier refuses each of them
+with exit 125 and a named reason, instead of an accepted flag that does
+nothing ([machine](../TODO/machine.md) T-1897). `--ulimit nproc=` and
+`--ulimit as=` hold on each tier, also for `run -d`. A cgroup v2 subtree
+that a host delegates is T-1747. The hazard is the engine underneath podvm, which
 accepts those limits silently; [RULES](../TODO/RULES.md) section 8 says an
 option accepted by an engine does not prove enforcement.
