@@ -4100,6 +4100,8 @@ run and the read of `memory.events`.
 
 **Partial (2026-11-15, rerun).** Run 43726504386 (`kvm.yml`, `only=cgroup`, request 418, beta.23): clause 1 PASS again; clause 3 PASS (`--memory 16m` with a payload over it: exit 137, "oom_kill 2" named); no leaf stayed. Clause 2 FAIL: a foreground `run --pids-limit 32` made its leaf under the cgroup of the shell (`podvm-ci/shell/podvm-*`) and the move into it gave EOPNOTSUPP. `pids` and `cpu` enable on a cgroup that holds a process, so the step "the directory, else its parent" took the directory of the shell. `limits` now skips a directory that holds a process: podvm's own cgroup, or one whose `cgroup.procs` names a process. Remaining: the rerun of the job.
 
+**Partial (2026-11-15, second rerun).** Run 43740331439 (`kvm.yml`, request 432, `283e3492`): clause 1 PASS; clause 2 PASS now (`--pids-limit 16`: exit 2 with the line of the failed fork); clause 3 FAIL: `run --rm --memory 32m` of a shell that holds 200 MB exited 0 with nothing on stderr, where run 43726504386 gave 137 and named the OOM kill. The cause is not known yet: the change of the parent does not touch a `--memory` run (its leaf goes to the parent in both runs). Experiment 459 now makes the payload name its cgroup and its size on stderr, and prints `/proc/swaps` on a failure. Remaining: the next run of the job.
+
 # T-1752: A versioned JSON Schema for the record of `run --report`, published in each release
 
 **Source:** PodUtils/podcrates#124 (the asks of podswarm to podvm, a message from a

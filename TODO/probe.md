@@ -1891,6 +1891,7 @@ Ask podcrates for a leg that checks that the device runs a guest of the architec
 
 **Partial (2026-11-15).** podcrates `v0.52.0` (podcrates@T-676, the answer to COORD-133) asks the device a question of the build's architecture after the open (`KVM_ARM_PREFERRED_TARGET` on arm64, `KVM_GET_SUPPORTED_CPUID` on x86_64), so the probe row `open(/dev/kvm, O_RDWR)` fails with "the device runs no guest of aarch64 (QEMU user mode?)". podvm's machine tier and Windows planner opened the device themselves; both now take the same leg (`machine::ssh::kvm_opens`), and `PODVM_MACHINE_ACCEL=kvm` names the reason. Remaining: the Prove, by the job `arch` of `kvm.yml` (an aarch64 podvm under `qemu-aarch64-static` on an x86_64 runner with `/dev/kvm`); the cloud host has no `/dev/kvm`.
 
+**Partial (2026-11-15, CI).** Run 43740331439: the job `arch` stopped at its first step: the runner image has no package `qemu-user-static` ("has no installation candidate"). The job now takes `qemu-user` where that package is missing, and runs the `qemu-aarch64` that it finds. Remaining: the next run of the job.
 
 # T-1909: The namespace rung does not enter through a user namespace
 

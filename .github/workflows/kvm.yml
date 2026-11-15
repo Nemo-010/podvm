@@ -333,8 +333,13 @@ jobs:
       - name: qemu user mode
         run: |
           sudo apt-get -qq update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-user-static >/dev/null
-          qemu-aarch64-static --version | head -1
+          # Run 43740331439: the runner image has no qemu-user-static; the
+          # package qemu-user gives a static qemu-aarch64 there.
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-user-static >/dev/null 2>&1 ||
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq qemu-user >/dev/null
+          Q=$(command -v qemu-aarch64-static || command -v qemu-aarch64)
+          echo "Q=$Q" >> "$GITHUB_ENV"
+          "$Q" --version | head -1
 
       - name: bootstrap
         run: ./scripts/common/bootstrap-env.sh rust cc zig tools
@@ -352,7 +357,7 @@ jobs:
         run: |
           set -u
           B=target/aarch64-unknown-linux-musl/release/podvm
-          rows=$(qemu-aarch64-static "$B" probe --rows 2>&1) || true
+          rows=$("$Q" "$B" probe --rows 2>&1) || true
           printf '%s\n' "$rows" | grep -i kvm || true
           if printf '%s\n' "$rows" | grep -F 'open(/dev/kvm, O_RDWR)' | grep -qw PASS; then
             echo "FAIL: the aarch64 probe says yes for the x86_64 device"
@@ -360,7 +365,7 @@ jobs:
           fi
           printf '%s\n' "$rows" | grep -F 'open(/dev/kvm, O_RDWR)' | grep -q 'FAIL' || { echo "FAIL: no kvm row"; exit 1; }
           rc=0
-          out=$(PODVM_MACHINE_ACCEL=kvm timeout 300 qemu-aarch64-static "$B" run --rm --podvm-tier=machine \
+          out=$(PODVM_MACHINE_ACCEL=kvm timeout 300 "$Q" "$B" run --rm --podvm-tier=machine \
             public.ecr.aws/docker/library/alpine:3.20 true 2>&1) || rc=$?
           printf '%s\n' "$out" | tail -5
           echo "exit=$rc"
