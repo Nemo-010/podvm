@@ -5366,7 +5366,7 @@ each other difference, the raw-syscall escape too, and that
 
 `exec` and `create` with `--podvm-tier=machine` say "running an OCI image
 as a guest arrives with T-1656"; T-1656 is done, and `exec --help` does
-not say the tier is refused. the limits page said "A dynamic
+not say the tier is refused. The limits page said "A dynamic
 program and a detached run refuse by name" on the syscall and emulate
 tiers; a dynamic program runs there. `extract --help` says a reference
 that names more than one image is refused; the host platform is taken
