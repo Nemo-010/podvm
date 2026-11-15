@@ -351,9 +351,9 @@ pub(crate) fn prepare(
         userland_note = ue.banner;
         strict_unsafe = ue.unsafe_paths;
     }
-    ro_env(verb, &o, userland.as_ref(), &mut env)?; // TODO/cli.md T-1655
-                                                    // T-1412, T-1772: a missing workdir is made as docker does; one that is
-                                                    // a file, a link out or a `..` past the root refuses at 125.
+    ro_env(verb, &mut o, rootfs.as_ref(), userland.as_ref(), &mut env)?; // T-1655, T-1908
+                                                                         // T-1412, T-1772: a missing workdir is made as docker does; one that is
+                                                                         // a file, a link out or a `..` past the root refuses at 125.
     crate::lifecycle::volume::make_workdir(&rootfs, &working_dir, &o.volumes);
     if let Err(e) = podvm_enter::check_workdir(&maps, &working_dir, &image) {
         eprintln!("podvm {verb}: {e}");

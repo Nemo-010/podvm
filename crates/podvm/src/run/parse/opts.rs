@@ -18,6 +18,8 @@ pub(crate) struct Opts {
     /// `--user`. Carried raw here and resolved against the image once its
     /// rootfs exists, because a name means the image's own passwd entry.
     pub(crate) user: Option<String>,
+    /// `--hostname` (TODO/enter.md T-1908).
+    pub(crate) hostname: Option<String>,
     /// `--podvm-tier`. Carried raw here and resolved in `prepare`.
     /// TODO/machine.md T-1302.
     pub(crate) tier: Option<crate::tier::Want>,
@@ -130,6 +132,7 @@ impl Opts {
             image: None,
             command: Vec::new(),
             user: None,
+            hostname: None,
             tier: None,
             qemu_args: Vec::new(),
             mem: None,
@@ -162,4 +165,21 @@ impl Opts {
             ask: crate::complete::Ask::default(),
         }
     }
+}
+
+/// `--hostname NAME` (TODO/enter.md T-1908): a host name of 1 to 63
+/// letters, digits, dots and hyphens, as the nodename of `uname` holds.
+pub(super) fn hostname_arg(verb: &str, a: &str) -> Result<String, i32> {
+    let ok = (1..=63).contains(&a.len())
+        && a.bytes().next().is_some_and(|c| c.is_ascii_alphanumeric())
+        && a.bytes()
+            .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'.');
+    if ok {
+        return Ok(a.to_string());
+    }
+    eprintln!(
+        "podvm {verb}: --hostname takes 1 to 63 letters, digits, dots and hyphens, \
+         with a letter or a digit first, not {a:?} (TODO/enter.md T-1908)"
+    );
+    Err(podvm_image::error::EXIT_FLAG_ERROR)
 }

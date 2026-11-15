@@ -315,6 +315,7 @@ pub(super) fn unhonoured_flags(o: &Opts) -> Vec<&'static str> {
     [
         (o.confine.is_some(), "--podvm-confine"),
         (o.user.is_some(), "--user"),
+        (o.hostname.is_some(), "--hostname"),
         (!o.ask.add_hosts.is_empty(), "--add-host"),
         (o.read_only, "--read-only"),
         (!o.tmpfs.is_empty(), "--tmpfs"),

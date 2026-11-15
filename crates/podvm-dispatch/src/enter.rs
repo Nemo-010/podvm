@@ -123,6 +123,14 @@ fn volumes(envp: &[OsString]) -> Result<(), String> {
     {
         crate::ro::mark(ro);
     }
+    // TODO/enter.md T-1908: the name of `--hostname`.
+    if let Some(name) = envp
+        .iter()
+        .find_map(|e| e.as_bytes().strip_prefix(b"PODVM_HOSTNAME="))
+        && !crate::uts::set(name)
+    {
+        return Err("PODVM_HOSTNAME is empty or longer than 64 bytes".into());
+    }
     Ok(())
 }
 

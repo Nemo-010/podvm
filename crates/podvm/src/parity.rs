@@ -257,7 +257,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "run", flag: Some("--cpus"), status: Degraded, note: "the incus tier only: limits.cpu (a whole number) or limits.cpu.allowance (a part) of the instance; each other tier refuses it (TODO/machine.md T-1897)" },
     Row { verb: "run", flag: Some("--pids-limit"), status: Degraded, note: "the incus tier only: limits.processes of the instance; each other tier refuses it, and --ulimit nproc= holds on each tier (TODO/machine.md T-1897)" },
     Row { verb: "run", flag: Some("--restart"), status: NoneStatus, note: "not implemented: `stop` then `start` is the same thing and says which half failed (TODO/cli.md T-1331)" },
-    Row { verb: "run", flag: Some("--hostname"), status: NoneStatus, note: "sethostname needs a UTS namespace this runtime does not grant" },
+    Row { verb: "run", flag: Some("--hostname"), status: Degraded, note: "no UTS namespace: the handler of the native-static rung and the interposer of the loader family answer uname and gethostname with the name; /etc/hostname, HOSTNAME and /etc/hosts hold it. Each other entry refuses by name, and sethostname in the payload fails with EPERM (T-1908)" },
     // ⭐ M5 and TODO/cli.md T-0804. Four flags docker does not have, and each
     // is here for the same reason every other row is: a surface with no row is
     // a surface nobody documented.

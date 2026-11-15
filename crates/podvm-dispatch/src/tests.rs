@@ -78,4 +78,12 @@ fn the_tier_counts_growth_and_names_its_release() {
     assert_eq!(&u[130..130 + RELEASE.len()], RELEASE);
     assert_eq!(u[130 + RELEASE.len()], 0);
     assert_eq!(&u[0..5], b"zzzzz", "the other fields stay the host's");
+    // TODO/enter.md T-1908: `--hostname` writes the nodename field only.
+    let mut u = [b'z'; 390];
+    assert!(crate::uts::set(b"unit1"));
+    crate::uts::patch(&mut u);
+    assert_eq!(&u[65..71], b"unit1\0");
+    assert_eq!(u[129], 0);
+    assert_eq!(&u[130..135], b"zzzzz", "the release stays the host's");
+    assert!(!crate::uts::set(&[b'a'; 65]), "a name of 65 bytes");
 }

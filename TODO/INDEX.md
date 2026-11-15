@@ -570,11 +570,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1905](packaging.md) | P2 | S | none | packaging | partial | The release has no attestation in GitHub's store |
 | [T-1906](machine.md) | P1 | S | none | machine | done | The store keeps `machine/run-PID-*` after each guest of the machine tier |
 | [T-1907](probe.md) | P3 | S | none | probe | open | Under QEMU user mode, `probe` says `kvm: yes` for the device of the host |
-| [T-1908](enter.md) | P1 | M | none | enter | open | A payload has the host name of the host: no `--hostname` |
+| [T-1908](enter.md) | P1 | M | none | enter | partial | A payload has the host name of the host: no `--hostname` |
 
 ## Counts
 
-505 entries: 11 open, 12 partial, 2 blocked, 480 done.
+505 entries: 10 open, 13 partial, 2 blocked, 480 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -584,10 +584,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 2 | 4 | 0 | 203 | 209 |
+| P1 | 1 | 5 | 0 | 203 | 209 |
 | P2 | 5 | 6 | 2 | 164 | 177 |
 | P3 | 4 | 2 | 0 | 39 | 45 |
-| **All** | 11 | 12 | 2 | 480 | 505 |
+| **All** | 10 | 13 | 2 | 480 | 505 |
 
 ## Work order
 

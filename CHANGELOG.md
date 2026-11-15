@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `--hostname` for `run` and `create`, 2026-11-15
+
+Record: T-1908 (PodUtils/podvm#402, PodUtils/podrunner#115).
+Deployed: none yet.
+
+- `podvm run --hostname NAME` gives the payload NAME for `uname -n`,
+  `hostname`, `/etc/hostname`, `$HOSTNAME` and `/etc/hosts`, on the
+  userland rung (native-static and loader family). The namespace rung, the
+  machine tier and the incus tier refuse it with exit 125 by name.
+
 ### Added: `podvm exec` into a running guest of the machine tier, 2026-11-15
 
 Record: T-1750 (PodUtils/podcrates#124, ask of podswarm).

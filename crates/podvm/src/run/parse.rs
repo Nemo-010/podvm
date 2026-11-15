@@ -114,6 +114,7 @@ fn parse_flags_with(
                 "--pull" => o.pull = a.clone(),
                 "--name" => o.name = Some(a.clone()),
                 "--user" => o.user = Some(a.clone()),
+                "--hostname" => o.hostname = Some(opts::hostname_arg(verb, a)?), // T-1908
                 "--add-host" => crate::complete::add_host(&mut o.ask, verb, a)?,
                 "--podvm-tier" => match crate::tier::want(a) {
                     Some(w) => o.tier = Some(w),
@@ -246,6 +247,7 @@ fn parse_flags_with(
             "-v" | "--volume" => expecting = Some("-v"),
             other if other.starts_with("--volume=") => volume(verb, &other[9..], &mut o)?,
             "-u" | "--user" => expecting = Some("--user"),
+            "--hostname" => expecting = Some("--hostname"),
             "--entrypoint" => expecting = Some("--entrypoint"),
             "--platform" => expecting = Some("--platform"),
             "--pull" => expecting = Some("--pull"),
@@ -332,6 +334,9 @@ fn parse_flags_with(
                 label(verb, &other["--label=".len()..])?,
             ),
             other if other.starts_with("--user=") => o.user = Some(other[7..].to_string()),
+            other if other.starts_with("--hostname=") => {
+                o.hostname = Some(opts::hostname_arg(verb, &other[11..])?)
+            }
             other if other.starts_with("--workdir=") => o.workdir = Some(other[10..].to_string()),
             other if other.starts_with("--device=") => {
                 match podvm_enter::device::parse(&other[9..]) {

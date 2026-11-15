@@ -299,6 +299,9 @@ fn call(n: i64, a: [i64; 6], g: *mut i64) -> i64 {
     if let Some(r) = crate::ro::gate(n, a) {
         return r; // TODO/enter.md T-1901: a `:ro` volume
     }
+    if let Some(r) = crate::uts::call(n, a) {
+        return r; // TODO/enter.md T-1908: `--hostname`
+    }
     if let Some(r) = crate::tier::call(n, a) {
         return r;
     }

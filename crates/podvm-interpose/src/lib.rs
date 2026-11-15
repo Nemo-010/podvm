@@ -438,6 +438,8 @@ crate::real!(pub fn next_getegid = "getegid"() -> c_uint);
 crate::real!(pub fn next_getgroups = "getgroups"(c_int, *mut c_uint) -> c_int);
 crate::real!(pub fn next_getresuid = "getresuid"(*mut c_uint, *mut c_uint, *mut c_uint) -> c_int);
 crate::real!(pub fn next_getresgid = "getresgid"(*mut c_uint, *mut c_uint, *mut c_uint) -> c_int);
+crate::real!(pub fn next_uname = "uname"(*mut c_void) -> c_int);
+crate::real!(pub fn next_gethostname = "gethostname"(*mut c_char, usize) -> c_int);
 
 #[macro_use]
 mod owner_calls;
@@ -479,6 +481,9 @@ pub use sock_calls::*;
 
 mod nss;
 pub use nss::*;
+
+mod uts_calls; // TODO/enter.md T-1908
+pub use uts_calls::*;
 
 #[cfg(test)]
 mod tests;

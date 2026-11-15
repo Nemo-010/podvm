@@ -193,6 +193,8 @@
     dlopen;
     dlmopen;
     syscall;
+    uname;
+    gethostname;
   local:
     *;
 };

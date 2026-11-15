@@ -45,6 +45,8 @@ mod state;
 mod sys;
 #[cfg(target_arch = "x86_64")]
 pub mod tier;
+#[cfg(target_arch = "x86_64")]
+mod uts; // TODO/enter.md T-1908
 
 #[cfg(all(test, target_arch = "x86_64"))]
 mod tests;

@@ -14,6 +14,7 @@ fn v(xs: &[&str]) -> Vec<String> {
 const TABLE: &[(&[&str], bool, bool)] = &[
     (&["--podvm-confine", "read=/tmp"], true, true),
     (&["--user", "1000"], true, true),
+    (&["--hostname", "unit1"], true, true),
     (&["--add-host", "a:1.2.3.4"], true, true),
     (&["--read-only"], true, true),
     (&["--tmpfs", "/mnt/x"], true, true),
@@ -71,6 +72,7 @@ fn every_field_of_opts_is_classified(o: Opts) {
         image: _,             // each tier
         command: _,           // each tier
         user: _,              // TABLE: --user
+        hostname: _,          // TABLE: --hostname
         tier: _,              // the dispatch
         limits: _,            // incus keys; each other tier refuses (T-1897)
         qemu_args: _,         // machine only; incus refuses (incus_tier)
@@ -118,4 +120,19 @@ fn machine_foreign_guest_refuses_another_architecture() {
     assert!(super::machine::foreign_guest(&p("arm64")).is_none());
     let e = super::machine::foreign_guest(&p("riscv64")).unwrap();
     assert!(e.contains("linux/riscv64") && e.contains("T-1890"), "{e}");
+}
+
+/// TODO/enter.md T-1908: `--hostname` takes a host name, in both spellings.
+#[test]
+fn hostname_flag_takes_a_host_name() {
+    for a in [&["--hostname", "unit1"][..], &["--hostname=unit1"][..]] {
+        let mut a = a.to_vec();
+        a.extend_from_slice(&["img", "true"]);
+        let o = parse::parse("run", &v(&a)).unwrap_or_else(|c| panic!("{a:?}: {c}"));
+        assert_eq!(o.hostname.as_deref(), Some("unit1"));
+    }
+    for bad in ["-x", "a b", "a_b", "", &"a".repeat(64)] {
+        let r = parse::parse("run", &v(&["--hostname", bad, "img", "true"]));
+        assert_eq!(r.err(), Some(EXIT_FLAG_ERROR), "{bad:?}");
+    }
 }

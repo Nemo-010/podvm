@@ -141,7 +141,8 @@ pub(super) fn end_tree(reaper: bool, err: &mut dyn std::io::Write) {
 /// entry has no read-only layer. TODO/cli.md T-1655.
 pub(super) fn ro_env(
     verb: &str,
-    o: &Opts,
+    o: &mut Opts,
+    rootfs: &std::path::Path,
     userland: Option<&crate::lifecycle::Userland>,
     env: &mut Vec<String>,
 ) -> Result<(), i32> {
@@ -152,7 +153,72 @@ pub(super) fn ro_env(
         &o.volumes,
         userland,
         env,
-    )
+    )?;
+    hostname_env(verb, o, rootfs, userland, env)
+}
+
+/// TODO/enter.md T-1908 (PodUtils/podvm#402): `--hostname NAME`. The
+/// handler of the native-static rung and the interposer of the loader
+/// family answer `uname` and `gethostname` with the name of
+/// `PODVM_HOSTNAME`; `/etc/hostname` of the tree holds it, `HOSTNAME`
+/// names it, and `/etc/hosts` resolves it to 127.0.0.1, as docker does. An
+/// entry with neither refuses by name: it has no UTS namespace.
+pub(super) fn hostname_env(
+    verb: &str,
+    o: &mut Opts,
+    rootfs: &std::path::Path,
+    userland: Option<&crate::lifecycle::Userland>,
+    env: &mut Vec<String>,
+) -> Result<(), i32> {
+    env.retain(|e| !e.starts_with("PODVM_HOSTNAME="));
+    let Some(name) = o.hostname.clone() else {
+        return Ok(());
+    };
+    let held = userland.is_some_and(|u| {
+        u.dispatch_exe.is_some() || u.family == podvm_enter::userland::Family::Loader
+    });
+    if !held {
+        eprintln!(
+            "podvm {verb}: --hostname needs the handler of the native-static rung or the \
+             interposer of the loader family, and this entry has neither and no UTS \
+             namespace: the payload would see the name of the host (TODO/enter.md T-1908)"
+        );
+        return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
+    }
+    if let Err(e) = write_hostname(rootfs, &name) {
+        eprintln!("podvm {verb}: /etc/hostname of the tree: {e}");
+        return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
+    }
+    if !o
+        .env
+        .iter()
+        .any(|e| e == "HOSTNAME" || e.starts_with("HOSTNAME="))
+    {
+        env.retain(|e| !e.starts_with("HOSTNAME="));
+        env.push(format!("HOSTNAME={name}"));
+    }
+    env.push(format!("PODVM_HOSTNAME={name}"));
+    o.ask.add_hosts.push(format!("{name}:127.0.0.1"));
+    Ok(())
+}
+
+/// Write `/etc/hostname` of the tree. A link there is removed first, so
+/// that the write cannot leave the tree.
+fn write_hostname(rootfs: &std::path::Path, name: &str) -> std::io::Result<()> {
+    let etc = rootfs.join("etc");
+    if !std::fs::symlink_metadata(&etc).is_ok_and(|m| m.is_dir()) {
+        return Err(std::io::Error::other("etc is no directory of the tree"));
+    }
+    let f = etc.join("hostname");
+    match std::fs::remove_file(&f) {
+        Err(e) if e.kind() != std::io::ErrorKind::NotFound => return Err(e),
+        _ => {}
+    }
+    let mut out = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&f)?;
+    std::io::Write::write_all(&mut out, format!("{name}\n").as_bytes())
 }
 
 /// The directory of the `--tmpfs` directories of this process, under the
