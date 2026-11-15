@@ -329,4 +329,5 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #430 | COORD-144: the answer to PodUtils/podrunner#182: podvm lab run is in v0.2.0-beta.24 (to podrunner) | open | T-1916 |
 | #431 | [gh action] requested | closed (a wrong hash; replaced by #432) | the kvm.yml run for T-1747, T-1907 and T-1867 |
 | #432 | [gh action] requested | closed (run 43740331439) | the kvm.yml run for T-1747, T-1907 and T-1867 from 283e3492 |
-| #433 | [gh action] requested | open | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
+| #433 | [gh action] requested | closed (run 43754060132) | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
+| #434 | [gh action] requested | open | the kvm.yml rerun for T-1747 (swap) and T-1867 (the sampler) from 7a6c1edb |
