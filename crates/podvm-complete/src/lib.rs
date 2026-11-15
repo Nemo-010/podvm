@@ -192,7 +192,7 @@ impl Report {
     pub fn banner(&self) -> String {
         let mut s = String::new();
         for f in &self.fixups {
-            if !f.action.changed() && f.action != Action::Failed {
+            if !f.action.changed() && f.action != Action::Failed && !f.degraded {
                 continue;
             }
             s.push_str(&format!(
@@ -240,12 +240,12 @@ impl Report {
         s
     }
 
-    /// ⭐ T-0804's input. A `Skipped` row did nothing, so it is not one.
+    /// ⭐ T-0804's input. TODO/complete.md T-1826: a `Skipped` row that
+    /// pod-rootfs marks degraded gave something up (`--no-steps` left no
+    /// keyring, an image has no `pacman-key`), so it is one; a plain
+    /// `Skipped` row did nothing and is not.
     pub fn degradations(&self) -> Vec<&Fixup> {
-        self.fixups
-            .iter()
-            .filter(|f| f.degraded && f.action != Action::Skipped)
-            .collect()
+        self.fixups.iter().filter(|f| f.degraded).collect()
     }
 
     /// The record as JSON, for `inspect`. ⚠ The field order is the contract.
@@ -402,6 +402,38 @@ mod tests {
             .expect("a ca-bundle row");
         assert_eq!(row.action, pod_rootfs::Action::Skipped, "{row:?}");
         assert!(!row.detail.is_empty(), "{row:?}");
+        let _ = std::fs::remove_dir_all(&d);
+    }
+
+    /// TODO/complete.md T-1826: `--no-steps` on an image with steps leaves
+    /// a degraded `Skipped` row, and the report and the banner name it.
+    #[test]
+    fn skipped_by_choice_is_a_degradation() {
+        let d = std::env::temp_dir().join(format!("podvm-t1826-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        let root = d.join("rootfs");
+        std::fs::create_dir_all(root.join("etc/pacman.d")).unwrap();
+        std::fs::create_dir_all(root.join("usr/bin")).unwrap();
+        std::fs::write(root.join("etc/os-release"), "ID=arch\n").unwrap();
+        std::fs::write(root.join("etc/pacman.conf"), "[options]\n").unwrap();
+        std::fs::write(root.join("usr/bin/pacman-key"), "#!/bin/sh\n").unwrap();
+        let off = Options {
+            steps: false,
+            host_cas: false,
+            ..Options::default()
+        };
+        let s = settings(root.to_str().unwrap(), &off);
+        let r: Report = pod_rootfs::complete(&root, &s, &mut pod_rootfs::reach::Fixed(true))
+            .unwrap()
+            .into();
+        let rows: Vec<&str> = r.degradations().iter().map(|f| f.id).collect();
+        assert!(rows.contains(&"pacman-keyring"), "{rows:?}");
+        assert!(r.steps.is_empty());
+        let b = r.banner();
+        assert!(
+            b.contains("skipped etc/pacman.d/gnupg (pacman-keyring"),
+            "{b}"
+        );
         let _ = std::fs::remove_dir_all(&d);
     }
 }

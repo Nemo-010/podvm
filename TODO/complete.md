@@ -1896,7 +1896,7 @@ the row `run.no-host-cas-nobundle`.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1926,3 +1926,14 @@ report names it.
 ## Prove
 
 `cargo test -p podvm-complete skipped_by_choice` exits 0, with a test that `--no-steps` on an image with steps leaves a row in `degradations`
+
+## Done
+
+**Done 2026-11-15.** `Report::degradations` keeps each row that
+pod-rootfs marks degraded, a `Skipped` row too, and the banner of
+`--verbose` prints such a row. The rule is wider than the Approach: a
+degraded `Skipped` row from the image (no `pacman-key`) also counts, as
+it also gives something up; under `--strict` it warns as a substitution.
+`cargo test -p podvm-complete skipped_by_choice` exits 0: `--no-steps`
+on a root with `pacman.conf`, `pacman-key` and no keyring gives the
+`pacman-keyring` row in `degradations` and in the banner.
