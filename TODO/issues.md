@@ -287,3 +287,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #388 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the job `install` (experiment 452) |
 | #389 | COORD-124: pod-services: list the host api.ghcr.pkgforge.dev (podvm T-1875) (to podcrates) | open | T-1875 |
 | #390 | COORD-125: pod-hostprobe: report a delegated cgroup2 subtree (podvm T-1747) (to podcrates) | open | T-1747 |
+| #391 | COORD-126: the answer to PodUtils/podrunner#111: a :ro volume on the detached run of a static image where chroot is denied (podvm T-1901) (to podrunner) | open | T-1901 |
