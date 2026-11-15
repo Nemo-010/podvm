@@ -64,14 +64,16 @@ Deployed: version 0.2.0-beta.19.
 
 ### Changed: the banner and the report, 2026-11-15
 
-Record: T-1824, T-1826, T-1825 (partial), T-1834, T-1835.
+Record: T-1824, T-1826, T-1825, T-1834, T-1835.
 Deployed: version 0.2.0-beta.19.
 
 - The notice of the machine tier follows `-q` and `--verbose`, as the
   banner does; a default run prints nothing.
 - `--no-steps` and an image with no `pacman-key` leave a row in the
   `degradations` of the report.
-- A `--report` that cannot be written exits 125.
+- A `--report` that cannot be written exits 125, and the report of a
+  detached run gets the end of its payload: `exit_code`, `signal` and
+  `timed_out`.
 - `system info --format '{{json .X}}'` prints counts and `StrictOk` as
   numbers and booleans, and `compare --strict` refuses an empty or
   partial report.
