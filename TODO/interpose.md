@@ -4267,3 +4267,38 @@ host with HTTP 429. Experiment 443 has the row
 `run.glibc234-nolibdl` on both rungs; the section run gave 237 pass and
 2 fail, the two rows of this entry, which named an image variable that
 the row's shell does not get; with the fix both rows give `ok`.
+
+
+# T-1915: On the userland rung, `tar -x` fails when a symbolic link comes before its target
+
+**Source:** PodUtils/podrunner#178 (COORD-060 of podrunner, podrunner@T-232)
+**Category:** interpose
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+On the userland rung, GNU tar exits 2 on an archive whose symbolic link comes before its target, or that holds a dangling link ("Cannot utime: No such file or directory", "Cannot change mode"); `actions/setup-python` fails on the tarball of Python 3.13.
+
+## Premise
+
+GNU tar sets the time and the mode of a link with `utimensat` and `fchmodat` and `AT_SYMLINK_NOFOLLOW`. The interposer mapped their path with `map::prepare`, which follows the last link whatever the flags say.
+
+## Approach
+
+Map the path of both calls with `map::prepare_follow`, with the follow of their flags, as T-1725 does for `statx` and `fchownat`.
+
+## Decision
+
+`AT_SYMLINK_NOFOLLOW` acts on the link on each call that takes it.
+
+## Prove
+
+`sh experiments/461-tar-link-order.sh` exits 0
+
+## Done
+
+**Done (2026-11-15).** `crates/podvm-interpose/src/link_calls.rs` (`path_at_int_flags!`). Reproduced first as uid 1000 on the loader family (`PODVM_USERNS=0`, a `-v` volume, debian:bookworm-slim): link first and dangling exited 2 with the two lines of the report, target first exited 0. After the change, experiment 461: PASS, each of the four orders exits 0 and each link stays a link.
+

@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: `tar -x` of a link before its target on the userland rung, 2026-11-15
+
+Record: T-1915 (PodUtils/podrunner#178).
+Deployed: none yet.
+
+- `utimensat` and `fchmodat` with `AT_SYMLINK_NOFOLLOW` act on the link,
+  so GNU tar extracts a link that comes before its target, or a dangling
+  one (`actions/setup-python` with Python 3.13).
+
 ### Fixed: "a passed descriptor goes onto 17", 2026-11-15
 
 Record: T-1914 (PodUtils/podrunner#177).

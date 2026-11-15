@@ -449,6 +449,9 @@ pub use owner_calls::*;
 mod stat_calls;
 pub use stat_calls::*;
 
+mod link_calls; // TODO/interpose.md T-1915
+pub use link_calls::*;
+
 mod path_calls;
 pub use path_calls::*;
 
