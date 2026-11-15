@@ -32,24 +32,29 @@ pub(crate) fn note(store: &podvm_image::Store, digest: &str) {
     }
 }
 
-/// At podvm's exit: start the detached prefill of the noted image.
+/// At podvm's exit: start the detached prefill of the noted image. In the
+/// user namespace of a run (TODO/probe.md T-1909), each other process of
+/// the namespace ends then: pid 1 waits for the prefill only.
 pub(crate) fn spawn_pending() {
-    use std::os::unix::process::CommandExt;
     if cfg!(test) {
         return;
     }
+    let helper = spawn_prefill();
+    crate::userns::sweep(helper);
+}
+
+fn spawn_prefill() -> Option<u32> {
+    use std::os::unix::process::CommandExt;
     let pending = PENDING.lock().ok().and_then(|mut p| p.take());
     let trash = podvm_extract::tree::trashed();
     let (root, digest) = match (pending, trash) {
         (Some((root, digest)), _) => (root, digest),
         (None, Some(root)) => (root, String::new()),
-        (None, None) => return,
+        (None, None) => return None,
     };
-    let Ok(me) = std::env::current_exe() else {
-        return;
-    };
+    let me = std::env::current_exe().ok()?;
     let null = std::process::Stdio::null;
-    let _ = std::process::Command::new(me)
+    std::process::Command::new(me)
         .arg("tree-prefill")
         .arg(root)
         .args((!digest.is_empty()).then_some(digest))
@@ -57,7 +62,9 @@ pub(crate) fn spawn_pending() {
         .stdout(null())
         .stderr(null())
         .process_group(0)
-        .spawn();
+        .spawn()
+        .ok()
+        .map(|c| c.id())
 }
 
 /// `podvm tree-prefill STORE [DIGEST]`: empty the trash of the store, then

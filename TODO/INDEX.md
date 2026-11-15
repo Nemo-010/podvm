@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1902](enter.md) | P1 | M | none | enter | done | `--podvm-confine` stops name resolution in the payload, while TCP to an address works |
 | [T-1903](probe.md) | P2 | S | none | probe | done | `podvm probe` takes userland on a host with user namespaces and KVM, and does not say why |
 | [T-1904](image.md) | P3 | S | none | image | done | `podvm load` names a local image `docker.io/library/runner` |
-| [T-1905](packaging.md) | P2 | S | none | packaging | partial | The release has no attestation in GitHub's store |
+| [T-1905](packaging.md) | P2 | S | none | packaging | done | The release has no attestation in GitHub's store |
 | [T-1906](machine.md) | P1 | S | none | machine | done | The store keeps `machine/run-PID-*` after each guest of the machine tier |
 | [T-1907](probe.md) | P3 | S | none | probe | open | Under QEMU user mode, `probe` says `kvm: yes` for the device of the host |
 | [T-1908](enter.md) | P1 | M | none | enter | done | A payload has the host name of the host: no `--hostname` |
@@ -576,7 +576,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-507 entries: 8 open, 12 partial, 2 blocked, 485 done.
+507 entries: 8 open, 11 partial, 2 blocked, 486 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -587,9 +587,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 4 | 0 | 205 | 209 |
-| P2 | 4 | 6 | 2 | 167 | 179 |
+| P2 | 4 | 5 | 2 | 168 | 179 |
 | P3 | 4 | 2 | 0 | 39 | 45 |
-| **All** | 8 | 12 | 2 | 485 | 507 |
+| **All** | 8 | 11 | 2 | 486 | 507 |
 
 ## Work order
 

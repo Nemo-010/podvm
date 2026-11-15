@@ -309,7 +309,9 @@ jobs:
           sudo mkdir -p /mnt/w && sudo chown "$(id -u):$(id -g)" /mnt/w
           df -h / /mnt
 
+      # The refusal names the QEMU of PATH; the leg of the store has none.
       - name: experiment 452, the refusal under TCG
+        if: matrix.apt_qemu == '1'
         env:
           HOME: /mnt/w/home-refusal
         run: |

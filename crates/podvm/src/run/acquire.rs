@@ -177,6 +177,7 @@ pub(super) fn hostname_env(
     env: &mut Vec<String>,
 ) -> Result<(), i32> {
     env.retain(|e| !e.starts_with("PODVM_HOSTNAME="));
+    crate::userns::bind_devices(rootfs); // TODO/probe.md T-1909
     let Some(name) = o.hostname.clone() else {
         return Ok(());
     };
@@ -376,7 +377,12 @@ pub(crate) fn extract_now(
         let _ = writeln!(err, "podvm {verb}: {e}");
         podvm_image::error::EXIT_RUNTIME_ERROR
     })?;
-    crate::diagnose::report_dropped(&mut err, &done, &podvm_probe::identity::read(), false);
+    // TODO/probe.md T-1909: in the user namespace of a run, an id that the
+    // map does not hold stays the caller's, as outside it; the sidecar
+    // keeps the intended ids, and a quiet run says nothing.
+    if !crate::userns::active() {
+        crate::diagnose::report_dropped(&mut err, &done, &podvm_probe::identity::read(), false);
+    }
     crate::diagnose::report_skipped(&mut err, &done); // TODO/image.md T-1883
     Ok(())
 }

@@ -8,6 +8,25 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: podvm takes podcrates `v0.51.0`, 2026-11-15
+
+Record: T-1890, T-1875, T-1909.
+Deployed: none yet.
+
+- An arm64 guest of the machine tier fetches its pinned kernel itself
+  (`alpine-netboot-aarch64` of `pod-services`); `PODVM_MACHINE_KERNEL_ARM64`
+  is an override now, not a need.
+- The Windows agent of `pod-guest` tries its shutdown again when `ping`
+  fails (PodUtils/podvm#380).
+- A run in the user namespace of T-1909 gets `/dev/null`, `/dev/zero`,
+  `/dev/random` and `/dev/urandom` of the host, leaves no tree behind, says
+  nothing of the ids of its first extraction, and `probe` and `system
+  info` report the rung that `run` enters. A process that the payload left
+  ends with the run.
+- Two runs at the same time, one in a user namespace and one outside it,
+  no longer remove each other's tree while it is filled.
+- `exec` into a container of `--hostname` gives the name.
+
 ### Added: `exec` and `cp` join a run in a user namespace, 2026-11-15
 
 Record: T-1910.

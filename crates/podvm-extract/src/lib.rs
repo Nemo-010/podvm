@@ -18,6 +18,7 @@
 #![forbid(unsafe_op_in_unsafe_fn)]
 
 pub mod error;
+pub mod live;
 pub mod tree;
 
 use std::io::Write;

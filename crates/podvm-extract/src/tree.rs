@@ -114,6 +114,9 @@ pub fn fill(store: &Store, digest: &str) -> io::Result<Fill> {
     // the next fill removes, and never a tree that a record could name.
     let partial = trees(store).join(format!("{FILLING}{}-{id}", std::process::id()));
     let dir = trees(store).join(&id);
+    // The lock first: a sweep of another PID namespace cannot read the
+    // pid of the name (podvm's TODO/probe.md T-1909).
+    let _live = crate::live::FillLock::take(&partial)?;
     fs::create_dir(&partial)?;
     let started = Instant::now();
     let mut fill = Fill::default();
@@ -155,13 +158,22 @@ pub fn sweep(store: &Store) -> usize {
         else {
             continue;
         };
-        if pid == std::process::id() || Path::new(&format!("/proc/{pid}")).exists() {
+        let p = e.path();
+        if p.extension().is_some_and(|x| x == "lock") {
             continue;
         }
-        let p = e.path();
+        let live = match crate::live::FillLock::held(&p) {
+            Some(held) => held,
+            // A fill of an older podvm, with no lock: its pid decides.
+            None => pid == std::process::id() || Path::new(&format!("/proc/{pid}")).exists(),
+        };
+        if live {
+            continue;
+        }
         if open_dirs(&p).is_ok() && pod_extract::remove_tree(&p).is_ok() {
             n += 1;
         }
+        crate::live::FillLock::forget(&p);
     }
     n
 }
@@ -187,6 +199,7 @@ pub fn tree_of(store: &Store, rootfs: &str) -> Option<PathBuf> {
 pub fn remove(store: &Store, rootfs: &str) -> io::Result<bool> {
     match tree_of(store, rootfs) {
         Some(dir) => {
+            unbind_devices(&dir);
             // A directory of the image without the owner's write bit (0555
             // is common) refuses the removal of its entries to a user that
             // is not root (CI run 391).
@@ -427,6 +440,7 @@ pub fn discard(store: &Store, rootfs: &str) -> io::Result<bool> {
     if !deferred() {
         return remove(store, rootfs);
     }
+    unbind_devices(&dir);
     let aside = trees(store).join(format!("{TRASH}{}", new_id()?));
     match fs::rename(&dir, &aside) {
         Ok(()) => {
@@ -438,6 +452,8 @@ pub fn discard(store: &Store, rootfs: &str) -> io::Result<bool> {
         Err(_) => remove(store, rootfs),
     }
 }
+
+pub use crate::live::{unbind_devices, BOUND_DEVICES};
 
 /// The store whose trash this process filled, taken once.
 pub fn trashed() -> Option<PathBuf> {

@@ -486,7 +486,7 @@ for v in "run --foo \$A true" "exec --foo x true" "ps --foo" "images --foo" "log
 	vid=$(echo "$v" | cut -d' ' -f1-2 | tr ' ' '_' | tr -d '$')
 	t sys.unknown.$vid ns "rc 125, names --foo, short message" '[ $rc -eq 125 ] && has "$err" -- "--foo"' "\$PB $v"
 done
-for v in "run --hostname h \$A true" "run --privileged \$A true" "run --network host \$A true" "run --memory 1g \$A true" "run --init \$A true" "run --restart always \$A true" "run --mount type=bind,src=/tmp,dst=/x \$A true" "exec -d x true" "top x" "build ." "network ls" "volume ls" "compose up" "commit x y" "export x"; do
+for v in "run --privileged \$A true" "run --network host \$A true" "run --memory 1g \$A true" "run --init \$A true" "run --restart always \$A true" "run --mount type=bind,src=/tmp,dst=/x \$A true" "exec -d x true" "top x" "build ." "network ls" "volume ls" "compose up" "commit x y" "export x"; do
 	vid=$(echo "$v" | cut -d' ' -f1-2 | tr ' ' '_' | tr -d '$/.')
 	t sys.none.$vid ns "rc 125 by name" '[ $rc -eq 125 ]' "\$PB $v"
 done

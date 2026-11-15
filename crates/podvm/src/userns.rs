@@ -56,45 +56,28 @@ unsafe extern "C" {
         data: *const u8,
     ) -> i32;
     fn __errno_location() -> *mut i32;
+    fn alarm(seconds: u32) -> u32;
+    fn atexit(f: extern "C" fn()) -> i32;
     fn _exit(code: i32) -> !;
     fn syscall(n: i64, ...) -> i64;
     fn close(fd: i32) -> i32;
     fn open(path: *const std::ffi::c_char, flags: i32, ...) -> i32;
     fn setns(fd: i32, nstype: i32) -> i32;
+    fn pipe2(fds: *mut i32, flags: i32) -> i32;
+    fn read(fd: i32, buf: *mut std::ffi::c_void, n: usize) -> isize;
+    fn write(fd: i32, buf: *const std::ffi::c_void, n: usize) -> isize;
 }
+
+mod host;
+mod join;
+mod sweep;
+pub use host::{bind_devices, host_pid};
+pub use join::{joined_pidfd, rejoin};
+pub use sweep::sweep;
 
 static CHILD: AtomicI32 = AtomicI32::new(0);
 static ACTIVE: AtomicBool = AtomicBool::new(false);
 static UTS: AtomicBool = AtomicBool::new(false);
-/// A descriptor of the host's `/proc`, opened in pid 2 before its own
-/// `/proc` covers it.
-static HOST_PROC: AtomicI32 = AtomicI32::new(-1);
-
-/// The pid that the host gives the process `pid` of this namespace, or
-/// `pid` where podvm entered no namespace. A pidfd of the process, read
-/// through the `fdinfo` of the host's `/proc`, gives its `Pid:` in the
-/// namespace of that `/proc`.
-pub fn host_pid(pid: i64) -> Option<i64> {
-    let host = HOST_PROC.load(Ordering::Relaxed);
-    if !active() || host < 0 {
-        return Some(pid);
-    }
-    const PIDFD_OPEN: i64 = 434;
-    // SAFETY: pidfd_open takes two integers.
-    let fd = unsafe { syscall(PIDFD_OPEN, pid, 0) };
-    if fd < 0 {
-        return None;
-    }
-    let text = std::fs::read_to_string(format!("/proc/self/fd/{host}/self/fdinfo/{fd}"));
-    // SAFETY: fd is the pidfd of this call.
-    unsafe { close(fd as i32) };
-    text.ok()?
-        .lines()
-        .find_map(|l| l.strip_prefix("Pid:"))
-        .and_then(|v| v.trim().parse().ok())
-        .filter(|p: &i64| *p > 0)
-}
-
 /// True where this process owns a UTS namespace of its own: the entry of
 /// [`enter_if`], or a `run --hostname` of uid 0.
 pub fn owns_uts() -> bool {
@@ -127,8 +110,16 @@ extern "C" fn forward(sig: i32) {
 /// True for an argument vector of a foreground `run` of a caller that is
 /// not uid 0, where `PODVM_USERNS` is not `0`.
 pub fn wanted(argv: &[String], euid: u32, var: Option<&str>) -> bool {
-    if var == Some("0") || euid == 0 || argv.get(1).map(String::as_str) != Some("run") {
+    // `probe` and `system info` take the same entry, so that the rung that
+    // they report is the rung that `run` enters (T-1713).
+    let verb = argv.get(1).map(String::as_str);
+    let reports = verb == Some("probe")
+        || (verb == Some("system") && argv.get(2).map(String::as_str) == Some("info"));
+    if var == Some("0") || euid == 0 || (verb != Some("run") && !reports) {
         return false;
+    }
+    if reports {
+        return true;
     }
     // ⚠ A word of the payload that looks like `-d` also keeps the entry as
     // before: the cost is a weaker rung, never a wrong pid.
@@ -254,113 +245,16 @@ fn trial(uid: u32, gid: u32) -> bool {
     wait_for(pid) == 0
 }
 
-/// TODO/enter.md T-1910: the variable that asks a new podvm to join the
-/// user, the UTS and the PID namespace of the process that it names (a
-/// host pid), first in `main`.
-pub const JOIN_VAR: &str = "PODVM_USERNS_JOIN";
-static JOINED: AtomicBool = AtomicBool::new(false);
-static JOIN_FD: AtomicI32 = AtomicI32::new(-1);
-
-/// A new pidfd of the payload that this process joined, or `None`. The
-/// record names a host pid, which names nothing in the PID namespace.
-pub fn joined_pidfd() -> Option<std::os::fd::OwnedFd> {
-    use std::os::fd::BorrowedFd;
-    let fd = JOIN_FD.load(Ordering::Relaxed);
-    if fd < 0 {
-        return None;
-    }
-    // SAFETY: the descriptor stays open for the life of the process.
-    let b = unsafe { BorrowedFd::borrow_raw(fd) };
-    b.try_clone_to_owned().ok()
-}
-
-/// Join the namespaces of [`JOIN_VAR`]. As the owner of the user
-/// namespace, this process holds each capability in it after the join, so
-/// the join of the mount namespace (T-1765) works after it. A refused
-/// join is named, and the verb goes on as before.
-fn join_if() {
-    let Ok(v) = std::env::var(JOIN_VAR) else {
-        return;
-    };
-    JOINED.store(true, Ordering::Relaxed);
-    // SAFETY: one thread (the contract of `enter_if`).
-    unsafe { std::env::remove_var(JOIN_VAR) };
-    let Ok(pid) = v.parse::<i64>() else {
-        return;
-    };
-    const PIDFD_OPEN: i64 = 434;
-    // SAFETY: pidfd_open takes two integers.
-    let fd = unsafe { syscall(PIDFD_OPEN, pid, 0) };
-    // SAFETY: a pidfd and namespace types, on one thread.
-    let joined =
-        fd >= 0 && unsafe { setns(fd as i32, CLONE_NEWUSER | CLONE_NEWUTS | CLONE_NEWPID) } == 0;
-    if !joined {
-        eprintln!(
-            "podvm: the namespaces of the run (pid {pid}) refused the join: {} (TODO/enter.md T-1910)",
-            std::io::Error::last_os_error()
-        );
-    }
-    if !joined {
-        if fd >= 0 {
-            // SAFETY: the pidfd of this call.
-            unsafe { close(fd as i32) };
-        }
-        return;
-    }
-    JOIN_FD.store(fd as i32, Ordering::Relaxed);
-    // After `setns(CLONE_NEWPID)` this process makes no thread, and its
-    // children go into the PID namespace: a child goes on with the verb as
-    // a member of it, and this process waits and relays, as in `enter_if`.
-    // SAFETY: one thread.
-    let child = unsafe { fork() };
-    if child < 0 {
-        eprintln!(
-            "podvm: fork in the PID namespace of the run: {} (TODO/enter.md T-1910)",
-            std::io::Error::last_os_error()
-        );
-        std::process::exit(125);
-    }
-    if child > 0 {
-        CHILD.store(child, Ordering::Relaxed);
-        relay_signals();
-        std::process::exit(wait_for(child));
-    }
-}
-
-/// TODO/enter.md T-1910: where the running payload `pid` (a host pid) is
-/// in another user namespace, start this podvm again with the same
-/// arguments and [`JOIN_VAR`]. It returns where nothing is to join, where
-/// this process joined already, or where the new start fails.
-pub fn rejoin(pid: Option<i64>) {
-    use std::os::unix::process::CommandExt;
-    let Some(pid) = pid.filter(|_| !JOINED.load(Ordering::Relaxed)) else {
-        return;
-    };
-    let ours = std::fs::read_link("/proc/self/ns/user");
-    let theirs = std::fs::read_link(format!("/proc/{pid}/ns/user"));
-    if !matches!((&ours, &theirs), (Ok(a), Ok(b)) if a != b) {
-        return;
-    }
-    let Ok(exe) = std::env::current_exe() else {
-        return;
-    };
-    let mut args = std::env::args_os();
-    let arg0 = args.next().unwrap_or_default();
-    let e = std::process::Command::new(exe)
-        .arg0(arg0)
-        .args(args)
-        .env(JOIN_VAR, pid.to_string())
-        .exec();
-    eprintln!("podvm: starting again to join the run: {e} (TODO/enter.md T-1910)");
-}
-
 /// Enter the namespaces where [`wanted`] says so. Returns in pid 2, or
 /// where the kernel refuses the user namespace (the ladder decides as
 /// before); the other two processes exit with the code of pid 2.
 ///
 /// ⛔ Call it first in `main`, with one thread.
 pub fn enter_if(argv: &[String]) {
-    join_if();
+    if argv.get(1).map(String::as_str) == Some(sweep::REAPER_ARG) {
+        sweep::reap_all();
+    }
+    join::join_if();
     // SAFETY: getuid and getgid cannot fail.
     let (uid, gid) = unsafe { (getuid(), getgid()) };
     // T-1908: uid 0 has the right to a UTS namespace of its own; `run
@@ -384,6 +278,22 @@ pub fn enter_if(argv: &[String]) {
         eprintln!("podvm run: the user namespace closed after its trial (TODO/probe.md T-1909)");
         std::process::exit(125);
     }
+    // The code of pid 2 comes back on a pipe as soon as pid 2 ends, so that
+    // `run` returns then; pid 1 stays until each process of the namespace
+    // ended. The detached helpers of podvm (the removal of a `--rm` tree
+    // and the fill of the spare tree, T-1781) outlive pid 2, and the end of
+    // pid 1 would kill them: each run then left a tree behind.
+    let mut ends = [-1i32; 2];
+    const O_CLOEXEC: i32 = 0o2000000;
+    // SAFETY: ends has room for two descriptors.
+    if unsafe { pipe2(ends.as_mut_ptr(), O_CLOEXEC) } != 0 {
+        eprintln!(
+            "podvm run: pipe2: {} (TODO/probe.md T-1909)",
+            std::io::Error::last_os_error()
+        );
+        std::process::exit(125);
+    }
+    let (code_r, code_w) = (ends[0], ends[1]);
     // SAFETY: one thread; the child returns into main.
     let pid1 = unsafe { fork() };
     if pid1 < 0 {
@@ -394,21 +304,40 @@ pub fn enter_if(argv: &[String]) {
         std::process::exit(125);
     }
     if pid1 > 0 {
+        // SAFETY: the write end of this process.
+        unsafe { close(code_w) };
         CHILD.store(pid1, Ordering::Relaxed);
         relay_signals();
-        std::process::exit(wait_for(pid1));
+        let mut b = [0u8; 1];
+        loop {
+            // SAFETY: b has room for one byte.
+            let n = unsafe { read(code_r, b.as_mut_ptr().cast(), 1) };
+            // SAFETY: errno of this thread.
+            if n < 0 && unsafe { *__errno_location() } == EINTR {
+                continue;
+            }
+            if n == 1 {
+                std::process::exit(i32::from(b[0]));
+            }
+            // No code: pid 1 ended first.
+            std::process::exit(wait_for(pid1));
+        }
     }
     // pid 1 of the PID namespace.
+    // SAFETY: the read end of the outer process.
+    unsafe { close(code_r) };
     // SAFETY: one thread.
     let pid2 = unsafe { fork() };
     if pid2 < 0 {
         std::process::exit(125);
     }
     if pid2 == 0 {
+        // SAFETY: the write end of pid 1.
+        unsafe { close(code_w) };
         const O_PATH_DIR_CLOEXEC: i32 = 0o10000000 | 0o200000 | 0o2000000;
         // SAFETY: a NUL-ended literal.
         let host = unsafe { open(c"/proc".as_ptr(), O_PATH_DIR_CLOEXEC) };
-        HOST_PROC.store(host, Ordering::Relaxed);
+        host::HOST_PROC.store(host, Ordering::Relaxed);
         if !own_proc() {
             eprintln!(
                 "podvm run: /proc of the PID namespace: {} (TODO/probe.md T-1909)",
@@ -418,11 +347,15 @@ pub fn enter_if(argv: &[String]) {
         }
         ACTIVE.store(true, Ordering::Relaxed);
         UTS.store(true, Ordering::Relaxed);
+        sweep::OWNER.store(std::process::id(), Ordering::Relaxed);
+        // SAFETY: a handler with no arguments, for the life of the process.
+        unsafe { atexit(sweep::sweep_at_exit) };
         return;
     }
     CHILD.store(pid2, Ordering::Relaxed);
     relay_signals();
     let mut code = 125;
+    let mut told = false;
     loop {
         let mut st = 0;
         // SAFETY: st lives for the call.
@@ -432,7 +365,7 @@ pub fn enter_if(argv: &[String]) {
             continue;
         }
         if r < 0 {
-            break;
+            break; // ECHILD: no process of the namespace is left
         }
         if r == pid2 {
             code = if st & 0x7f == 0 {
@@ -440,8 +373,25 @@ pub fn enter_if(argv: &[String]) {
             } else {
                 128 + (st & 0x7f)
             };
-            break;
+            let b = [code as u8];
+            // SAFETY: one byte of b; the outer process exits on it.
+            unsafe { write(code_w, b.as_ptr().cast(), 1) };
+            unsafe { close(code_w) };
+            told = true;
+            CHILD.store(0, Ordering::Relaxed);
+            // After pid 2: only the prefill of T-1781 is left (`sweep`).
+            // This process becomes the reaper, with a command line that
+            // names no payload; the exec keeps its pid and its children.
+            if let Ok(me) = std::env::current_exe() {
+                use std::os::unix::process::CommandExt;
+                let e = std::process::Command::new(me).arg(sweep::REAPER_ARG).exec();
+                eprintln!("podvm: the reaper of the namespace: {e} (TODO/probe.md T-1909)");
+            }
         }
+    }
+    if !told {
+        // SAFETY: as above.
+        unsafe { close(code_w) };
     }
     std::process::exit(code);
 }

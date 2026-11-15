@@ -1738,7 +1738,7 @@ the 394 step, because `cargo test --workspace` runs the test.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -1761,6 +1761,8 @@ The cosign bundles stay beside the new attestation.
 After the next release, `gh attestation verify podvm-x86_64 --repo PodUtils/podvm` exits 0.
 
 ## Done
+
+**Done (2026-11-15).** The release `0.2.0-beta.22` (release run 43708756057 from `d2004f12`, request 410) is the first with build provenance in GitHub's attestation store. The public API `GET /repos/PodUtils/podvm/attestations/DIGEST` gives one attestation for each of `podvm-x86_64`, `podvm-aarch64` and `podvm-ssh-x86_64.tar.gz`: an in-toto DSSE envelope with predicate `https://slsa.dev/provenance/v1`, 15 subjects, the workflow `.github/workflows/nightly.yml` at `refs/tags/v0.2.0-beta.22`, and `gitCommit` `d2004f12`. Issue 399 is closed.
 
 **Partial 2026-11-15.** The publish job of `nightly.yml` (which `release.yml`
 runs on the tag) writes a build provenance attestation after the cosign

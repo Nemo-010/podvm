@@ -59,7 +59,11 @@ pub(super) fn enter(
     let inherited: Vec<String> = container
         .env
         .iter()
-        .filter(|e| !e.starts_with("PODVM_") && !e.starts_with("LD_PRELOAD="))
+        // T-1908: the name of `--hostname` stays the container's.
+        .filter(|e| {
+            (e.starts_with("PODVM_HOSTNAME=") || !e.starts_with("PODVM_"))
+                && !e.starts_with("LD_PRELOAD=")
+        })
         .cloned()
         .collect();
     let mut env = podvm_enter::Plan::env_for(&podvm_enter::NAMES, &inherited, &o.env);
@@ -424,6 +428,7 @@ pub(super) fn enter(
                 .and_then(|p| crate::userns::joined_pidfd().or_else(|| pidfd_open(p)));
             let r = match joined {
                 Some(fd) => {
+                    join_uts(&fd); // TODO/enter.md T-1908
                     let r =
                         podvm_enter::spawn_joined(&root, &plan, fd.as_raw_fd() as i64, &mut err)
                             .and_then(|c| c.wait_forwarding(&mut err));
@@ -441,6 +446,20 @@ pub(super) fn enter(
             }
         }
     }
+}
+
+/// Join the UTS namespace of the payload of `pidfd`, so that `exec` sees
+/// the name of `--hostname` (T-1908). Where it is the namespace of this
+/// process already, or the join is refused, nothing changes.
+fn join_uts(pidfd: &std::os::fd::OwnedFd) {
+    use std::os::fd::AsRawFd;
+    unsafe extern "C" {
+        fn setns(fd: i32, nstype: i32) -> i32;
+    }
+    const CLONE_NEWUTS: i32 = 0x0400_0000;
+    // SAFETY: a pidfd and a namespace type; a UTS join has no rule of one
+    // thread.
+    unsafe { setns(pidfd.as_raw_fd(), CLONE_NEWUTS) };
 }
 
 /// A pidfd of `pid` (Linux 5.3), or `None`.

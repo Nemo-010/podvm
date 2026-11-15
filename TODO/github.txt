@@ -288,7 +288,7 @@
 396 issue closed
 397 issue closed
 398 issue closed
-399 issue open
+399 issue closed
 400 issue closed
 401 issue open
 402 issue closed
@@ -299,5 +299,5 @@
 407 issue open
 408 issue closed
 409 issue closed
-410 issue open
+410 issue closed
 411 issue open
