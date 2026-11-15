@@ -1,11 +1,12 @@
 # Handoff
 
-The state on 2026-11-15, later. `0.2.0-beta.20` is released (issue 387:
-gate, arm, nightly trial and release green on `35d5b686`). It carries the
-limits of the incus tier (T-1897, PodUtils/podrunner#110), `podvm pull
-windows:2025` (the install of a setup ISO, T-1867, not yet run under KVM:
-request 388) and `run windows:validationos`. `main` adds the store copy
-of QEMU (T-1875) and T-1852 (CHANGELOG "Unreleased").
+The state on 2026-11-15, later. `0.2.0-beta.20` is released (issue 387).
+`main` adds, for the next release: the store copy of QEMU (T-1875), the
+detached Windows and DOS machines with `ps`, `stop`, `start`, `rm`,
+`logs -f`, `port` and `-p` (T-1870, T-1869), `windows screenshot` and
+`windows view` (T-1899), and a `:ro` volume on the native-static rung
+(T-1901, the ask of PodUtils/podrunner#111; podrunner@T-158 waits for the
+release). Request 388 runs the first Windows install under KVM.
 A fresh
 session with no memory reads this file first, then `AGENTS.md`,
 `TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
@@ -50,6 +51,10 @@ PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
   guest (T-1872).
 * COORD-124 (#389): `pod-services` lists `api.ghcr.pkgforge.dev` (T-1875);
   until then the host is in `WAITING` of `crates/podvm/src/hosts_tests.rs`.
+* COORD-125 (#390): a leg of `pod-hostprobe` for a delegated cgroup2
+  subtree (T-1747).
+* COORD-126 (#391): the answer to PodUtils/podrunner#111 (T-1901); close it
+  when a release carries T-1901.
 
 Each other COORD issue is closed; `TODO/issues.md` gives the state of
 each one.

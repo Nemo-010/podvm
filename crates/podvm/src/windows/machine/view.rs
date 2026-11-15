@@ -87,6 +87,10 @@ pub(crate) fn ps_rows(all: bool) -> Vec<Vec<String>> {
 /// name of no machine keeps the refusal of the parity table: a container
 /// shares the network of this machine and publishes nothing.
 pub(crate) fn port(args: &[String]) -> i32 {
+    if args.iter().any(|a| a == "-h" || a == "--help") {
+        println!("usage: podvm port NAME [PORT[/PROTO]]");
+        return 0;
+    }
     let Some(name) = args.first().filter(|a| !a.starts_with('-')) else {
         eprintln!("usage: podvm port NAME [PORT[/PROTO]]");
         return EXIT_FLAG_ERROR;
