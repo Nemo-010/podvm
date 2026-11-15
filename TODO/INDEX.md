@@ -494,7 +494,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1829](cli.md) | P3 | S | none | cli | done | Refusals of `run` lead with the wrong cause or name the wrong spelling |
 | [T-1830](cli.md) | P2 | S | none | cli | done | A `--tmpfs` run leaves its map in the record, so a later `exec` cannot see the path |
 | [T-1831](cli.md) | P2 | S | none | cli | done | The help of `run` and `create` promises what the verbs do not do |
-| [T-1832](cli.md) | P3 | S | none | cli | open | The manual, `--help` and `docs/limits.md` disagree with the binary in six places |
+| [T-1832](cli.md) | P3 | S | none | cli | done | The manual, `--help` and `docs/limits.md` disagree with the binary in six places |
 | [T-1833](cli.md) | P2 | S | none | cli | done | Twelve commands refuse `-h` and `--help`, and `system df --help` prints the usage of `system info` |
 | [T-1834](cli.md) | P2 | S | none | cli | done | `system info --format '{{json .X}}'` prints counts and `StrictOk` as strings |
 | [T-1835](probe.md) | P2 | S | none | probe | done | `compare --strict` passes an empty report, an unparsable one, or one that lost whole sections |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 23 open, 12 partial, 2 blocked, 456 done.
+493 entries: 22 open, 12 partial, 2 blocked, 457 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -574,8 +574,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
 | P2 | 12 | 3 | 2 | 158 | 175 |
-| P3 | 10 | 2 | 0 | 28 | 40 |
-| **All** | 23 | 12 | 2 | 456 | 493 |
+| P3 | 9 | 2 | 0 | 29 | 40 |
+| **All** | 22 | 12 | 2 | 457 | 493 |
 
 ## Work order
 

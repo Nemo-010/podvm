@@ -5360,13 +5360,13 @@ each other difference, the raw-syscall escape too, and that
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
 `exec` and `create` with `--podvm-tier=machine` say "running an OCI image
 as a guest arrives with T-1656"; T-1656 is done, and `exec --help` does
-not say the tier is refused. `docs/limits.md:80-81` says "A dynamic
+not say the tier is refused. the limits page said "A dynamic
 program and a detached run refuse by name" on the syscall and emulate
 tiers; a dynamic program runs there. `extract --help` says a reference
 that names more than one image is refused; the host platform is taken
@@ -5400,6 +5400,20 @@ Text only. The behaviour of each verb stays.
 ## Prove
 
 `cargo test -p podvm --bin podvm doc_text` exits 0, with tests on the six texts, and `podvm --help` lists `login` and `logout`
+
+## Done
+
+**Done 2026-11-15.** The machine refusal of `exec` and `create` says that
+the tier serves `run` (`tier.rs`, also T-1857), and `exec --help` says
+that the tier is refused and that a re-entry into a guest is T-1750.
+`docs/limits.md` scopes the refusal of the syscall and emulate tiers to a
+detached run. `extract --help` says that the host platform is taken, and
+`extract` names the platforms and the one it took on stderr.
+`--insecure-registry` is "docker's daemon option of the same name" in the
+help of `pull` and in the parity rows. The manual heads each section by
+the argv that serves it (`=== podvm image prune`, `=== podvm system df`).
+`podvm --help` lists `login`, `logout` and `container`. `cargo test -p
+podvm --bin podvm doc_text` exits 0.
 
 
 # T-1833: Twelve commands refuse `-h` and `--help`, and `system df --help` prints the usage of `system info`

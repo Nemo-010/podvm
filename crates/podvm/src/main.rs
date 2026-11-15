@@ -94,8 +94,9 @@ usage: podvm <command> [options]
   rm           remove a container
   cp           copy one file into or out of a container's rootfs
   system info  what this podvm is, and the verb and flag parity table AS DATA
-  system install-names
-               install `docker` and `podman` as symlinks to this binary
+  login        log in to a registry; logout removes the entry (T-1832)
+  container    ls | rm | prune | start | stop and the other container verbs
+  system install-names  install `docker` and `podman` as links to podvm
   version      print the version
 
   Every other docker verb is named in that table with the reason podvm does
@@ -129,7 +130,6 @@ usage: podvm probe [--json | --rows] [--strict] [--cached]
 fn main() -> std::process::ExitCode {
     names::start(); // T-1652 (the native-static rung) and SIGPIPE (T-1769)
     let argv: Vec<String> = std::env::args().collect();
-
     // TODO/net.md T-1665: one connection of a guest, relayed to the broker.
     if argv.get(1).map(String::as_str) == Some(broker::RELAY_ARG) {
         return exit(broker::relay(argv.get(2).map_or("", String::as_str)));

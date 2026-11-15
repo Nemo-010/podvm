@@ -90,7 +90,10 @@ fn summary(note: &str) -> &str {
 }
 
 fn render_section(out: &mut String, row: &Row, help: &dyn Fn(&str) -> Option<String>) {
-    out.push_str(&format!("=== podvm {} [{}]\n", row.verb, row.status.word()));
+    // TODO/cli.md T-1832: the head names the argv that serves the verb
+    // (`podvm image prune`), not a top-level name that refuses.
+    let head = help_argv(row.verb).join(" ");
+    out.push_str(&format!("=== podvm {head} [{}]\n", row.status.word()));
     out.push_str(row.note.trim());
     out.push('\n');
     match help(row.verb) {
@@ -281,7 +284,11 @@ mod tests {
         assert!(!verbs.is_empty(), "the manual lists no verbs");
         for row in &verbs {
             assert!(
-                text.contains(&format!("=== podvm {} [{}]", row.verb, row.status.word())),
+                text.contains(&format!(
+                    "=== podvm {} [{}]",
+                    help_argv(row.verb).join(" "),
+                    row.status.word()
+                )),
                 "no section for {}",
                 row.verb
             );
@@ -368,5 +375,27 @@ mod tests {
         let text = render(None, &stub).expect("the full manual renders");
         let bad = text.bytes().filter(|b| *b > 0x7F).count();
         assert_eq!(bad, 0, "the manual carries {bad} non-ASCII bytes");
+    }
+
+    /// TODO/cli.md T-1832: the six texts say what the binary does.
+    #[test]
+    fn doc_text_matches_the_binary() {
+        let top = crate::USAGE;
+        assert!(top.contains("login") && top.contains("logout"), "{top}");
+        assert!(crate::exec::EXEC_USAGE.contains("T-1750"));
+        assert!(crate::images::PULL_USAGE.contains("daemon option of the same name"));
+        assert!(crate::images::EXTRACT_USAGE.contains("platform of\n    this host"));
+        let notes: Vec<&str> = crate::parity::TABLE
+            .iter()
+            .filter(|r| r.flag == Some("--insecure-registry"))
+            .map(|r| r.note)
+            .collect();
+        assert!(
+            notes.iter().all(|n| n.contains("daemon option")),
+            "{notes:?}"
+        );
+        let limits = include_str!("../../../docs/limits.md");
+        assert!(!limits.contains("A dynamic program and a detached"));
+        assert_eq!(help_argv("prune").join(" "), "image prune");
     }
 }

@@ -77,8 +77,7 @@ Read [PROGRESS](../TODO/PROGRESS.md) for current verification.
   `/proc/self`. The entries of other processes in `/proc` are the
   host's. The cap counts the writes of a descriptor opened under `/tmp`;
   a write through `mmap`, `sendfile`, `splice` or `copy_file_range`, and a
-  rename into `/tmp`, are not counted. A dynamic program and a detached
-  run refuse by name. The handler shares the payload's address space, so
+  rename into `/tmp`, are not counted. A detached run refuses by name. The handler shares the payload's address space, so
   the tier is a compatibility layer, not a boundary.
 - `--podvm-tier=runsc` (T-1729) needs a `runsc` (`PODVM_RUNSC` or
   `PATH`, with its `gvisor-bin/` sidecars) and a host that grants user

@@ -343,6 +343,23 @@ pub fn extract(verb: &str, args: &[String]) -> i32 {
             return e.exit_code();
         }
     };
+    // TODO/cli.md T-1832: a choice by the host platform is said, not silent.
+    if platform.is_none()
+        && let Ok(all) = store.find(want)
+    {
+        let mut plats: Vec<&str> = all.iter().map(|r| r.platform.as_str()).collect();
+        plats.sort_unstable();
+        plats.dedup();
+        if plats.len() > 1 {
+            eprintln!(
+                "podvm extract: {want} names {} platforms ({}); the platform of this host, \
+                 {}, is taken (--platform names another)",
+                plats.len(),
+                plats.join(", "),
+                record.platform
+            );
+        }
+    }
 
     // ⛔ The extraction lock comes before the question, not after it, and the
     // payload hold comes before the removal: `extract --force` used to remove

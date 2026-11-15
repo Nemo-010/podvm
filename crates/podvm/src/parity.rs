@@ -235,7 +235,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "run", flag: Some("--entrypoint"), status: Native, note: "as docker: replacing it also drops the image's Cmd" },
     Row { verb: "run", flag: Some("--platform"), status: Native, note: "a bare word is an architecture, as docker reads it" },
     Row { verb: "run", flag: Some("--pull"), status: Native, note: "never, missing (default) or always" },
-    Row { verb: "run", flag: Some("--insecure-registry"), status: Native, note: "docker's flag and docker's meaning; every use is disclosed on stderr" },
+    Row { verb: "run", flag: Some("--insecure-registry"), status: Native, note: "docker's daemon option of the same name, with its meaning; every use is disclosed on stderr" },
     Row { verb: "run", flag: Some("--tls-verify"), status: Native, note: "podman's flag and podman's meaning; every use is disclosed on stderr" },
     Row { verb: "run", flag: Some("-t, --tty"), status: Degraded, note: "a foreground run gives the payload a pty of the host's /dev/ptmx as its 0, 1 and 2, and relays it, also where podvm has no terminal (T-1760); it is not the controlling terminal, and on the namespace rung `tty` finds no name (no /proc, T-1758). REFUSED BY NAME where /dev/ptmx is unusable (T-0503). On --podvm-tier=machine a terminal of a virtio console with the size of the host terminal (T-1723)" },
     Row { verb: "run", flag: Some("-i, --interactive"), status: Native, note: "podvm never detaches stdin, so a foreground run is interactive when the caller's stdin is; with run -d on --podvm-tier=incus the piped stdin goes to the command as a file of root, mode 0600, removed once the command holds it (T-1777)" },
@@ -343,7 +343,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "exec", flag: Some("--podvm-mem"), status: Native, note: "as in run: machine tier only and refused elsewhere, the guest memory in bytes with an optional K/M/G/T suffix, judged against the RLIMIT_FSIZE ceiling before anything starts (T-1305)" },
     // ------------------------------------------------------ pull's own flags
     Row { verb: "pull", flag: Some("--platform"), status: Native, note: "a bare word is an architecture, as docker reads it" },
-    Row { verb: "pull", flag: Some("--insecure-registry"), status: Native, note: "docker's flag and docker's meaning" },
+    Row { verb: "pull", flag: Some("--insecure-registry"), status: Native, note: "docker's daemon option of the same name, with its meaning" },
     Row { verb: "pull", flag: Some("--tls-verify"), status: Native, note: "podman's flag and podman's meaning" },
     Row { verb: "pull", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     Row { verb: "pull", flag: Some("-a, --all-tags"), status: Native, note: "fetch every offered tag of a bare repository; a tag on it is refused; a tag with no manifest for this platform is named and skipped (TODO/cli.md T-1331)" },

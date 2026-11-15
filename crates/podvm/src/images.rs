@@ -35,8 +35,9 @@ usage: podvm pull [--platform os/arch[/variant]] <image>
                    podman's meaning, and it does NOT permit plain HTTP.
   --insecure-registry HOST
                    for HOST only: do not verify its certificate, and fall back
-                   to plain HTTP if HTTPS cannot connect. Repeatable. This is
-                   docker's flag and it means both things, as docker's does.
+                   to plain HTTP if HTTPS cannot connect. Repeatable. docker
+                   has it as a daemon option of the same name, with both
+                   meanings.
                    Also $PODVM_INSECURE_REGISTRIES (comma separated) and one
                    host per line in $PODVM_CONFIG, else
                    $XDG_CONFIG_HOME/podvm/registries.conf.
@@ -87,9 +88,10 @@ usage: podvm extract [--force] <image>
   --force          extract again over an existing rootfs
   --platform P     which platform, where the store holds more than one
 
-  refused: A reference naming more than one image is REFUSED rather than resolved by
-    position. The store holds one record per platform, and picking the most
-    recently pulled would unpack an architecture nobody asked for.
+  note: A reference that names more than one image takes the platform of
+    this host, and stderr names the platform; where the host platform is
+    not one of them, it is refused rather than resolved by position
+    (TODO/cli.md T-1832).
 ";
 
 pub const IMAGES_USAGE: &str = "\
