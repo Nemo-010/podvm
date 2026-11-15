@@ -5872,7 +5872,7 @@ On a host with no root, `sh install.sh` puts podvm under its prefix in seconds, 
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** blocked
+**Status:** partial
 
 ## Problem
 
@@ -5894,8 +5894,10 @@ A dry run prints each change before the workflow first closes or reopens an issu
 
 `./target/x86_64-unknown-linux-musl/release/podvm-gate` fails on a row of `TODO/issues.md` whose state differs from GitHub, and after a push that marks the last entry of an open issue done, the workflow closes the issue with the tag in its comment.
 
-## Blocker
+## Done
 
 **Blocked (2026-11-15).** The workflow and the check of podcrates@T-703. Clears when a tag of podcrates carries them.
 
 **Blocked, amended (2026-11-16).** podvm takes podcrates `v0.55.0` (COORD-115, PodUtils/podcrates#194), whose `pod-todo` holds the rules of the issues and whose `issue-sync.yml` writes them. With `issue_rules = "on"`, `podvm-todo check` gave 52 problems: 5 open reports whose entries are done (podvm closed #272, #353 and #401; #149 and #162 are references), and 47 references "(report) names no entry". A reference holds no work, and no kind of `pod-todo` fits it. COORD-145 (PodUtils/podvm#435) asks for a kind `reference`. Clears when a tag carries it; then the rules go on, and `issue-sync.yml` is called with a dry run first.
+
+**Partial (2026-11-16).** podcrates answered COORD-145 with the kind `reference` in `v0.56.0` (podcrates@T-723). podvm takes `v0.56.0` and sets `issue_rules = "on"` in `TODO/todo.toml`: `podvm-todo check` now ties the state of each issue to its entries, and gives no problem. The 47 references take their kind from the title `[Reference]`; the three messages of another writer (#331, #335, #337, titled `COORD-NNN of NAME:`) are in a table with a column `Kind` (`coord`). `.github/workflows/issue-sync.yml` calls the reusable workflow of podcrates at the commit of `v0.56.0`, with a dry run by default, on dispatch only. Remaining: the dry run, read; then `push` to `main` and the daily schedule.

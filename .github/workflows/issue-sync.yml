@@ -1,0 +1,26 @@
+# The state of each issue from the record (the owner's ruling "Issues",
+# TODO/cli.md T-1919): the reusable workflow of podcrates writes a status
+# block into each issue, and closes or opens it to match TODO/github.txt.
+#
+# Dispatch only, with a dry run by default, until the first dry run is
+# read; then `push` to main and a daily schedule follow
+# (PodUtils/podcrates#194).
+name: issue-sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print what the sync would change, and change nothing"
+        type: boolean
+        default: true
+
+jobs:
+  issues:
+    permissions:
+      contents: read
+      issues: write
+    uses: PodUtils/podcrates/.github/workflows/issue-sync.yml@93bf133ab8b636505d035dfda5c7a1ce21b27eb4 # v0.56.0
+    with:
+      podcrates_ref: v0.56.0
+      dry_run: ${{ inputs.dry_run }}

@@ -11,3 +11,4 @@ root_files = ["Cargo.toml", "Cargo.lock", "README.md", "AGENTS.md", "CLAUDE.md",
 documents = ["README.md", "AGENTS.md"]
 document_dirs = ["TODO", "docs"]
 readings = ["docs/history/"]
+issue_rules = "on"
