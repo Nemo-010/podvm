@@ -3921,7 +3921,7 @@ and `read=?/nosuch` runs.
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -3951,6 +3951,21 @@ One table of each layer reaches the payload.
 ## Prove
 
 `cargo test -p podvm --bin podvm exec_table` exits 0, and a run on the userland fixture with `--podvm-confine exec=/vol` has `PODVM_EXEC_HOST` and no `PODVM_EXEC` in its environment, and still gives 126 for a program outside the table
+
+## Done
+
+**Done 2026-11-15.** The interposer reads the one table that `pod-enter`
+writes, `PODVM_EXEC_HOST` (the host paths of the layer, `:` separated, as
+`pod_confine::ExecTable::encode` gives them), and checks the resolved host
+path of each level of an exec against it (`podvm-interpose/src/map/readonly.rs`,
+`exec.rs`); a path with `..` is never allowed, as in
+`pod_confine::exec::allows_in`. podvm writes no `PODVM_EXEC` of its own,
+and drops a caller's table of either name (`lifecycle/confine.rs`).
+`cargo test -p podvm --bin podvm exec_table` exits 0, and the interposer
+tests pass (98). On the userland fixture, `run --podvm-confine
+'write=/tmp;exec=/vol' -v DIR:/vol alpine:3.20` has `PODVM_EXEC_HOST` and
+no `PODVM_EXEC`, runs `/vol/s.sh`, and gives 126 for `/tmp/bb` ("the
+confine layer denies the exec of this path").
 
 
 # T-1896: `run -d` of a static image where chroot is denied refuses: the native-static rung has no detached driver

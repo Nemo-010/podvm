@@ -554,7 +554,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1889](machine.md) | P1 | S | none | machine | done | The machine tier boots an image of another architecture and ends with "no exit marker" |
 | [T-1890](machine.md) | P2 | L | none | machine | open | The machine tier has no guest of another architecture |
 | [T-1891](extract.md) | P1 | S | none | extract | done | A tree with a directory of mode 0555 cannot be removed by a user who is not root |
-| [T-1892](enter.md) | P3 | S | none | enter | open | Two exec tables reach the payload: podvm's guest paths and the crate's host paths |
+| [T-1892](enter.md) | P3 | S | none | enter | done | Two exec tables reach the payload: podvm's guest paths and the crate's host paths |
 | [T-1893](machine.md) | P1 | S | none | machine | done | The provision of a Windows guest leaves the emulator running when the typing fails |
 | [T-1894](machine.md) | P1 | S | none | machine | partial | The provision of a Windows guest never types: the screen-settle readiness of podcrates v0.45.0 fails |
 | [T-1895](image.md) | P1 | S | none | image | done | A reference by an index digest finds a tag record and a digest record of one manifest, and `save` calls them two images |
@@ -563,7 +563,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-494 entries: 16 open, 14 partial, 2 blocked, 462 done.
+494 entries: 15 open, 14 partial, 2 blocked, 463 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -575,8 +575,8 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 197 | 205 |
 | P2 | 9 | 5 | 2 | 159 | 175 |
-| P3 | 6 | 2 | 0 | 32 | 40 |
-| **All** | 16 | 14 | 2 | 462 | 494 |
+| P3 | 5 | 2 | 0 | 33 | 40 |
+| **All** | 15 | 14 | 2 | 463 | 494 |
 
 ## Work order
 

@@ -476,11 +476,14 @@ fn denied_in_lets_ro_win_a_tie() {
     assert!(!denied_in(b"ro:/,rw:/data", b"/data/f"));
 }
 
-/// TODO/enter.md T-1819: the exec table holds a path under one of its
-/// prefixes, at a component boundary; an empty table holds nothing.
+/// TODO/enter.md T-1819, T-1892: the exec table (host paths, `:`
+/// separated, as `pod_confine::ExecTable::encode` writes it) holds a path
+/// under one of its paths, at a component boundary; an empty table holds
+/// nothing, and a path with `..` is never held.
 #[test]
 fn exec_allowed_in_takes_each_prefix() {
-    let t = b"/bin,/usr,/lib,/opt/tool/";
+    assert!(!exec_allowed_in(b"/bin", b"/bin/../tmp/x"));
+    let t = b"/bin:/usr:/lib:/opt/tool/";
     assert!(exec_allowed_in(t, b"/bin/sh"));
     assert!(exec_allowed_in(t, b"/usr/local/bin/python3"));
     assert!(exec_allowed_in(t, b"/opt/tool/run"));

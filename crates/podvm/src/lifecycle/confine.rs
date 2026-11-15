@@ -27,9 +27,9 @@ pub fn decide(
     userland: Option<&super::Userland>,
     env: &mut Vec<String>,
 ) -> Result<Option<Spec>, i32> {
-    // TODO/enter.md T-1819: a caller's own exec table is dropped; podvm
-    // sets it from the layer only.
-    env.retain(|e| !e.starts_with("PODVM_EXEC="));
+    // TODO/enter.md T-1819, T-1892: a caller's own exec table is dropped;
+    // `pod-enter` writes the table of the layer (host paths) at the spawn.
+    env.retain(|e| !e.starts_with("PODVM_EXEC=") && !e.starts_with("PODVM_EXEC_HOST="));
     let Some(ask) = ask else {
         return Ok(None);
     };
@@ -43,11 +43,11 @@ pub fn decide(
     let Some(u) = userland else {
         return Ok(Some(confine::spec_in(ask, std::path::Path::new(rootfs))));
     };
-    // TODO/enter.md T-1819: on the userland rung the kernel executes the
-    // loader (or podvm's dispatcher, or the emulator), so Landlock never
-    // checks EXECUTE on the program itself. The interposer checks each
-    // program against this table of guest paths before it starts it.
-    env.push(exec_table(ask));
+    // TODO/enter.md T-1819, T-1892: on the userland rung the kernel
+    // executes the loader (or podvm's dispatcher, or the emulator), so
+    // Landlock never checks EXECUTE on the program itself. The interposer
+    // checks each program against the table of host paths that `pod-enter`
+    // writes from this spec (`PODVM_EXEC_HOST`), the one table it reads.
     let rx = confine::Access::READ | confine::Access::EXECUTE;
     let mut spec = match confine::host_spec(ask, &u.maps) {
         Ok(s) => s,
@@ -68,18 +68,6 @@ pub fn decide(
         spec = spec.allow(host.to_string(), rx);
     }
     Ok(Some(spec))
-}
-
-/// `PODVM_EXEC=`: the system directories of the image and each `exec=`
-/// path of `ask`, as guest paths (TODO/enter.md T-1819). An optional path
-/// `?/P` is listed as `/P`; a path that the image lacks matches nothing.
-pub fn exec_table(ask: &Ask) -> String {
-    let paths: Vec<&str> = confine::SYSTEM_EXEC
-        .iter()
-        .copied()
-        .chain(ask.exec.iter().map(|p| p.strip_prefix('?').unwrap_or(p)))
-        .collect();
-    format!("PODVM_EXEC={}", paths.join(","))
 }
 
 /// The refusals of the layer, as a pure function of its inputs.
@@ -137,20 +125,18 @@ mod tests {
         assert!(check(&no_tcp, Rung::Chroot, false, Some(2)).is_err());
     }
 
-    /// TODO/enter.md T-1819: the exec table names the system directories
-    /// of the image and each `exec=` path, `?` dropped; `decide` drops a
-    /// caller's own table.
+    /// TODO/enter.md T-1819, T-1892: `decide` drops a caller's own exec
+    /// table, of either name, and writes none of its own: `pod-enter`
+    /// writes the one table at the spawn.
     #[test]
-    fn exec_table_names_the_system_dirs_and_each_exec_path() {
-        let ask = confine::parse("read=/etc;exec=/vol,?/opt/tool").unwrap();
-        let t = exec_table(&ask);
-        assert_eq!(
-            t,
-            "PODVM_EXEC=/bin,/sbin,/usr,/lib,/lib64,/lib32,/.podvm,/vol,/opt/tool"
-        );
-        let mut env = vec!["PODVM_EXEC=/".to_string(), "A=1".to_string()];
+    fn exec_table_of_the_caller_is_dropped() {
+        let mut env = vec![
+            "PODVM_EXEC=/".to_string(),
+            "PODVM_EXEC_HOST=/".to_string(),
+            "A=1".to_string(),
+        ];
         let none = decide("run", None, Rung::Namespace, "/r", None, &mut env).unwrap();
         assert!(none.is_none());
-        assert_eq!(env, ["A=1"], "a caller's own table stays");
+        assert_eq!(env, ["A=1"], "a caller's own table goes");
     }
 }

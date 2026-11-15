@@ -15,14 +15,15 @@ use super::*;
 pub const RO_VAR: &[u8] = b"PODVM_RO";
 
 /// The variable of the exec table of the confine layer (TODO/enter.md
-/// T-1819): the guest prefixes, comma separated, where a program may run.
+/// T-1819, T-1892): the host paths, `:` separated, where a program may
+/// run, as `pod-enter` writes them (`pod_confine::ExecTable::encode`).
 /// On the loader family the kernel executes the loader of the image, so
 /// Landlock checks EXECUTE on the loader only; the interposer checks each
 /// program here before it starts it.
-pub const EXEC_VAR: &[u8] = b"PODVM_EXEC";
+pub const EXEC_VAR: &[u8] = b"PODVM_EXEC_HOST";
 
-/// True where the exec table lets the resolved guest path `path` run: no
-/// table (no confine layer), or a prefix of the table holds it.
+/// True where the exec table lets the resolved host path `path` run: no
+/// table (no confine layer), or a path of the table holds it.
 ///
 /// # Safety
 /// As [`lookup_env`].
@@ -35,8 +36,14 @@ pub unsafe fn exec_allowed(path: &[u8]) -> bool {
 
 /// [`exec_allowed`] over a given table, for the tests. An empty table lets
 /// nothing run.
+///
+/// A copy of `pod_confine::exec::allows_in`, as the interposer takes no
+/// dependency: a path with a `.` or `..` component is never allowed.
 pub fn exec_allowed_in(table: &[u8], path: &[u8]) -> bool {
-    table.split(|c| *c == b',').any(|p| {
+    if path.split(|b| *b == b'/').any(|c| c == b"." || c == b"..") {
+        return false;
+    }
+    table.split(|c| *c == b':').any(|p| {
         let mut n = p.len();
         if n > 1 && p[n - 1] == b'/' {
             n -= 1;

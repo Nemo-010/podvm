@@ -289,9 +289,11 @@ pub(crate) unsafe fn plan(
         if unsafe { access(host, X_OK) } != 0 {
             return Err(crate::errno());
         }
-        // TODO/enter.md T-1819: the exec table of the confine layer, on the
-        // resolved guest path of each level (the script, its interpreter).
-        if !unsafe { crate::map::exec_allowed(&s.resolved[..rn]) } {
+        // TODO/enter.md T-1819, T-1892: the exec table of the confine
+        // layer, on the resolved host path of each level (the script, its
+        // interpreter), as the crate writes the table.
+        let hn = crate::map::strnlen(host, OUT);
+        if !unsafe { crate::map::exec_allowed(&s.host[..hn]) } {
             crate::say::line(&[
                 what,
                 b": the confine layer denies the exec of this path (exec=)",
