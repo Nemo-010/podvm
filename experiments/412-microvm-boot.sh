@@ -78,7 +78,7 @@ note() { echo "$*" >>"$REPORT"; }
 
 # Clause 1.
 start=$(date +%s)
-timeout 900 "$PB" run --podvm-tier=machine "$ALPINE" sh -c 'uname -r; exit 7' >"$WORK/c1.out" 2>"$WORK/c1.err"
+timeout 900 "$PB" run --verbose --podvm-tier=machine "$ALPINE" sh -c 'uname -r; exit 7' >"$WORK/c1.out" 2>"$WORK/c1.err"
 rc=$?
 took=$(( $(date +%s) - start ))
 { echo ""; echo "== 1. one command"; echo "exit              $rc"; echo "seconds           $took (with the kernel fetch and the base archive)"; sed 's/^/  /' "$WORK/c1.out" "$WORK/c1.err"; } >>"$REPORT"
@@ -87,7 +87,7 @@ grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$WORK/c1.out" || { note "1: no kernel releas
 grep -q "a guest under \(KVM\|TCG\)" "$WORK/c1.err" || { note "1: the banner names no accelerator"; fail=1; }
 
 # Clause 2.
-timeout 900 "$PB" run --podvm-tier=machine "$ALPINE" true >/dev/null 2>"$WORK/c2.err"
+timeout 900 "$PB" run --verbose --podvm-tier=machine "$ALPINE" true >/dev/null 2>"$WORK/c2.err"
 rc=$?
 { echo ""; echo "== 2. the cache"; echo "exit              $rc"; sed 's/^/  /' "$WORK/c2.err"; } >>"$REPORT"
 [ "$rc" -eq 0 ] || { note "2: wanted exit 0, got $rc"; fail=1; }
@@ -107,7 +107,7 @@ took=$(( $(date +%s) - start ))
 [ "$ok" -eq "$BOOTS" ] || fail=1
 
 # Clause 4.
-PODVM_MACHINE_ACCEL=kvm timeout 300 "$PB" run --podvm-tier=machine "$ALPINE" echo booted >"$WORK/c4.out" 2>"$WORK/c4.err"
+PODVM_MACHINE_ACCEL=kvm timeout 300 "$PB" run --verbose --podvm-tier=machine "$ALPINE" echo booted >"$WORK/c4.out" 2>"$WORK/c4.err"
 rc=$?
 { echo ""; echo "== 4. KVM asked"; echo "exit              $rc"; sed 's/^/  /' "$WORK/c4.out" "$WORK/c4.err"; } >>"$REPORT"
 if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then

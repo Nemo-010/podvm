@@ -177,6 +177,7 @@ fn main() -> std::process::ExitCode {
         Some("ps") => exit(lifecycle::ps(rest)),
         Some("start") => exit(lifecycle::start(rest)),
         Some("create") => exit(lifecycle::create(rest)),
+        Some("container") => exit(lifecycle::container_group(rest)), // T-1848
         Some("probe") => exit(probe(rest)),
         // ⭐ `podvm remote ssh`, decided 2026-09-27 (docs/decisions/remote-verb.md).
         // `remote` is a NAMESPACE, not a synonym for `ssh`: `remote fetch`,

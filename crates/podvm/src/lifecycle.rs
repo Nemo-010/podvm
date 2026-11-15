@@ -424,6 +424,9 @@ pub use wait_rm_cp::*;
 mod copy_tree;
 pub use copy_tree::*;
 
+mod prune; // TODO/supervise.md T-1848
+pub use prune::container_group;
+
 mod entry;
 mod prepared;
 use prepared::container_json;

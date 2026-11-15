@@ -26,7 +26,8 @@ pub const RUN_OPTIONS: &str = "\
   --name NAME      a name for the container. note: Refused if one already has it.
                    A foreground run leaves a record under it: `ps -a` lists
                    it as Exited and `logs` reads its output
-                   (TODO/supervise.md T-1421)
+                   (TODO/supervise.md T-1421). `container prune` removes
+                   each exited record and its tree (T-1848)
   --rm             remove the extracted rootfs when the payload exits,
                    unless a container record references it: the rootfs is
                    shared, and a failed run must not delete what `keeper`

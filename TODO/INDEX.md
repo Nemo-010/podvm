@@ -510,7 +510,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1845](cli.md) | P3 | S | none | cli | open | `profile show` writes a part of the document to stdout and then fails |
 | [T-1846](machine.md) | P2 | M | none | machine | open | A failed incus run leaves its instance, `ps` omits instances, `rm` calls an ERROR instance running, and `system info` takes `tier = bogus` |
 | [T-1847](net.md) | P3 | M | none | net | open | The scenarios and knobs of `lab` differ from the surface that sand-net documents |
-| [T-1848](supervise.md) | P2 | M | none | supervise | open | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
+| [T-1848](supervise.md) | P2 | M | none | supervise | done | No verb removes the exited containers in bulk, and `container` names verbs "listed above" that it does not list |
 | [T-1849](machine.md) | P3 | S | none | machine | open | `run` does not say that the machine tier needs `qemu-system`, and the guest sees less memory than `--podvm-mem` asks |
 | [T-1850](cli.md) | P3 | M | none | cli | open | `exec` takes 1.6 times the time of `docker exec`, and `pull` 1.4 times the time of `podman pull` |
 | [T-1851](supervise.md) | P3 | S | none | supervise | open | A store that root and a user share refuses the next run of the user with a bare `Permission denied` |
@@ -562,7 +562,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-493 entries: 35 open, 12 partial, 2 blocked, 444 done.
+493 entries: 34 open, 12 partial, 2 blocked, 445 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -573,9 +573,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 1 | 7 | 0 | 196 | 204 |
-| P2 | 18 | 3 | 2 | 152 | 175 |
+| P2 | 17 | 3 | 2 | 153 | 175 |
 | P3 | 16 | 2 | 0 | 22 | 40 |
-| **All** | 35 | 12 | 2 | 444 | 493 |
+| **All** | 34 | 12 | 2 | 445 | 493 |
 
 ## Work order
 

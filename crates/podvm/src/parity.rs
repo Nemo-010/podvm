@@ -211,7 +211,10 @@ pub const TABLE: &[Row] = &[
     Row { verb: "swarm", flag: Option::None, status: NoneStatus, note: "not implemented, and out of the shape TOOL.md section 2.0 describes" },
     Row { verb: "builder", flag: Option::None, status: NoneStatus, note: "the counterpart of a verb podvm does not have" },
     Row { verb: "context", flag: Option::None, status: NoneStatus, note: "there is no daemon to point a context at" },
-    Row { verb: "container", flag: Option::None, status: NoneStatus, note: "the sub-command group is not implemented; every verb it holds is a top-level verb here and is listed above" },
+    Row { verb: "container", flag: Option::None, status: Native, note: "ls (ps), rm, prune, start, stop, restart, kill, wait, logs, inspect, exec, create, run and cp: each the top-level verb of the same name (TODO/supervise.md T-1848)" },
+    Row { verb: "container prune", flag: Option::None, status: Native, note: "removes each exited or dead container and its rootfs tree, and prints the bytes the trees held; a created or running one stays (TODO/supervise.md T-1848)" },
+    Row { verb: "container prune", flag: Some("-f, --force"), status: Stub, note: "accepted for parity: podvm never prompts, so there is nothing to suppress" },
+    Row { verb: "container prune", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     // ------------------------------------------------- issue 60: ten docker
     // verbs with no row anywhere. Each takes an existing reason: no daemon,
     // or out of the shape TOOL.md section 2.0 describes. TODO/cli.md T-0801.

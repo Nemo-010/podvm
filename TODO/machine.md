@@ -4466,5 +4466,9 @@ cannot see the guest.
 the tag, and `podvm_windows::ready_for(accel, wait)` passes
 `Sign::After(wait)` under TCG and a screen settle of 15 s before it
 under KVM, with a bound of `wait` and 60 s more. `cargo test -p
-podvm-windows provision_readiness` exits 0. The clause that remains:
-`kvm.yml` passes experiments 392 and 450 under KVM.
+podvm-windows provision_readiness` exits 0. In `kvm.yml` run
+43657522107, `podvm windows setup` of Validation OS passed under KVM in
+37 s; experiment 450 then failed on its own path of the provisioned
+image (`$VHDX.podvm.qcow2`, where setup writes the name with the
+extension replaced). The clause that remains: `kvm.yml` passes
+experiments 392 and 450 under KVM.

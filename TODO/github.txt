@@ -262,7 +262,7 @@
 370 issue closed
 371 issue closed
 372 issue closed
-373 issue open
+373 issue closed
 374 issue open
 375 issue open
 376 issue open

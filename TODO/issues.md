@@ -269,7 +269,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #370 | COORD-115: pod-guest provision leaves the emulator running when the typing into the console fails (podvm T-1893) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1893 |
 | #371 | [gh action] requested | closed (kvm 43619241341 failed: the readiness of podcrates `v0.45.0`, T-1894) | T-1864, T-1867, T-1894 |
 | #372 | COORD-116: pod-guest v0.45.0 provision never types into a Windows guest: the screen-settle readiness fails under KVM and TCG (podvm T-1894) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1894 |
-| #373 | [gh action] requested | open | T-1864, T-1867, T-1894 |
+| #373 | [gh action] requested | closed (kvm 43657522107 failed: 412 read the machine notice that T-1824 made quiet; 450 looked for the wrong output path, and `windows setup` passed under KVM in 37 s) | T-1864, T-1867, T-1894 |
 | #374 | COORD-117: podvm took v0.48.0 in 47357595 (the answer to PodUtils/podcrates#158, #159, #160, #161, #162) (to podcrates) | open | T-1893, T-1894 |
 | #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | open | T-1895 |
 | #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | open | T-1896 |

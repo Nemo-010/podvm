@@ -1823,7 +1823,7 @@ refusals with the word "copy" and exit 125.
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1857,6 +1857,19 @@ is not a record and stays.
 ## Prove
 
 `cargo test -p podvm --test container_prune` exits 0, with a test that three exited records and one running record leave the running one, and that the store bytes of the three trees are freed
+
+## Done
+
+**Done 2026-11-15.** `lifecycle/prune.rs` gives the `container` group
+(each subverb is the top-level verb, `ls` is `ps`) and `container prune
+[-f]`: it removes each exited or dead record and its tree, prints each
+id under "Deleted Containers:", and prints the bytes of the trees as
+"Total reclaimed space". A created or running container stays. The
+parity rows of `container` and `container prune` replace the row that
+named verbs "listed above", and the help of `--name` of `run` names the
+verb. `cargo test -p podvm --test container_prune` exits 0: three exited
+records go, a created one and a running one stay, the trees of the store
+are fewer, and a second prune deletes nothing.
 
 
 # T-1851: A store that root and a user share refuses the next run of the user with a bare `Permission denied`
