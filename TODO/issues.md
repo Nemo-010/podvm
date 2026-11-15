@@ -278,3 +278,4 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |
 | #381 | [gh action] requested | closed (gate 43666264498, arm 43667556798, nightly trial 43667929703 and release 43668566087 green on f5a757c6: `0.2.0-beta.19`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
+| #382 | COORD-121: the answer to PodUtils/podrunner#110: limits of memory, CPU and processes (podvm T-1897, T-1747) (to podrunner) | open | T-1897, T-1747 |

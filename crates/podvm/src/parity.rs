@@ -88,6 +88,7 @@ pub const CLUSTER_VALUES: &[(&str, char)] = &[
     ("run", 'w'),
     ("run", 'u'),
     ("run", 'v'),
+    ("run", 'm'), // TODO/machine.md T-1897
     ("exec", 'e'),
     ("exec", 'w'),
     ("exec", 'u'),
@@ -251,8 +252,9 @@ pub const TABLE: &[Row] = &[
     Row { verb: "run", flag: Some("--privileged"), status: NoneStatus, note: "podvm holds every capability bit already and can still do none of what they name" },
     Row { verb: "run", flag: Some("--cap-add"), status: NoneStatus, note: "capabilities are not what is denied here; the filter is" },
     Row { verb: "run", flag: Some("--cap-drop"), status: Degraded, note: "ALL only: PR_SET_NO_NEW_PRIVS in the child, as --security-opt no-new-privileges; podvm does not change the capability sets. Each named capability is refused (T-1655)" },
-    Row { verb: "run", flag: Some("-m, --memory"), status: NoneStatus, note: "resource limits need a cgroup this runtime does not grant" },
-    Row { verb: "run", flag: Some("--cpus"), status: NoneStatus, note: "resource limits need a cgroup this runtime does not grant" },
+    Row { verb: "run", flag: Some("-m, --memory"), status: Degraded, note: "the incus tier only: limits.memory of the instance; each other tier refuses it, as a limit with no cgroup is not held (TODO/machine.md T-1897, TODO/cli.md T-1747)" },
+    Row { verb: "run", flag: Some("--cpus"), status: Degraded, note: "the incus tier only: limits.cpu (a whole number) or limits.cpu.allowance (a part) of the instance; each other tier refuses it (TODO/machine.md T-1897)" },
+    Row { verb: "run", flag: Some("--pids-limit"), status: Degraded, note: "the incus tier only: limits.processes of the instance; each other tier refuses it, and --ulimit nproc= holds on each tier (TODO/machine.md T-1897)" },
     Row { verb: "run", flag: Some("--restart"), status: NoneStatus, note: "not implemented: `stop` then `start` is the same thing and says which half failed (TODO/cli.md T-1331)" },
     Row { verb: "run", flag: Some("--hostname"), status: NoneStatus, note: "sethostname needs a UTS namespace this runtime does not grant" },
     // ⭐ M5 and TODO/cli.md T-0804. Four flags docker does not have, and each
@@ -304,7 +306,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "run", flag: Some("--domainname"), status: NoneStatus, note: "the payload shares this machine's network namespace and hostname; sethostname needs a UTS namespace this runtime does not grant" },
     Row { verb: "run", flag: Some("--mac-address"), status: NoneStatus, note: "the payload shares this machine's network namespace and interface; there is no address to assign" },
     Row { verb: "run", flag: Some("--link"), status: NoneStatus, note: "the payload shares this machine's network namespace, so there is nothing to link to" },
-    Row { verb: "run", flag: Some("--blkio-weight, --cgroup-parent, --cpu-period, --cpu-quota, --cpu-shares, --cpuset-cpus, --oom-kill-disable, --pids-limit"), status: NoneStatus, note: "resource limits need a cgroup this runtime does not grant" },
+    Row { verb: "run", flag: Some("--blkio-weight, --cgroup-parent, --cpu-period, --cpu-quota, --cpu-shares, --cpuset-cpus, --oom-kill-disable"), status: NoneStatus, note: "resource limits need a cgroup this runtime does not grant" },
     Row { verb: "run", flag: Some("--ulimit"), status: Native, note: "NAME=SOFT[:HARD], -1 for no limit, repeatable: set in the child before the exec on every rung and kept in the record for a detached run. A hard value over podvm's own is refused by name. fsize below 2 TiB ends a .NET payload with SIGXFSZ (T-1655)" },
     Row { verb: "run", flag: Some("--pid, --ipc, --uts, --userns"), status: NoneStatus, note: "the payload shares this machine's namespaces; there is no PID, IPC, UTS or user namespace to select" },
     Row { verb: "run", flag: Some("--isolation"), status: NoneStatus, note: "there is no isolation backend to select: the ladder selects the rung, and --podvm-tier selects a tier" },

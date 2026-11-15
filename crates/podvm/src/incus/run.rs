@@ -39,6 +39,9 @@ pub struct Job<'a> {
     pub env: Vec<String>,
     pub workdir: String,
     pub stdin: Option<Vec<u8>>,
+    /// `--memory`, `--cpus`, `--pids-limit`: keys of the instance
+    /// (TODO/machine.md T-1897, PodUtils/podrunner#110).
+    pub limits: Vec<(&'static str, String)>,
     /// `-v HOST:GUEST[:ro]`; `true` is read-only.
     pub volumes: Vec<(String, String, bool)>,
     /// `run -d` and `create`: an instance that stays (T-1722).
@@ -217,6 +220,8 @@ async fn run_in(c: &Client, job: &Job<'_>, image: &str, inst: &str) -> i32 {
     };
     let mut new = NewInstance::container(inst, Source::Alias(image.to_string()));
     new.devices = job_devices(job);
+    new.config
+        .extend(job.limits.iter().map(|(k, v)| (k.to_string(), v.clone())));
     new.config.insert(
         "raw.lxc".into(),
         "lxc.init.cmd = /.podvm/podvm guest-hold".into(),

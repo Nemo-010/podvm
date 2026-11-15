@@ -121,6 +121,8 @@ pub(super) async fn detached(c: &Client, job: &Job<'_>, image: &str, d: &Detach)
     };
     let mut new = NewInstance::container(&name, Source::Alias(image.to_string()));
     new.devices = job_devices(job);
+    new.config
+        .extend(job.limits.iter().map(|(k, v)| (k.to_string(), v.clone()))); // T-1897
     new.config.insert("raw.lxc".into(), INIT.into());
     new.config.insert(LABEL.into(), "1".into());
     new.config.insert(IMAGE_KEY.into(), d.image.clone());

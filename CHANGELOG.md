@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: limits of memory, CPU and processes on the incus tier, 2026-11-15
+
+Record: T-1897 (PodUtils/podrunner#110).
+Deployed: not deployed; no version change.
+
+- `--memory`, `--cpus` and `--pids-limit` become the limits of the incus
+  instance (`limits.memory`, `limits.cpu`, `limits.processes`), and the
+  report names them. Each other tier refuses them by name; `--ulimit
+  nproc=` and `--ulimit as=` hold on each tier.
+
 ### Fixed: refusals and help texts name the cause and what the binary does, 2026-11-15
 
 Record: T-1829, T-1832, T-1836, T-1838, T-1851, T-1857.

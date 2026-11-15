@@ -101,14 +101,15 @@ fn refused_run_flags_exit_125_naming_status_none() {
         "--device-cgroup-rule", "--disable-content-trust", "--dns", "--dns-option",
         "--dns-search", "--domainname", "--gpus", "--group-add", "--health-cmd", "--init",
         "--ipc", "--isolation", "--link", "--log-opt", "--mac-address",
-        "--mount", "--oom-kill-disable", "--pid", "--pids-limit", "--runtime",
+        "--mount", "--oom-kill-disable", "--pid", "--runtime",
         "--shm-size", "--stop-signal", "--stop-timeout", "--sysctl",
         "--userns", "--uts", "--volume-driver", "--volumes-from",
     ];
     assert_eq!(
         flags.len(),
-        36,
-        "the script refuses exactly 36 flags, not {}",
+        35,
+        // TODO/machine.md T-1897: --pids-limit is the incus tier's.
+        "the script refuses exactly 35 flags, not {}",
         flags.len()
     );
     let mut bad = Vec::new();

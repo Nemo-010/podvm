@@ -337,6 +337,11 @@ fn note_guest_run(tier: &'static str, o: &Opts, p: &Prepared) {
         image: o.image.clone().unwrap_or_default(),
         digest: p.digest.clone(),
         timeout_s: o.timeout,
+        limits: o
+            .limits
+            .iter()
+            .map(|(_, k, v)| format!("{k}={v}"))
+            .collect(),
     });
 }
 
@@ -396,6 +401,7 @@ pub(super) fn incus_tier(
         env: p.env,
         workdir: p.workdir,
         stdin: p.stdin,
+        limits: o.limits.iter().map(|(_, k, v)| (*k, v.clone())).collect(),
         // TODO/machine.md T-1722: create and run -d keep the instance.
         detach: (verb == "create" || o.detach).then(|| crate::incus::verbs::Detach {
             name: o.name.clone(),

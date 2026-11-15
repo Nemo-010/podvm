@@ -143,6 +143,10 @@ fn parse_flags_with(
                     }
                 },
                 "--podvm-cpus" => o.cpus = Some(cpus(verb, a)?),
+                "--memory" | "--cpus" | "--pids-limit" => {
+                    let (key, val) = limits::incus_limit(verb, flag, a)?;
+                    o.limits.push((flag.to_string(), key, val)); // T-1897
+                }
                 // TODO/cli.md T-1695, T-1801: the parser gives the path.
                 "--report" => report_path(verb, a)?, // T-1825
                 "--podvm-confine" => {
@@ -227,6 +231,9 @@ fn parse_flags_with(
             "-e" | "--env" => expecting = Some("-e"),
             "--env-file" => expecting = Some("--env-file"),
             "--label" => expecting = Some("--label"),
+            "-m" | "--memory" => expecting = Some("--memory"),
+            "--cpus" => expecting = Some("--cpus"),
+            "--pids-limit" => expecting = Some("--pids-limit"),
             "--log-driver" => expecting = Some("--log-driver"),
             // ⚠ Stub by the table, and each takes its value as docker's
             // does (TODO/gate.md T-1853): podvm captures stdout and stderr
@@ -462,7 +469,8 @@ pub(crate) use values::env_arg;
 pub use values::usage;
 use values::*;
 
-mod opts;
+pub(crate) mod limits;
+mod opts; // TODO/machine.md T-1897
 pub(super) use opts::Opts;
 
 /// TODO/cli.md T-1829: no image: the usage line and the cause on stderr,

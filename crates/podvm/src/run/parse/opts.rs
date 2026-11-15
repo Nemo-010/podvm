@@ -32,6 +32,9 @@ pub(crate) struct Opts {
     /// `--podvm-cpus`. The guest's vCPUs, machine tier only and refused on
     /// every other tier. TODO/cli.md T-1654 (`limits.cpus` of a profile).
     pub(crate) cpus: Option<u32>,
+    /// `--memory`, `--cpus`, `--pids-limit` (TODO/machine.md T-1897): the
+    /// flag, the incus key and its value; held on the incus tier only.
+    pub(crate) limits: Vec<(String, &'static str, String)>,
     /// `--podvm-net none`: the guest of the machine tier has no NIC
     /// (TODO/machine.md T-1751, PodUtils/podrunner#83).
     pub(crate) net_none: bool,
@@ -129,6 +132,7 @@ impl Opts {
             qemu_args: Vec::new(),
             mem: None,
             cpus: None,
+            limits: Vec::new(),
             net_none: false,
             sealed: false,
             engine: false,

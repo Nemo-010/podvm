@@ -21,6 +21,9 @@ pub(crate) fn prepare(
         tier,
         crate::tier::Tier::Machine | crate::tier::Tier::Incus | crate::tier::Tier::Runsc
     );
+    if tier != crate::tier::Tier::Incus {
+        super::parse::limits::refuse_off_incus(verb, &o.limits)?; // T-1897
+    }
     // ⭐ TODO/packaging.md T-1003. A forced launch rung is refused here, before
     // anything is fetched, where the verb cannot honor it: only foreground
     // `run` drives the ladder, and no guest tier reaches it (so it sits first).

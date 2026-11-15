@@ -234,9 +234,9 @@ mod tests {
 
     #[test]
     fn a_sha256_that_is_not_a_digest_is_refused() {
-        assert!(p(&["fetch", "--url", "u", "--sha256", "abc"]).is_err());
-        assert!(p(&["fetch", "--url", "u", "--sha256", &"z".repeat(64)]).is_err());
-        let a = p(&["fetch", "--url", "u", "--sha256", &"A".repeat(64)])
+        assert!(p(&["fetch", "--url", "https://u", "--sha256", "abc"]).is_err());
+        assert!(p(&["fetch", "--url", "https://u", "--sha256", &"z".repeat(64)]).is_err());
+        let a = p(&["fetch", "--url", "https://u", "--sha256", &"A".repeat(64)])
             .unwrap()
             .unwrap();
         assert_eq!(
@@ -250,7 +250,7 @@ mod tests {
     fn a_zero_memory_or_cpu_or_ceiling_or_timeout_is_refused() {
         assert!(p(&["run", "--podvm-mem", "0"]).is_err());
         assert!(p(&["run", "--podvm-cpus", "0"]).is_err());
-        assert!(p(&["fetch", "--url", "u", "--max-bytes", "0"]).is_err());
+        assert!(p(&["fetch", "--url", "https://u", "--max-bytes", "0"]).is_err());
         assert!(p(&["run", "--podvm-timeout", "0"]).is_err());
         assert!(p(&["run", "--podvm-mem", "1G"]).unwrap().unwrap().mem == Some(1 << 30));
         assert_eq!(

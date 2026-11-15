@@ -114,6 +114,7 @@ impl Report {
         self.image = Some(g.image);
         self.image_digest = Some(g.digest);
         self.timeout_s = g.timeout_s;
+        self.limits = g.limits;
         self.timed_out = code == 137 && g.timeout_s.is_some();
         self.ran = true;
     }
@@ -243,6 +244,9 @@ pub struct Guest {
     pub image: String,
     pub digest: String,
     pub timeout_s: Option<u64>,
+    /// The limits that the tier holds (TODO/machine.md T-1897: the keys
+    /// of an incus instance), for `limits` of the report.
+    pub limits: Vec<String>,
 }
 
 thread_local! {

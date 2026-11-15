@@ -72,6 +72,7 @@ fn every_field_of_opts_is_classified(o: Opts) {
         command: _,           // each tier
         user: _,              // TABLE: --user
         tier: _,              // the dispatch
+        limits: _,            // incus keys; each other tier refuses (T-1897)
         qemu_args: _,         // machine only; incus refuses (incus_tier)
         mem: _,               // machine only; incus refuses
         cpus: _,              // machine only; incus refuses

@@ -4560,3 +4560,61 @@ podvm-windows provision_readiness` exits 0. In `kvm.yml` run
 image (`$VHDX.podvm.qcow2`, where setup writes the name with the
 extension replaced). The clause that remains: `kvm.yml` passes
 experiments 392 and 450 under KVM.
+
+
+# T-1897: The incus tier and the native tiers hold no limit of memory, CPU or processes for a detached run
+
+**Source:** PodUtils/podrunner#110 (COORD-050 of podrunner, podrunner@T-162, 2026-11-15); the answer is issue 382
+**Category:** machine
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** done
+
+## Problem
+
+A unit of podrunner of the incus tier, or of the native tiers with no
+root, has no limit of memory, CPU or processes: one job can take the
+memory of the host. `run` refused `--memory` and `--cpus` with "resource
+limits need a cgroup this runtime does not grant", and `--pids-limit` had
+a row of status None.
+
+## Premise
+
+incus holds limits as keys of the instance (`limits.memory`,
+`limits.cpu`, `limits.cpu.allowance`, `limits.processes`). On the native
+tiers `--ulimit nproc=` and `--ulimit as=` already hold on `run -d`
+(T-1655): the record keeps them and the launcher sets them. A cgroup v2
+subtree for the other limits is T-1747.
+
+## Approach
+
+Parse `--memory` (`-m`), `--cpus` and `--pids-limit` into the incus keys,
+give them to the instance of `run`, `run -d` and `create` of the incus
+tier, and refuse them by name on each other tier. The report names the
+limits that the tier holds.
+
+## Decision
+
+A limit is held or refused, never dropped: no tier takes a limit that it
+does not hold.
+
+## Prove
+
+`cargo test -p podvm --bin podvm incus_limits` exits 0, the run of the incus stand-in sends `limits.processes` in the config of the instance, and `run --memory 512m` off the incus tier exits 125 naming the incus tier
+
+## Done
+
+**Done 2026-11-15.** `run/parse/limits.rs` maps `--memory` (bytes with
+b, k, m or g, at least 6m) to `limits.memory`, `--cpus` to `limits.cpu`
+(a whole number) or `limits.cpu.allowance` (a part, as a percent), and
+`--pids-limit` to `limits.processes`; `-m` bundles as a valued short. The
+incus job puts the keys in the config of the instance, for a foreground
+run and for `run -d` and `create`. `prepare` refuses each of them off the
+incus tier with exit 125, naming the incus tier and `--ulimit nproc=` and
+`--ulimit as=`. The `limits` of the report of an incus run names the
+keys. `cargo test -p podvm --bin podvm incus_limits` exits 0, the
+stand-in test of `incus/tests.rs` finds `limits.processes` = 64 in the
+config of the created instance, and on the cloud host `run --memory 512m`
+exits 125 with the refusal.
+

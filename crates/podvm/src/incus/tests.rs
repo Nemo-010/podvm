@@ -287,6 +287,7 @@ fn a_run_imports_creates_pushes_starts_execs_and_deletes() {
         env: vec!["PATH=/bin".into()],
         workdir: "/".into(),
         stdin: Some(b"in".to_vec()),
+        limits: vec![("limits.processes", "64".into())],
         volumes: vec![
             ("/h/ws".into(), "/workspace".into(), false),
             ("/h/cfg".into(), "/cfg".into(), true),
@@ -324,6 +325,8 @@ fn a_run_imports_creates_pushes_starts_execs_and_deletes() {
         create["config"]["raw.lxc"],
         "lxc.init.cmd = /.podvm/podvm guest-hold"
     );
+    // TODO/machine.md T-1897: a limit of the run is a key of the instance.
+    assert_eq!(create["config"]["limits.processes"], "64");
     assert_eq!(body("POST /1.0/images/aliases")["target"], "f00d");
     // TODO/machine.md T-1722: each -v is a disk device; :ro is read-only.
     assert_eq!(
