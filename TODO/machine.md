@@ -3810,6 +3810,8 @@ the mailbox (T-1861). Experiment 452 checks it (clause 5).
 
 **Partial (2026-11-15, the root bus).** Run 43740331439 (request 432): the leg with the root on SATA (`PODVM_WINDOWS_ROOT_BUS=sata`) stopped as the leg on NVMe: in the apply of `install.wim` from the ISO (`E:\Sources\Install.wim`, Panther at "Image apply. Progress: 1" on SATA and 5 on NVMe), with 1.53 GiB on the disk from minute 5 to the bound of 2 h. Each run since 43689812413 stopped at 1.53 GiB. So the bus of the root is not the cause; the source is the common part: the setup ISO of 8 152 356 864 bytes on `ide-cd`. `PODVM_WINDOWS_ISO_BUS=usb` now puts the ISO on a USB CD (`usb-bot` and `scsi-cd` on the xHCI bus), and the second leg of the job `install` uses it in place of the SATA leg. Remaining: that run.
 
+**Partial (2026-11-15, the ISO bus).** Run 43754060132 (request 433): the leg with the setup ISO on a USB CD (`PODVM_WINDOWS_ISO_BUS=usb`, `usb-bot` and `scsi-cd`) stopped as the leg on `ide-cd`: 1.53 GiB on the disk from minute 5 to the bound, Panther at "Image apply. Progress: 5". So neither the bus of the root (run 43740331439) nor the bus of the ISO is the cause. The job `install` now runs one leg, and samples the emulator each 5 min: its CPU ticks, its I/O bytes (`/proc/PID/io`) and the size of the root disk. A busy emulator with no I/O is the guest (a spin, or the compact apply of `install.wim`); an idle one waits on a request. Remaining: that run.
+
 # T-1868: A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe
 
 **Source:** the Windows guest review of 2026-11-14, section 5, item W10

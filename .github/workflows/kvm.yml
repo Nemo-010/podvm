@@ -399,14 +399,6 @@ jobs:
             apt_qemu: "1"
             hyperv: "1"
             root_bus: nvme
-          # Run 43740331439: the root on SATA stopped as on NVMe (1.53 GiB
-          # on the disk, as each run before), so the bus of the root is not
-          # the cause. This leg puts the setup ISO on a USB CD.
-          - leg: ubuntu-qemu-iso-usb
-            apt_qemu: "1"
-            hyperv: "1"
-            root_bus: nvme
-            iso_bus: usb
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -469,9 +461,26 @@ jobs:
           PODVM_WINDOWS_ROOT_BUS: ${{ matrix.root_bus }}
           PODVM_WINDOWS_ISO_BUS: ${{ matrix.iso_bus }}
         run: |
-          mkdir -p "$HOME"
+          mkdir -p "$HOME" "$RUNNER_TEMP/install-shots"
+          # Run 43754060132: the ISO on a USB CD stopped as on IDE, and the
+          # root on SATA as on NVMe (1.53 GiB on the disk from minute 5).
+          # Each 5 min: the CPU ticks and the I/O bytes of the emulator,
+          # and the size of the root disk: a busy emulator with no I/O is
+          # the guest; an idle one waits on a request.
+          (
+            while sleep 300; do
+              p=$(pgrep -o qemu-system) || continue
+              t=$(awk '{print $14 + $15}' "/proc/$p/stat")
+              io=$(grep -E '^(rchar|wchar|read_bytes|write_bytes)' "/proc/$p/io" | tr '\n' ' ')
+              d=$(find /mnt/w/home -name '*.qcow2' -size +100M -printf '%s\n' 2>/dev/null | sort -n | tail -1)
+              echo "$(date -u +%H:%M) cpu-ticks $t $io disk ${d:--}"
+            done
+          ) > "$RUNNER_TEMP/install-shots/qemu-sample.txt" 2>&1 &
+          SAMPLER=$!
           rc=0
           timeout 200m sh experiments/452-windows-install.sh || rc=$?
+          kill "$SAMPLER" 2>/dev/null || true
+          cat "$RUNNER_TEMP/install-shots/qemu-sample.txt" || true
           if pgrep -a qemu-system; then
             echo "an emulator stayed after the run"
             pkill -9 qemu-system || true
