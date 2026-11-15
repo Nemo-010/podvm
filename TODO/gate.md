@@ -5418,7 +5418,7 @@ case is held by T-1816 (`tests/stdout_full.rs`), not by the sites.
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5451,6 +5451,17 @@ A report is checked for what it says, not only for its form.
 `cargo test -p podvm --test report_paths_meaning` exits 0, with one case for each of the nine paths above
 
 ## Done
+
+**Done 2026-11-15, later.** The ninth path is in
+`tests/report_paths_meaning.rs` (`machine_case`): the machine tier with a
+fake boot, an emulator of python3 on PATH that reads the nonce out of the
+initrd, opens the stderr socket that podvm connects to, and prints the
+markers of the init with the exit code 5; the image is one file,
+`/bin/sh`, as the init needs it. The run gave exit 5, `guest-out` on
+stdout and `guest-err` on stderr, and its report says `rung` `machine`,
+`exit_code` 5 and `refused` null; the canary of `-e` is in no file that the
+run left. `cargo test -p podvm --test report_paths_meaning` exits 0 as
+root and as uid 1000 (with no python3 the case says SKIP).
 
 **Partial, 2026-11-15.** `tests/report_paths_meaning.rs` runs eight of
 the nine paths on an imported one-file image (the static test binary,

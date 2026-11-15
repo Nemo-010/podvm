@@ -233,9 +233,89 @@ fn report_paths_meaning() {
         assert_eq!(rc, 125, "{err}");
     }
 
+    // 8. the machine tier, with a fake boot: an emulator of python3 on PATH
+    // that answers with the markers of the init and exit 5 (no guest runs).
+    machine_case(&dir, &canary);
+
     // 9. an unwritable path: refused before the run (tests/report_paths.rs)
     let (rc, _) = run("/nonexistent/t1856/r.json", &[], &["payload_exit"]);
     assert_eq!(rc, 125);
 
     assert_no_canary(&dir);
+}
+
+/// The emulator of the fake boot: it reads the nonce from the initrd, opens
+/// the stderr socket that podvm connects to, and prints the markers.
+const FAKE_QEMU: &str = r#"#!/usr/bin/env python3
+import re, socket, sys
+args = sys.argv[1:]
+path = next(m.group(1) for a in args for m in [re.search(r"id=podvmerr,path=([^,]+)", a)] if m)
+data = open(args[args.index("-initrd") + 1], "rb").read()
+nonce = re.search(rb"PODVM-EXIT-([0-9a-f]+)", data).group(1).decode()
+s = socket.socket(socket.AF_UNIX)
+s.bind(path)
+s.listen(1)
+c, _ = s.accept()
+print("PODVM-READY-" + nonce, flush=True)
+print("guest-out", flush=True)
+c.sendall(b"guest-err\n")
+c.close()
+print("", flush=True)
+print("PODVM-EXIT-%s 5" % nonce, flush=True)
+"#;
+
+/// TODO/gate.md T-1856: the machine path. The report names the rung
+/// `machine`, the exit code of the guest and no refusal.
+fn machine_case(dir: &Path, canary: &str) {
+    use std::os::unix::fs::PermissionsExt;
+    if Command::new("python3").arg("-c").arg("1").output().is_err() {
+        eprintln!("SKIP: no python3 for the fake emulator");
+        return;
+    }
+    let fake = dir.join("fake");
+    std::fs::create_dir_all(&fake).unwrap();
+    let q = fake.join("qemu-system-x86_64");
+    std::fs::write(&q, FAKE_QEMU).unwrap();
+    std::fs::set_permissions(&q, std::fs::Permissions::from_mode(0o755)).unwrap();
+    std::fs::write(dir.join("kernel"), b"not a kernel").unwrap();
+    // The machine tier needs /bin/sh in the image, for its init.
+    let tar = dir.join("sh.tar");
+    write_ustar(&tar, "bin/sh", b"#!/bin/true\n");
+    let (rc, err) = podvm(dir, &["import", tar.to_str().unwrap(), "rep/sh:1"]);
+    assert_eq!(rc, 0, "import: {err}");
+    let path = format!(
+        "{}:{}",
+        fake.display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
+    let out = Command::new(env!("CARGO_BIN_EXE_podvm"))
+        .env("PODVM_SPARE_TREE", "0")
+        .env("PODVM_STORE", dir.join("store"))
+        .env("HOME", dir)
+        .env("PATH", path)
+        .env("PODVM_MACHINE_KERNEL", dir.join("kernel"))
+        .env("PODVM_MACHINE_ACCEL", "tcg")
+        .current_dir(dir)
+        .args([
+            "run",
+            "--rm",
+            "--podvm-tier=machine",
+            "--report",
+            "machine.json",
+            "-e",
+            canary,
+            "rep/sh:1",
+            "/bin/sh",
+        ])
+        .stdin(Stdio::null())
+        .output()
+        .expect("podvm runs");
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(5), "machine: {err}");
+    assert_eq!(String::from_utf8_lossy(&out.stdout).trim(), "guest-out");
+    assert!(err.contains("guest-err"), "{err}");
+    let r = report(dir, "machine.json");
+    assert_ran(&r, true, "machine");
+    assert_eq!(r["exit_code"], 5, "{r}");
+    assert_eq!(r["rung"], "machine", "{r}");
 }

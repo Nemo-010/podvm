@@ -518,7 +518,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1853](gate.md) | P2 | S | none | gate | done | No check proves that each parity row with a value takes `--flag=value`, and that each verb takes `-h` and `--help` |
 | [T-1854](gate.md) | P1 | S | none | gate | done | No test proves that each option of `run` is honoured or refused on each tier |
 | [T-1855](gate.md) | P2 | S | none | gate | done | The gate does not scan for the source patterns behind five defects |
-| [T-1856](gate.md) | P2 | S | none | gate | partial | No test reads the `--report` of each path of a run against its schema and for a secret |
+| [T-1856](gate.md) | P2 | S | none | gate | done | No test reads the `--report` of each path of a run against its schema and for a secret |
 | [T-1857](gate.md) | P3 | S | none | gate | done | A help text or a document can say "until T-NNNN" after that entry is done |
 | [T-1858](supervise.md) | P3 | S | none | supervise | done | The `ps` table pads by characters, so a wide character puts its row out of line |
 | [T-1859](gate.md) | P2 | S | none | gate | done | Tests leave their stores under `/tmp`, and an interrupted run leaves 1.3 GB each |
@@ -567,7 +567,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-498 entries: 8 open, 15 partial, 2 blocked, 473 done.
+498 entries: 8 open, 14 partial, 2 blocked, 474 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -578,9 +578,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 201 | 206 |
-| P2 | 4 | 7 | 2 | 162 | 175 |
+| P2 | 4 | 6 | 2 | 163 | 175 |
 | P3 | 4 | 3 | 0 | 36 | 43 |
-| **All** | 8 | 15 | 2 | 473 | 498 |
+| **All** | 8 | 14 | 2 | 474 | 498 |
 
 ## Work order
 
