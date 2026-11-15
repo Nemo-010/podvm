@@ -4410,3 +4410,53 @@ before it created 7, 3 and 5 (15 of 24, exits 125 and 126); with it, 8,
 0, and one `.extract.lock` beside the payload lock. The store tests
 pass, 33 of 33. T-1843 (`extract --force` before the store lock) is not
 closed by this: its order against a running container stays to test.
+
+
+# T-1895: A reference by an index digest finds a tag record and a digest record of one manifest, and `save` calls them two images
+
+**Source:** PodUtils/podrunner#104 (COORD-044, 2026-11-15); the answer is issue 375
+**Category:** image
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+After `podvm pull busybox:1.37.0` and `podvm pull busybox@sha256:a7dbc319...`
+(the index of that tag), `podvm save -o FILE busybox@sha256:a7dbc319...`
+exits 1 with "names 2 images in this store, for linux/amd64". Both
+records name the same manifest and platform, so `--platform` cannot
+choose.
+
+## Premise
+
+`Store::find_one_for` (`crates/podvm-image/src/store/records.rs`) counts
+records, not images. A tag record and a digest record of one manifest
+are one image with two names.
+
+## Approach
+
+Keep one record for each manifest digest and platform before the count:
+the record with no tag first (the record of the digest reference), then
+the least tag.
+
+## Decision
+
+Two names of one manifest are one image. The choice between its records
+is by content, never by position.
+
+## Prove
+
+`cargo test -p podvm-image one_manifest` exits 0, and on a store with a pull of `busybox:1.37.0` and of its index digest, `podvm save -o FILE` of the digest reference exits 0
+
+## Done
+
+**Done 2026-11-15.** `one_per_manifest` keeps one record for each
+manifest and platform in `find_one_for`. `cargo test -p podvm-image
+one_manifest` exits 0. On the cloud host, after a pull of
+`mirror.gcr.io/library/busybox:1.37.0` and of
+`mirror.gcr.io/library/busybox@sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec`
+for `linux/amd64`, `podvm save -o a.tar` of the digest reference exited
+1 before the change and exits 0 after it.
+

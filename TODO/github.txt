@@ -258,7 +258,10 @@
 366 issue open
 367 issue closed
 368 issue closed
-369 issue open
-370 issue open
+369 issue closed
+370 issue closed
 371 issue closed
-372 issue open
+372 issue closed
+373 issue open
+374 issue open
+375 issue open

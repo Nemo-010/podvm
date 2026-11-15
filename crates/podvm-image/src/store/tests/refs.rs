@@ -198,3 +198,21 @@ fn reclaimable_counts_unshared_blobs_once() {
     assert_eq!(s.blob_bytes("bogus"), 0);
     let _ = std::fs::remove_dir_all(s.root());
 }
+
+/// PodUtils/podrunner#104: a pull by tag and a pull by digest of one
+/// manifest are one image, so a reference by the digest finds one record.
+#[test]
+fn a_tag_record_and_a_digest_record_of_one_manifest_are_one_image() {
+    let _serialised = STORE_TESTS.lock().unwrap_or_else(|e| e.into_inner());
+    let s = scratch("one-manifest");
+    let tagged = record("docker.io/library/busybox", Some("1.37.0"), 21);
+    let bare = record("docker.io/library/busybox", None, 21);
+    s.put_record(tagged.clone()).unwrap();
+    s.put_record(bare).unwrap();
+    let want = format!("busybox@{}", tagged.digest);
+    let one = s.find_one(&want).unwrap();
+    assert_eq!(one.tag, None, "{one:?}");
+    let host = crate::platform::Platform::parse("linux/amd64").unwrap();
+    assert_eq!(s.find_one_for(&want, Some(&host)).unwrap().tag, None);
+    let _ = std::fs::remove_dir_all(s.root());
+}

@@ -122,7 +122,7 @@ impl Store {
         want: &str,
         platform: Option<&crate::platform::Platform>,
     ) -> Result<Record> {
-        let hits = self.find(want)?;
+        let hits = one_per_manifest(self.find(want)?);
         if hits.is_empty() {
             return Err(Error::NoSuchImage(want.to_string()));
         }
@@ -357,4 +357,23 @@ impl Store {
             skipped,
         })
     }
+}
+
+/// PodUtils/podrunner#104: a pull by tag and a pull by digest of one
+/// manifest give two records of one image, and a reference by the digest
+/// finds both. They are one image, not an ambiguity: keep one record for
+/// each manifest and platform, the one with no tag first (it is the record
+/// of the digest reference), then the least tag. The choice is by content,
+/// never by position.
+pub(crate) fn one_per_manifest(mut hits: Vec<Record>) -> Vec<Record> {
+    hits.sort_by(|a, b| {
+        (&a.manifest_digest, &a.platform, a.tag.is_some(), &a.tag).cmp(&(
+            &b.manifest_digest,
+            &b.platform,
+            b.tag.is_some(),
+            &b.tag,
+        ))
+    });
+    hits.dedup_by(|b, a| a.manifest_digest == b.manifest_digest && a.platform == b.platform);
+    hits
 }

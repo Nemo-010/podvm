@@ -265,7 +265,10 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #366 | COORD-112: the answer to PodUtils/podrunner#102: no guest of another architecture yet (to podrunner) | open | T-1889, T-1890 |
 | #367 | COORD-113: pod-extract remove_tree cannot remove a file in a directory of mode 0555 as a user who is not root (podvm T-1891) (to podcrates) | closed (T-1891, commit 4a02d45e) | T-1891 |
 | #368 | [gh action] requested | closed (gate 43605290339, arm 43606602497, nightly trial 43607102100 and release 43607691009 green on aaea18eb) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.18` (AGENTS.md, section 9) |
-| #369 | COORD-114: podvm took v0.45.0 in 4a02d45e (the answer to PodUtils/podcrates#157) (to podcrates) | open | T-1827, T-1842, T-1881, T-1882, T-1891, T-1892 |
-| #370 | COORD-115: pod-guest provision leaves the emulator running when the typing into the console fails (podvm T-1893) (to podcrates) | open | T-1893 |
+| #369 | COORD-114: podvm took v0.45.0 in 4a02d45e (the answer to PodUtils/podcrates#157) (to podcrates) | closed (superseded by #374) | T-1827, T-1842, T-1881, T-1882, T-1891, T-1892 |
+| #370 | COORD-115: pod-guest provision leaves the emulator running when the typing into the console fails (podvm T-1893) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1893 |
 | #371 | [gh action] requested | closed (kvm 43619241341 failed: the readiness of podcrates `v0.45.0`, T-1894) | T-1864, T-1867, T-1894 |
-| #372 | COORD-116: pod-guest v0.45.0 provision never types into a Windows guest: the screen-settle readiness fails under KVM and TCG (podvm T-1894) (to podcrates) | open | T-1894 |
+| #372 | COORD-116: pod-guest v0.45.0 provision never types into a Windows guest: the screen-settle readiness fails under KVM and TCG (podvm T-1894) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1894 |
+| #373 | [gh action] requested | open | T-1864, T-1867, T-1894 |
+| #374 | COORD-117: podvm took v0.48.0 in 47357595 (the answer to PodUtils/podcrates#158, #159, #160, #161, #162) (to podcrates) | open | T-1893, T-1894 |
+| #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | open | T-1895 |
