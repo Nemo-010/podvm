@@ -124,9 +124,10 @@ Read [PROGRESS](../TODO/PROGRESS.md) for current verification.
   125.
 - The namespace rung of an unprivileged caller (T-1909): a foreground
   `run` opens a user, a PID and a UTS namespace where a trial of the
-  entry works, and the payload is uid 0 of that namespace. `run -d`,
-  `create` and `exec` enter as before: pod-enter does not open a user
-  namespace (COORD-132), so they take the userland rung on such a host.
+  entry works, and the payload is uid 0 of that namespace. `run -d` and
+  `create` enter as before: pod-enter does not open a user namespace
+  (COORD-132), so they take the userland rung on such a host. `exec` and
+  `cp` into a running foreground run join its namespaces (T-1910).
 - The confine layer on the userland rung (T-1902): musl reads
   `/etc/resolv.conf`, `/etc/hosts` and `/etc/services` with raw system
   calls on the host path. Where the spec lets the payload read the guest

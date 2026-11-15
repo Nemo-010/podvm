@@ -20,7 +20,9 @@
 #   5. SIGTERM to podvm, with a payload that has a background child, gives
 #      143 and no process of the payload stays;
 #   6. `run -d` keeps the entry as before (no user namespace) and exits 0;
-#   7. `PODVM_USERNS=0` keeps the entry as before: mode=userland.
+#   7. `PODVM_USERNS=0` keeps the entry as before: mode=userland;
+#   8. `exec` into a running named run sees the `/tmp` of its payload, as
+#      uid 0, with its exit code; `cp` out of it copies the file (T-1910).
 
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -89,6 +91,19 @@ say "detached  rc $rc"
 b=$(PODVM_USERNS=0 timeout 120 "$BIN" run --rm --verbose "$IMG" true 2>&1)
 say "off       $(printf '%s\n' "$b" | grep -o 'mode=[a-z]*' | head -1)"
 printf '%s\n' "$b" | grep -q 'opened a user' && bad "clause 7"
+
+timeout 120 "$BIN" run --rm --name j8 "$IMG" sh -c 'echo hi > /tmp/m; sleep 40' >/dev/null 2>&1 &
+sleep 10
+e=$(timeout 60 "$BIN" exec j8 sh -c 'cat /tmp/m; id -u' 2>/dev/null | tr '\n' ' ')
+timeout 60 "$BIN" exec j8 sh -c 'exit 5' >/dev/null 2>&1
+erc=$?
+rm -f "$WORK/m.out"
+timeout 60 "$BIN" cp j8:/tmp/m "$WORK/m.out" >/dev/null 2>&1
+c=$(cat "$WORK/m.out" 2>/dev/null)
+timeout 60 "$BIN" stop j8 >/dev/null 2>&1
+wait
+say "exec      [$e] rc $erc; cp [$c]"
+[ "$e" = "hi 0 " ] && [ "$erc" -eq 5 ] && [ "$c" = hi ] || bad "clause 8"
 
 chmod -R u+w "$WORK" 2>/dev/null
 rm -rf "$WORK"

@@ -47,6 +47,10 @@ pub(super) fn enter(
             return podvm_image::error::EXIT_RUNTIME_ERROR;
         }
     };
+    // TODO/enter.md T-1910: a run in a user namespace of podvm's own.
+    if state == State::Running && container.rung == "namespace" {
+        crate::userns::rejoin(container.pid);
+    }
     // TODO/cli.md T-1765: the environment of the container, as docker's
     // `exec` has it: the image's and the `-e` of `run`, then the `-e` of
     // `exec`. podvm's own variables of the run (`PODVM_*`, its
@@ -417,7 +421,7 @@ pub(super) fn enter(
             let joined = (state == State::Running && container.rung == "namespace")
                 .then_some(container.pid)
                 .flatten()
-                .and_then(pidfd_open);
+                .and_then(|p| crate::userns::joined_pidfd().or_else(|| pidfd_open(p)));
             let r = match joined {
                 Some(fd) => {
                     let r =
@@ -465,7 +469,8 @@ pub(crate) fn join_mounts(pid: Option<i64>) -> bool {
         fn setns(fd: i32, nstype: i32) -> i32;
     }
     const CLONE_NEWNS: i32 = 0x0002_0000;
-    let Some(fd) = pid.and_then(crate::exec::enter::pidfd_open) else {
+    crate::userns::rejoin(pid); // TODO/enter.md T-1910: `cp`
+    let Some(fd) = crate::userns::joined_pidfd().or_else(|| pid.and_then(pidfd_open)) else {
         return false;
     };
     // SAFETY: a pidfd and a namespace type; podvm cp runs on one thread.

@@ -4158,7 +4158,7 @@ The release, the version and the machine of `uname` stay those of the host.
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -4179,4 +4179,8 @@ The join is all or nothing: a refused join names the call and keeps the entry of
 ## Prove
 
 As uid 1000 on a host where `unshare -Urm true` exits 0: with `podvm run --rm --name a IMAGE sh -c 'echo hi > /tmp/m; sleep 30'` running, `podvm exec a cat /tmp/m` prints `hi` and `podvm exec a id -u` prints 0.
+
+## Done
+
+**Done (2026-11-15).** Where `exec` or `cp` finds that the running payload of the namespace rung is in another user namespace (`/proc/PID/ns/user` differs), podvm starts itself again with the same arguments and `PODVM_USERNS_JOIN=PID` (`crates/podvm/src/userns.rs`, `rejoin`). First in `main`, with one thread, the new podvm opens a pidfd of the payload, joins its user, UTS and PID namespace with one `setns`, keeps the pidfd for the join of the mount namespace (the host pid of the record names nothing in the PID namespace), and forks: after `setns(CLONE_NEWPID)` a process makes no thread, so a child goes on with the verb as a member of the namespace, and the parent waits and relays the shutdown signals and the exit code. Evidence (kernel 6.18, uid 1000): with `run --rm --name j4 alpine:3.20 sh -c 'echo hi > /tmp/m; sleep 30'` running, `exec j4 sh -c 'cat /tmp/m; id -u'` prints `hi` and `0`, `exec j4 sh -c 'exit 5'` exits 5, `exec` with `--hostname box3` on the run prints `box3`, `ps` in it lists the processes of the run, `cp j4:/tmp/m` copies `hi`, and no podvm stays after `stop`; experiment 458 clause 8.
 

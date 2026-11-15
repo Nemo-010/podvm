@@ -1,4 +1,4 @@
-date      2026-11-15T10:36:29Z
+date      2026-11-15T11:01:30Z
 podvm     podvm 0.2.0-beta.22
 kernel    6.18.44-fc-v470, uid 1000
 banner    mode=namespace; 1 user line
@@ -8,4 +8,5 @@ exit      7
 sigterm   rc 143, 0 process(es) stayed
 detached  rc 0
 off       mode=userland
+exec      [hi 0 ] rc 5; cp [hi]
 PASS

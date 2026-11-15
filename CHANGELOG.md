@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `exec` and `cp` join a run in a user namespace, 2026-11-15
+
+Record: T-1910.
+Deployed: none yet.
+
+- `podvm exec` and `podvm cp` into a foreground run that podvm put in a
+  user namespace (T-1909) join its user, UTS, PID and mount namespace:
+  the command sees the `/tmp` and the `/proc` of the run, as uid 0 of it.
+
 ## 0.2.0-beta.22 (2026-11-15)
 
 ### Changed: an unprivileged foreground `run` enters the namespace rung, 2026-11-15
