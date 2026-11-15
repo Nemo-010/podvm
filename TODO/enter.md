@@ -4148,5 +4148,35 @@ The release, the version and the machine of `uname` stay those of the host.
 
 ## Done
 
-**Done (2026-11-15).** The namespace rung holds the name too: a foreground `run` of an unprivileged caller owns a UTS namespace of the entry of T-1909, and a `run --hostname` of uid 0 unshares one at the start of `main` (`crates/podvm/src/userns.rs`); `sethostname` names it, and the host keeps its name. Evidence: as root, `run --rm --hostname unit1 alpine:3.20` prints `unit1` for `uname -n`, `hostname` and `/etc/hostname`, and `hostname` of the host is unchanged; as uid 1000, experiment 458 clause 3. COORD-130 is not needed and is closed. The first half, the same day: `run` and `create` take `--hostname NAME` (and `--hostname=NAME`): 1 to 63 letters, digits, dots and hyphens. The handler of the native-static rung (`crates/podvm-dispatch/src/uts.rs`) and the interposer of the loader family (`crates/podvm-interpose/src/uts_calls.rs`, `uname` and `gethostname` in `interpose.map`) answer the name of `PODVM_HOSTNAME` in the nodename field. `/etc/hostname` of the tree holds it, `HOSTNAME` names it (a `-e HOSTNAME` of the caller wins), and `/etc/hosts` resolves it to 127.0.0.1. Each other entry, the machine tier and the incus tier refuse with exit 125 by name. Evidence: as uid 1000 on the userland rung, `run --rm --hostname unit1` of alpine 3.20 (loader family) and of busybox 1.36-musl (native-static) print `unit1` for `uname -n`, `hostname`, `/etc/hostname` and `$HOSTNAME`; as root, the namespace rung refuses at 125.
+**Done (2026-11-15).** The namespace rung holds the name too: a foreground `run` of an unprivileged caller owns a UTS namespace of the entry of T-1909, and a `run --hostname` of uid 0 unshares one at the start of `main` (`crates/podvm/src/userns.rs`); `sethostname` names it, and the host keeps its name. Evidence: as root, `run --rm --hostname unit1 alpine:3.20` prints `unit1` for `uname -n`, `hostname` and `/etc/hostname`, and `hostname` of the host is unchanged; as uid 1000, experiment 458 clause 3. COORD-130 is not needed and is closed. The first half, the same day: `run` and `create` take `--hostname NAME` (and `--hostname=NAME`): 1 to 63 letters, digits, dots and hyphens. The handler of the native-static rung (`crates/podvm-dispatch/src/uts.rs`) and the interposer of the loader family (`crates/podvm-interpose/src/uts_calls.rs`, `uname` and `gethostname` in `interpose.map`) answer the name of `PODVM_HOSTNAME` in the nodename field. `/etc/hostname` of the tree holds it, `HOSTNAME` names it (a `-e HOSTNAME` of the caller wins), and `/etc/hosts` resolves it to 127.0.0.1. Each other entry, the machine tier and the incus tier refuse with exit 125 by name. Evidence: as uid 1000 on the userland rung, `run --rm --hostname unit1` of alpine 3.20 (loader family) and of busybox 1.36-musl (native-static) print `unit1` for `uname -n`, `hostname`, `/etc/hostname` and `$HOSTNAME`; as root, the namespace rung refused at 125 until the UTS namespace of uid 0 above.
+
+
+# T-1910: `exec` and `cp` do not join a run that podvm put in a user namespace
+
+**Source:** T-1909 (the audit of the pids of a record, 2026-11-15)
+**Category:** enter
+**Milestone:** none
+**Priority:** P2
+**Effort:** M
+**Status:** open
+
+## Problem
+
+A foreground `run` of an unprivileged caller lives in a user, a PID and a UTS namespace that podvm opened (T-1909). `exec` and `cp` from outside try to join its mount namespace with the pidfd of the payload; the kernel refuses (`setns` of a mount namespace needs `CAP_SYS_ADMIN` in the user namespace that owns it), and they take an entry of their own. Measured 2026-11-15: `exec` into such a run did not see a file that the payload wrote in its `/tmp`, and ran as uid 1000.
+
+## Premise
+
+The caller owns the user namespace, so it has each capability in it. `setns(pidfd, CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWUTS)` in a child with one thread joins all of them in one call (Linux 5.8).
+
+## Approach
+
+In `exec` and `cp`, where the record of a running container names a payload in another user namespace (`/proc/PID/ns/user` differs), fork a child that joins the user, the mount and the UTS namespace through the pidfd, then enters as the join of T-1765 does.
+
+## Decision
+
+The join is all or nothing: a refused join names the call and keeps the entry of its own, as now.
+
+## Prove
+
+As uid 1000 on a host where `unshare -Urm true` exits 0: with `podvm run --rm --name a IMAGE sh -c 'echo hi > /tmp/m; sleep 30'` running, `podvm exec a cat /tmp/m` prints `hi` and `podvm exec a id -u` prints 0.
 
