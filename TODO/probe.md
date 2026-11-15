@@ -1951,6 +1951,8 @@ The user namespace of a foreground `run` (T-1909) maps only the caller (`0 UID 1
 
 Write the map from the outer process with `newuidmap PID 0 UID 1 1 START COUNT` (the child waits on a pipe), where the tools and a range exist; else keep the one-line map. ⛔ First solve the store: a file that a payload writes as uid 1000 lands on the host as uid `START+999`, and a run outside the namespace (`run -d`, `create`, `PODVM_USERNS=0`) as the caller cannot read or remove it. Either each verb that touches a tree enters the same namespace, or a tree of the namespace is removed only from inside it.
 
+Measured 2026-11-15 on the cloud host as uid 1000 (range `100000:65536`), with `unshare --map-auto --map-root-user -U` (util-linux runs `newuidmap` from outside): the map is `0 1000 1` and `1 100000 65536`; under `setpriv --reuid 1000`, `echo x > /root/qa` gives "Permission denied"; a `chown 1000:42` in the namespace shows as `100999:100041` on the host; and uid 1000 outside still removes that file, as the removal of an entry needs only the write right on its directory. So the store rule narrows to a directory that a subordinate id owns and that holds entries (`open_dirs` cannot add the owner's bits to it). ⛔ The map is written from outside: a setuid `newuidmap` that runs inside the namespace does not take root, as root is not mapped there.
+
 ## Decision
 
 A one-line map stays the default until the store rule holds for each verb.
