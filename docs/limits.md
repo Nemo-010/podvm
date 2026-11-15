@@ -113,18 +113,20 @@ Read [PROGRESS](../TODO/PROGRESS.md) for current verification.
   never writes the image's own tree after the extraction, so a spare
   stays its copy; a tool that edits that tree in place sets
   `PODVM_SPARE_TREE=0`, or a run takes a spare filled before the edit.
-- The host name (T-1908): no rung has a UTS namespace yet. With
-  `--hostname NAME`, the handler of the native-static rung and the
-  interposer of the loader family answer `uname` and `gethostname` with
-  NAME, and `/etc/hostname`, `HOSTNAME` and `/etc/hosts` hold it. A raw
-  `uname` system call of a dynamic program, and `/proc/sys/kernel/hostname`,
-  give the host's name. The namespace rung, the machine tier and the incus
-  tier refuse the flag with exit 125. `sethostname` in a payload fails with
-  `EPERM`.
-- The namespace rung (T-1909): pod-enter does not open a user namespace,
-  so an unprivileged caller enters the userland rung also on a host where
-  `unshare -Urm` works. `podvm probe` names the call that stops each
-  stronger rung.
+- The host name (T-1908): `--hostname NAME` names a UTS namespace of the
+  run where podvm can open one (uid 0, or the user namespace of a
+  foreground run, T-1909). Elsewhere the handler of the native-static
+  rung and the interposer of the loader family answer `uname` and
+  `gethostname` with NAME, and a raw `uname` of a dynamic program and
+  `/proc/sys/kernel/hostname` give the host's name. `/etc/hostname`,
+  `HOSTNAME` and `/etc/hosts` hold NAME on each entry. An entry with none
+  of these, the machine tier and the incus tier refuse the flag with exit
+  125.
+- The namespace rung of an unprivileged caller (T-1909): a foreground
+  `run` opens a user, a PID and a UTS namespace where a trial of the
+  entry works, and the payload is uid 0 of that namespace. `run -d`,
+  `create` and `exec` enter as before: pod-enter does not open a user
+  namespace (COORD-132), so they take the userland rung on such a host.
 - The confine layer on the userland rung (T-1902): musl reads
   `/etc/resolv.conf`, `/etc/hosts` and `/etc/services` with raw system
   calls on the host path. Where the spec lets the payload read the guest

@@ -199,6 +199,11 @@ fn prepare(
     )
     .map_err(|why| fail(verb, name, why))?;
     plan.options = podvm_windows::options::desktop(plan.accel, Vec::new());
+    // TODO/machine.md T-1867: `PODVM_WINDOWS_HYPERV=0` drops the Hyper-V
+    // flags, to tell a stall of nested KVM from one of the emulated disk.
+    if std::env::var("PODVM_WINDOWS_HYPERV").as_deref() == Ok("0") {
+        plan.options.hyperv = false;
+    }
     plan.options.media = vec![
         Medium {
             kind: MediumKind::Cdrom,

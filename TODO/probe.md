@@ -1895,7 +1895,7 @@ Ask podcrates for a leg that checks that the device runs a guest of the architec
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -1918,4 +1918,8 @@ The ownership view follows the map; the interposer view (T-0711) keeps each id t
 ## Prove
 
 As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm system info --format '{{.EnteredRung}}'` prints `namespace`, and `podvm run --rm IMAGE sh -c 'cat /proc/self/uid_map'` shows the map of the user namespace.
+
+## Done
+
+**Done (2026-11-15).** podvm opens the namespaces itself (`crates/podvm/src/userns.rs`), so it does not wait on COORD-132. At the start of a foreground `run` of a caller that is not uid 0, while podvm has one thread, it tries the whole entry in a child that it throws away; where each step works, it calls `unshare(CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWUTS)`, writes `setgroups` and the maps (`0 UID 1`, `0 GID 1`), and forks pid 1 of the PID namespace (a reaper that forwards SIGHUP, SIGTERM, SIGUSR1 and SIGUSR2), which forks pid 2: the rest of podvm, in a mount namespace with a `/proc` of the PID namespace. The probe then selects the namespace rung, and `--hostname` names the UTS namespace (T-1908). `run -d`, `create`, `exec` and `--podvm-tier` keep the entry as before, because a record keeps pids. Where a step fails (a host that refuses user namespaces, or AppArmor's restriction of Ubuntu 24.04), the trial fails and the ladder decides as before. `PODVM_USERNS=0` turns it off (call C21). Evidence (kernel 6.18, uid 1000): `experiments/458-userns-entry.sh` PASS (`experiments/results/userns-entry.txt`): mode=namespace with the banner line, `uid_map` `0 1000 1`, `uname -n` `unit1`, exit 7, SIGTERM with a background child gives 143 and no process stays, `run -d` exits 0; the 25 integration test binaries pass as uid 1000 with the entry; under the `deny-unshare` fixture the run takes mode=userland. A first form killed pid 2 at the end of a run: the sweep of T-1708 read host pids from the host's `/proc`; the `/proc` of pid 2 fixed it.
 

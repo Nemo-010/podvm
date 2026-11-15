@@ -292,8 +292,10 @@
 400 issue closed
 401 issue open
 402 issue open
-403 issue open
+403 issue closed
 404 issue open
 405 issue open
 406 issue open
 407 issue open
+408 issue closed
+409 issue open

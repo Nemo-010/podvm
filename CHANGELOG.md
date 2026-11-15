@@ -8,6 +8,19 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: an unprivileged foreground `run` enters the namespace rung, 2026-11-15
+
+Record: T-1909 (PodUtils/podvm#397), call C21.
+Deployed: none yet.
+
+- Where the host opens user namespaces, `podvm run` of a user with no
+  capability opens a user, a PID and a UTS namespace and enters the
+  namespace rung: the payload runs as uid 0 of that namespace, with its
+  own `/proc`, and `--hostname` holds (as it now does for uid 0 on the
+  namespace rung). Before, such a user got the
+  userland rung. `run -d`, `create` and `exec` are unchanged.
+  `PODVM_USERNS=0` keeps the old entry.
+
 ## 0.2.0-beta.22 (2026-11-15)
 
 ### Changed: `podvm probe` names why a stronger rung is not taken, 2026-11-15

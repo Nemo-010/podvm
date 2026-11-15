@@ -4124,7 +4124,7 @@ On a host with Landlock ABI 6 or more: `podvm run --rm --podvm-confine "read=/;w
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4148,5 +4148,5 @@ The release, the version and the machine of `uname` stay those of the host.
 
 ## Done
 
-**Partial (2026-11-15).** `run` and `create` take `--hostname NAME` (and `--hostname=NAME`): 1 to 63 letters, digits, dots and hyphens. The handler of the native-static rung (`crates/podvm-dispatch/src/uts.rs`) and the interposer of the loader family (`crates/podvm-interpose/src/uts_calls.rs`, `uname` and `gethostname` in `interpose.map`) answer the name of `PODVM_HOSTNAME` in the nodename field. `/etc/hostname` of the tree holds it, `HOSTNAME` names it (a `-e HOSTNAME` of the caller wins), and `/etc/hosts` resolves it to 127.0.0.1. Each other entry, the machine tier and the incus tier refuse with exit 125 by name. Evidence: as uid 1000 on the userland rung, `run --rm --hostname unit1` of alpine 3.20 (loader family) and of busybox 1.36-musl (native-static) print `unit1` for `uname -n`, `hostname`, `/etc/hostname` and `$HOSTNAME`; as root, the namespace rung refuses at 125. Remaining clause: the namespace rung, which needs `CLONE_NEWUTS` and `sethostname` in pod-enter (COORD-130, PodUtils/podvm#403).
+**Done (2026-11-15).** The namespace rung holds the name too: a foreground `run` of an unprivileged caller owns a UTS namespace of the entry of T-1909, and a `run --hostname` of uid 0 unshares one at the start of `main` (`crates/podvm/src/userns.rs`); `sethostname` names it, and the host keeps its name. Evidence: as root, `run --rm --hostname unit1 alpine:3.20` prints `unit1` for `uname -n`, `hostname` and `/etc/hostname`, and `hostname` of the host is unchanged; as uid 1000, experiment 458 clause 3. COORD-130 is not needed and is closed. The first half, the same day: `run` and `create` take `--hostname NAME` (and `--hostname=NAME`): 1 to 63 letters, digits, dots and hyphens. The handler of the native-static rung (`crates/podvm-dispatch/src/uts.rs`) and the interposer of the loader family (`crates/podvm-interpose/src/uts_calls.rs`, `uname` and `gethostname` in `interpose.map`) answer the name of `PODVM_HOSTNAME` in the nodename field. `/etc/hostname` of the tree holds it, `HOSTNAME` names it (a `-e HOSTNAME` of the caller wins), and `/etc/hosts` resolves it to 127.0.0.1. Each other entry, the machine tier and the incus tier refuse with exit 125 by name. Evidence: as uid 1000 on the userland rung, `run --rm --hostname unit1` of alpine 3.20 (loader family) and of busybox 1.36-musl (native-static) print `unit1` for `uname -n`, `hostname`, `/etc/hostname` and `$HOSTNAME`; as root, the namespace rung refuses at 125.
 

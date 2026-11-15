@@ -299,8 +299,10 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #400 | The store keeps machine/run-PID-* after each guest of the machine tier | closed (T-1906) | T-1906 |
 | #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | open | T-1907 |
 | #402 | A podvm payload has the host name of the host | open | T-1908 |
-| #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | open | T-1908 |
+| #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | closed (not needed: T-1908, T-1909) | T-1908 |
 | #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
 | #405 | [gh action] requested | open | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
 | #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | open | T-1909 |
 | #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | open | T-1907 |
+| #408 | [gh action] requested | closed (stopped at the gate: the snapshot) | T-1905: the release of 0.2.0-beta.22 at 7e45abc4 |
+| #409 | [gh action] requested | open | T-1905: the release of 0.2.0-beta.22 at 7189f0e6 |

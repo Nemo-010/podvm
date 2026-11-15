@@ -30,6 +30,12 @@ pub(super) fn entry_banner(
         banner.push_str(&note);
     }
     banner.push_str(interpose_note);
+    if crate::userns::active() {
+        banner.push_str(
+            "podvm opened a user, a PID and a UTS namespace for this run: the caller \
+             is uid 0 in it, and the payload has its own /proc (TODO/probe.md T-1909)\n",
+        );
+    }
     // ⭐ TODO/enter.md T-0501. Every mapping is named before anything of
     // the payload's runs: what the guest spelling serves (a duplicate of a
     // host descriptor opened before the chroot, never a node), where it
@@ -177,6 +183,14 @@ pub(super) fn hostname_env(
     let held = userland.is_some_and(|u| {
         u.dispatch_exe.is_some() || u.family == podvm_enter::userland::Family::Loader
     });
+    // TODO/probe.md T-1909: the run owns a UTS namespace.
+    if crate::userns::owns_uts()
+        && let Err(e) = crate::userns::set_hostname(&name)
+    {
+        eprintln!("podvm {verb}: sethostname in the UTS namespace of the run: {e}");
+        return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
+    }
+    let held = held || crate::userns::owns_uts();
     if !held {
         eprintln!(
             "podvm {verb}: --hostname needs the handler of the native-static rung or the \

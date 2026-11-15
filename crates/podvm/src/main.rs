@@ -37,6 +37,7 @@ mod runsc;
 mod sandprobe;
 mod system;
 mod tier;
+mod userns; // TODO/probe.md T-1909
 mod version;
 mod width; // TODO/supervise.md T-1858
 mod windows;
@@ -129,7 +130,8 @@ usage: podvm probe [--json | --rows] [--strict] [--cached]
 fn main() -> std::process::ExitCode {
     names::start(); // T-1652 (the native-static rung) and SIGPIPE (T-1769)
     let argv: Vec<String> = std::env::args().collect();
-    // TODO/net.md T-1665: one connection of a guest, relayed to the broker.
+    userns::enter_if(&argv); // T-1909: before any thread
+                             // TODO/net.md T-1665: one connection of a guest, relayed to the broker.
     if argv.get(1).map(String::as_str) == Some(broker::RELAY_ARG) {
         return exit(broker::relay(argv.get(2).map_or("", String::as_str)));
     }
@@ -150,7 +152,6 @@ fn main() -> std::process::ExitCode {
         };
         return exit(code);
     }
-
     let argv0 = argv.first().cloned().unwrap_or_else(|| "podvm".into());
     let rest = if argv.len() > 2 { &argv[2..] } else { &[] };
     // TODO/machine.md T-1722: `tier = incus` of the configuration, and the
@@ -306,7 +307,6 @@ fn main() -> std::process::ExitCode {
         }
     }
 }
-
 /// ⛔ THE OLD SPELLING IS A USEFUL ANSWER, NOT "UNKNOWN COMMAND". An
 /// agent that typed `podvm ssh` is asking a real question, and the
 /// house rule is that a tool must not need its user to learn its
