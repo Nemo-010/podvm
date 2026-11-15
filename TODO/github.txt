@@ -284,7 +284,7 @@
 392 issue closed
 393 issue closed
 394 issue closed
-395 issue open
+395 issue closed
 396 issue closed
 397 issue closed
 398 issue closed
@@ -301,7 +301,8 @@
 409 issue closed
 410 issue closed
 411 issue open
-412 issue open
+412 issue closed
 413 issue open
 414 issue open
 415 issue open
+416 issue open

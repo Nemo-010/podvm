@@ -291,7 +291,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #392 | [gh action] requested | closed (gate 43682978612, arm 43683769568, trial 43684116751, release 43684654940: `v0.2.0-beta.21`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.21` at e4dd9168 (AGENTS.md, section 9) |
 | #393 | COORD-127: a client of the QEMU Guest Agent for a running Windows guest (pod-qga?) (podvm T-1868) (to podcrates) | closed (v0.51.0; T-1868 wires it) | T-1868 |
 | #394 | COORD-128: pod-services: the aarch64 netboot of Alpine 3.22.6 for an arm64 guest (podvm T-1890) (to podcrates) | closed (v0.51.0, 3f92dab3) | T-1890 |
-| #395 | COORD-129: pod-oci: one registry token for the parallel blob fetches of a pull (podvm T-1850) (to podcrates) | open | T-1850 |
+| #395 | COORD-129: pod-oci: one registry token for the parallel blob fetches of a pull (podvm T-1850) (to podcrates) | closed (podcrates v0.52.0) | T-1850 |
 | #396 | --podvm-confine stops name resolution in the payload, while TCP to an address works | closed (T-1902) | T-1902 |
 | #397 | podvm probe takes userland on a host with user namespaces and KVM | closed (T-1903) | T-1903, T-1909 |
 | #398 | podvm load names an image docker.io/library/runner | closed (T-1904) | T-1904 |
@@ -308,7 +308,8 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #409 | [gh action] requested | closed (stopped at the gate: plant 27f) | T-1905: the release of 0.2.0-beta.22 at 7189f0e6 |
 | #410 | [gh action] requested | closed (release 43708756057) | T-1905: the release of 0.2.0-beta.22 at d2004f12 |
 | #411 | [gh action] requested | open | T-1867: a request of `kvm.yml` with the install in three legs |
-| #412 | [gh action] requested | open | the release of 0.2.0-beta.23 at 86574c96 |
+| #412 | [gh action] requested | closed (gate, arm, trial green; the release tag got 403) | the release of 0.2.0-beta.23 at 86574c96 |
 | #413 | COORD-134: podvm took podcrates v0.51.0 (to podcrates) | open | T-1890, T-1747, T-1868 |
 | #414 | COORD-135: pod-enter: the device nodes of the host on the namespace rung through a user namespace (to podcrates) | open | T-1912 |
 | #415 | [gh action] requested | open | T-1747: the job cgroup of kvm.yml (experiment 459) |
+| #416 | [gh action] requested | open | the rerun of the release run 43716584904 of 0.2.0-beta.23 |

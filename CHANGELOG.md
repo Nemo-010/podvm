@@ -16,6 +16,8 @@ Deployed: none yet.
 - `run -d --hostname` names the UTS namespace of the namespace rung
   through `Plan::hostname` of pod-enter; the probe of KVM checks the
   architecture of the guest that the device runs (PodUtils/podvm#407).
+- Each blob of a pull uses the registry token of the manifest, with no
+  token request of its own (T-1850).
 
 ### Added: `--memory`, `--cpus` and `--pids-limit` in a delegated cgroup2 subtree, 2026-11-15
 

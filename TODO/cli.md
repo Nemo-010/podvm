@@ -5746,3 +5746,5 @@ the INFO rows `perf.exec` (ns and ul) and `perf.pull` (the wall time of a
 pull of busybox:musl into a fresh store, 2.5 s here). The clause that
 remains: the phases of a pull (token, manifest, blob), which podvm does
 not time yet.
+
+**Done, amended (2026-11-15, night).** podcrates `v0.52.0` gives `Client::tokens` and `Client::with_tokens` (COORD-129, issue 395): each blob worker of a pull now starts with the tokens of the client that got the manifest, so a blob asks the registry for no token of its own (`podvm-image/src/pull/run.rs`). Three pulls of `mirror.gcr.io/library/python:3.12-slim` into a fresh store on the cloud host: blobs 2743, 2599 and 2360 ms (median 2599 ms, against the 2903 ms measured before; an estimate, with the noise of the network), manifest and token 939 to 1180 ms.

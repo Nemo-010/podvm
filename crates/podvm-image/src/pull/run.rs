@@ -199,6 +199,10 @@ pub fn pull(
     // the fetch already writes one 128 KiB chunk at a time, so the buffer was
     // adding a copy rather than a saving.
     let t_manifest = t0.elapsed();
+    // TODO/cli.md T-1850 (COORD-129, podcrates v0.52.0): each worker starts
+    // with the tokens of the client that got the manifest, so a blob asks
+    // the registry for no token of its own.
+    let tokens = client.tokens();
     let report = fetch_parallel(store, &jobs, |job, file, buf, cancel| {
         // ⛔ The flag is read here as well as before staging: another worker
         // may have failed while this one staged, and a blob fetched past the
@@ -206,7 +210,7 @@ pub fn pull(
         if cancel.load(std::sync::atomic::Ordering::Acquire) {
             return Ok(FetchStep::Skipped(file));
         }
-        let mut client = crate::registry::client(policy.clone())?;
+        let mut client = crate::registry::client(policy.clone())?.with_tokens(tokens.clone());
         let back = client.blob(
             &endpoint,
             &repository,
@@ -221,7 +225,7 @@ pub fn pull(
         let ms = |d: std::time::Duration| d.as_millis();
         eprintln!(
             "podvm pull: phases: client {} ms, manifest and token {} ms, blobs {} ms ({} blob(s), \
-             one client and token each) (TODO/cli.md T-1850)",
+             one client each, the token of the manifest) (TODO/cli.md T-1850)",
             ms(t_client),
             ms(t_manifest - t_client),
             ms(t0.elapsed() - t_manifest),
