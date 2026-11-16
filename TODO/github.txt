@@ -329,7 +329,7 @@
 437 issue closed
 438 issue closed
 439 issue open
-440 issue open
+440 issue closed
 441 issue closed
 442 issue open
 443 issue open
