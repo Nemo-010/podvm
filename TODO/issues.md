@@ -340,8 +340,11 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #444 | COORD-151: the answer to PodUtils/podrunner#195: a user with no root passes the machine tier; run your probe with v0.2.0-beta.25 for the cause (to podrunner) | open | T-1922 |
 | #445 | COORD-152: podvm took podcrates v0.60.0 in 959af827 (the answer to PodUtils/podcrates#206) (to podcrates) | open | T-1921 |
 | #446 | COORD-153: podvm took podcrates v0.61.0 in 013e76a1; COORD-150 is answered (the answer to PodUtils/podcrates#209) (to podcrates) | open | T-1921, T-1924, T-1925 |
-| #447 | COORD-154: pod-enter: the id inside the user namespace of the namespace rung, so that a payload runs as the user of its image (podvm T-1927, PodUtils/podrunner#196) (to podcrates) | open | T-1927 |
+| #447 | COORD-154: pod-enter: the id inside the user namespace of the namespace rung, so that a payload runs as the user of its image (podvm T-1927, PodUtils/podrunner#196) (to podcrates) | closed (podcrates@T-786 in podcrates `v0.62.0`, taken in `e62a7dc1`) | T-1927 |
 | #448 | COORD-155: the answer to PodUtils/podrunner#196: --hostname of run -d is fixed on main; the user of the image waits for pod-enter (to podrunner) | open | T-1926, T-1927 |
+| #449 | COORD-156: podvm took podcrates v0.62.0 in e62a7dc1; Plan::userns_ids is wired for run -d (the answer to PodUtils/podcrates#210) (to podcrates) | open | T-1927 |
+| #450 | COORD-157: the answer to PodUtils/podrunner#197: descriptor 17 is fixed in v0.2.0-beta.26 (to podrunner) | open | T-1928 |
+| #451 | COORD-158: the answer to PodUtils/podrunner#198: not the size and not the user; run your probe with v0.2.0-beta.26 for the timing (to podrunner) | open | T-1922 |
 
 ## Messages whose title does not start with COORD-NNN
 

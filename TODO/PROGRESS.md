@@ -11,11 +11,11 @@ start.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.25` (2026-11-16, release run
-  43825580962 on `71099545`; the gate 43821923369, `arm.yml` 43821939528
-  and the nightly trial 43821944079 passed first): T-1912, T-1916, T-1918
-  (the installer), T-1920 (a volume keeps the namespace rung), T-1921,
-  T-1923 and the message of the machine tier (T-1922). `release.yml`
+* The newest release is `v0.2.0-beta.26` (2026-11-16, release run
+  43848648491 on `17862c8f`; the gate 43845754849, `arm.yml` 43845775404
+  and the nightly trial 43845760609 passed first): T-1928 (descriptor 17
+  and the ownership memo, PodUtils/podrunner#197), T-1926 (`run -d
+  --hostname`) and the message of the machine tier (T-1922). `release.yml`
   needs a successful gate run on its commit; dispatch `nightly.yml` with
   `trial=true` and `arm.yml` on `main` first, and push nothing to `main`
   until the release run ends (call C22).
