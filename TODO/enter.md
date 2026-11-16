@@ -4354,3 +4354,36 @@ The staging skips the device nodes that podvm's fixups made (the set of `dev/` t
 
 As root on the cloud host: `PODVM_MODE=rundir podvm run --rm IMAGE true` and `PODVM_MODE=tmpfs podvm run --rm IMAGE true` exit 0 for `mirror.gcr.io/library/busybox:musl`, and the payload reads 16 bytes from `/dev/urandom`.
 
+
+# T-1930: `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host
+
+**Source:** PodUtils/podrunner#200 (COORD-074 of podrunner, podrunner@T-318), COORD-164 (PodUtils/podvm#457), COORD-165 (PodUtils/podvm#458)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** blocked
+
+## Problem
+
+podrunner's fourth QA measured `podvm run -d` of a user with no root on the namespace rung (`v0.2.0-beta.27`): from a step of a job, `ps -eo user,pid,args` lists each process of the host, `kill -TERM` ends a `sleep` of the same user on the host, and `pkill -KILL -f "^podrunner run"` ends the podrunner that started the unit. The entry of `pod-enter` makes a user namespace and a mount namespace and no PID namespace, and the `/proc` of the rung is a bind of the host's `/proc` (T-1758). A foreground `run` has podvm's own PID namespace (T-1909).
+
+## Premise
+
+A user with no root can make a PID namespace in the user namespace of the run. `CLONE_NEWPID` applies to the children of the caller, so the child of `pod-enter` makes it before it forks the payload: a change of `pod-enter`.
+
+## Approach
+
+podcrates gives a plan option for a PID namespace with its own `/proc` (COORD-164). podvm sets it for `run -d`, `create` and `start` on the namespace rung, names it on the banner, records the host pid as now, and makes `exec` and `cp` join the PID namespace of a running unit (the join of T-1910).
+
+## Decision
+
+-
+
+## Prove
+
+As uid 1000 on the cloud host: in `podvm run -d IMAGE sleep 600`, `podvm exec NAME ps -o pid,args` lists only the processes of the run, `podvm exec NAME kill -0 PID` of a host process fails, and `podvm stop NAME` ends the run.
+
+## Blocker
+
+The plan option of `pod-enter` (COORD-164, PodUtils/podvm#457). Clears when a podcrates tag carries it.
