@@ -327,12 +327,14 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #431 | [gh action] requested | closed (a wrong hash; replaced by #432) | the kvm.yml run for T-1747, T-1907 and T-1867 |
 | #432 | [gh action] requested | closed (run 43740331439) | the kvm.yml run for T-1747, T-1907 and T-1867 from 283e3492 |
 | #433 | [gh action] requested | closed (run 43754060132) | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
-| #434 | [gh action] requested | open | the kvm.yml rerun for T-1747 (swap) and T-1867 (the sampler) from 7a6c1edb |
+| #434 | [gh action] requested | closed (run 43767666467) | the kvm.yml rerun for T-1747 (swap) and T-1867 (the sampler) from 7a6c1edb |
 | #435 | COORD-145: pod-todo: a kind `reference` for an issue that holds no work (to podcrates) | closed | T-1919 |
 | #436 | [gh action] requested | closed (run 43770947835) | the first dry run of issue-sync.yml (T-1919) |
 | #437 | COORD-146: issue-sync.yml builds pod-todo under the consumer's .cargo/config.toml (to podcrates) | closed | T-1919 |
 | #438 | [gh action] requested | closed (run 43775969796) | the dry run of issue-sync.yml at podcrates v0.57.0 (T-1919) |
 | #439 | COORD-147: the answer to PodUtils/podrunner#189: raw syscalls on the loader family; a volume moves a run off the namespace rung (to podrunner) | open | T-1920, T-1740 |
+| #440 | COORD-148: pod-enter: bind the volumes of a plan on the namespace rung through a user namespace (to podcrates) | open | T-1920 |
+| #441 | [gh action] requested | open | the kvm.yml run for the install of 8 GiB (T-1867) and ValidationOS (T-1350) from 1298b66a |
 
 ## Messages whose title does not start with COORD-NNN
 
