@@ -72,11 +72,10 @@ file when each step below is done.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
-2. A new ask of a peer first. Watch #454 (podrunner takes beta.28 for
-   its runner image), #450 (descriptor 17), #448 (`--hostname` and the
-   user of the image: write the tag of T-1927 there with the next beta),
-   #439, #442 and #444 (older answers to podrunner; close each when
-   podrunner confirms).
+2. A new ask of a peer first. podrunner closed its asks #193 and #195 to
+   #199 after beta.28, and podvm closed its answers (#442, #444, #448,
+   #450, #451, #454). Still open: #439 (the answer to
+   PodUtils/podrunner#189; close it when podrunner closes #189).
 3. A root on a virtio disk in place of an initrd removes the copy of a
    large image in the guest's memory: an entry when a caller needs it.
 4. Close COORD-152, COORD-153, COORD-156 and COORD-160 (#445, #446,

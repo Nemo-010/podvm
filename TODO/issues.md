@@ -335,19 +335,19 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #439 | COORD-147: the answer to PodUtils/podrunner#189: raw syscalls on the loader family; a volume moves a run off the namespace rung (to podrunner) | open | T-1920, T-1740 |
 | #440 | COORD-148: pod-enter: bind the volumes of a plan on the namespace rung through a user namespace (to podcrates) | closed (podcrates `v0.59.0`, taken in `aa281ba7`) | T-1920 |
 | #441 | [gh action] requested | closed (run 43783602911, read into T-1867 and T-1350) | the kvm.yml run for the install of 8 GiB (T-1867) and ValidationOS (T-1350) from 1298b66a |
-| #442 | COORD-149: the answer to PodUtils/podrunner#193: Node 26 on the loader family; the microVM of a user with no root (to podrunner) | open | T-1920 |
+| #442 | COORD-149: the answer to PodUtils/podrunner#193: Node 26 on the loader family; the microVM of a user with no root (to podrunner) | closed (PodUtils/podrunner#193 closed) | T-1920 |
 | #443 | COORD-150: pod-hostprobe: chroot_usable takes the row chroot(/tmp) in unshare(NEWUSER+maps) as the caller's chroot (podvm T-1921) (to podcrates) | closed (podcrates@T-758 in podcrates `v0.61.0`) | T-1921 |
-| #444 | COORD-151: the answer to PodUtils/podrunner#195: a user with no root passes the machine tier; run your probe with v0.2.0-beta.25 for the cause (to podrunner) | open | T-1922 |
+| #444 | COORD-151: the answer to PodUtils/podrunner#195: a user with no root passes the machine tier; run your probe with v0.2.0-beta.25 for the cause (to podrunner) | closed (PodUtils/podrunner#195 closed) | T-1922 |
 | #445 | COORD-152: podvm took podcrates v0.60.0 in 959af827 (the answer to PodUtils/podcrates#206) (to podcrates) | open | T-1921 |
 | #446 | COORD-153: podvm took podcrates v0.61.0 in 013e76a1; COORD-150 is answered (the answer to PodUtils/podcrates#209) (to podcrates) | open | T-1921, T-1924, T-1925 |
 | #447 | COORD-154: pod-enter: the id inside the user namespace of the namespace rung, so that a payload runs as the user of its image (podvm T-1927, PodUtils/podrunner#196) (to podcrates) | closed (podcrates@T-786 in podcrates `v0.62.0`, taken in `e62a7dc1`) | T-1927 |
-| #448 | COORD-155: the answer to PodUtils/podrunner#196: --hostname of run -d is fixed on main; the user of the image waits for pod-enter (to podrunner) | open | T-1926, T-1927 |
+| #448 | COORD-155: the answer to PodUtils/podrunner#196: --hostname of run -d is fixed on main; the user of the image waits for pod-enter (to podrunner) | closed (PodUtils/podrunner#196 closed) | T-1926, T-1927 |
 | #449 | COORD-156: podvm took podcrates v0.62.0 in e62a7dc1; Plan::userns_ids is wired for run -d (the answer to PodUtils/podcrates#210) (to podcrates) | open | T-1927 |
-| #450 | COORD-157: the answer to PodUtils/podrunner#197: descriptor 17 is fixed in v0.2.0-beta.26 (to podrunner) | open | T-1928 |
-| #451 | COORD-158: the answer to PodUtils/podrunner#198: not the size and not the user; run your probe with v0.2.0-beta.26 for the timing (to podrunner) | open | T-1922 |
+| #450 | COORD-157: the answer to PodUtils/podrunner#197: descriptor 17 is fixed in v0.2.0-beta.26 (to podrunner) | closed (PodUtils/podrunner#197 closed) | T-1928 |
+| #451 | COORD-158: the answer to PodUtils/podrunner#198: not the size and not the user; run your probe with v0.2.0-beta.26 for the timing (to podrunner) | closed (PodUtils/podrunner#198 closed) | T-1922 |
 | #452 | COORD-159: pod-enter: Plan::userns_ids for a caller that is uid 0 of a user namespace (a nested namespace), for a foreground podvm run (podvm T-1927) (to podcrates) | closed (podcrates@T-787 in podcrates `v0.63.0`) | T-1927 |
 | #453 | COORD-160: podvm took podcrates v0.63.0; the foreground run has the ids of the plan (the answer to PodUtils/podcrates#211) (to podcrates) | open | T-1927 |
-| #454 | COORD-161: the answer to PodUtils/podrunner#199: a 1.4 GiB initrd needs more than 4G of guest memory; give the unit 8G (to podrunner) | open | T-1922 |
+| #454 | COORD-161: the answer to PodUtils/podrunner#199: a 1.4 GiB initrd needs more than 4G of guest memory; give the unit 8G (to podrunner) | closed (PodUtils/podrunner#199 closed) | T-1922 |
 
 ## Messages whose title does not start with COORD-NNN
 
