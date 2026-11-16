@@ -272,6 +272,11 @@ pub(super) fn prove_commands(
             let mut bad = None;
             let mut prev_dash = !bounded;
             for tok in &tokens {
+                // A bare `--` ends the options: what follows is the command
+                // of the verb (`lab run P -- CMD`), not its flags.
+                if tok == "--" {
+                    break;
+                }
                 if tok.starts_with('-') && tok.chars().count() > 1 {
                     let body: String = tok.chars().skip(1).collect();
                     let first = body.chars().next().unwrap_or('\0');

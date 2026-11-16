@@ -38,8 +38,27 @@ pub fn settings() -> Settings {
 /// arguments do not ask for it.
 pub fn dispatch() {
     if std::env::args_os().nth(1).is_some_and(|a| a == LAB_FLAG) {
+        quiet_sigpipe();
         pod_lab::dispatch(&settings());
     }
+}
+
+/// A SIGPIPE handler that does nothing, for the lab process. podvm sets
+/// SIGPIPE to its default at the start (TODO/cli.md T-1769), and the
+/// stand-in proxy that the lab forks inherits it: a probe that closed its
+/// socket before the stand-in wrote its answer killed the stand-in, and
+/// each later CONNECT got "Connection refused" (TODO/net.md T-1924). With a
+/// handler, the write gives EPIPE; an `exec` sets a handled signal back to
+/// its default, so CMD gets the default SIGPIPE, not an ignored one.
+fn quiet_sigpipe() {
+    extern "C" fn nothing(_: i32) {}
+    unsafe extern "C" {
+        fn signal(sig: i32, handler: usize) -> usize;
+    }
+    const SIGPIPE: i32 = 13;
+    // SAFETY: the handler touches no state; musl's signal() sets
+    // SA_RESTART.
+    unsafe { signal(SIGPIPE, nothing as extern "C" fn(i32) as usize) };
 }
 
 /// Is each name of the list `A,B` a profile?
@@ -57,13 +76,19 @@ pub fn parse(list: &str) -> Result<Vec<&'static Profile>, String> {
         .collect()
 }
 
-pub const RUN_USAGE: &str = "usage: podvm lab run [--allow-connect PORT[,PORT...]] PROFILE[,PROFILE...] -- CMD [ARG...]\n\n\
+pub const RUN_USAGE: &str = "usage: podvm lab run [--allow-connect PORT[,PORT...]] [--way-out] PROFILE[,PROFILE...] -- CMD [ARG...]\n\n\
 Run CMD in a hostile host class on this host, with no root and no guest.\n\
 `podvm lab profiles` lists the profiles. The lab sets each part, checks the\n\
 profile from inside, and only then runs CMD; a part that does not hold\n\
 stops the run with exit 125. A list runs as nested labs, the profiles of a\n\
 tmpfs outermost. The exit code is\n\
-the code of CMD (127: CMD was not found, 126: it did not run).\n";
+the code of CMD (127: CMD was not found, 126: it did not run).\n\n\
+--allow-connect PORT: a TCP connect to PORT stays allowed where a part\n\
+refuses each TCP connect (the proxy of a host whose only way out is it).\n\
+--way-out: the stand-in proxy of a network lab sends a CONNECT that the\n\
+rules of its class pass to the real network, directly or through the\n\
+proxy of this host; CMD never gets that proxy or its credential. Only a\n\
+profile with a stand-in proxy takes it.\n";
 
 pub const CHECK_USAGE: &str = "usage: podvm lab check PROFILE[,PROFILE...]\n\n\
 Measure this host against each profile: one line for each part (holds,\n\
@@ -154,11 +179,14 @@ pub fn nest_order(mut p: Vec<&'static Profile>) -> Vec<&'static Profile> {
 /// The command of the outermost lab: CMD itself, or for a list, podvm
 /// again with the rest of the list. `/proc/self/exe` is podvm in the lab
 /// process, also where a tmpfs of `small-tmp` hides a podvm under `/tmp`.
-pub fn inner(rest: &[&Profile], allow: &[u16], cmd: &[String]) -> Vec<OsString> {
+pub fn inner(rest: &[&Profile], allow: &[u16], way_out: bool, cmd: &[String]) -> Vec<OsString> {
     let mut v: Vec<OsString> = Vec::new();
     if !rest.is_empty() {
         let names: Vec<&str> = rest.iter().map(|p| p.name).collect();
         v.extend(["/proc/self/exe", "lab", "run"].map(OsString::from));
+        if way_out {
+            v.push("--way-out".into());
+        }
         if !allow.is_empty() {
             let ports: Vec<String> = allow.iter().map(u16::to_string).collect();
             v.push("--allow-connect".into());
@@ -171,32 +199,60 @@ pub fn inner(rest: &[&Profile], allow: &[u16], cmd: &[String]) -> Vec<OsString> 
     v
 }
 
+/// The flags of `podvm lab run` before the profile list.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct RunFlags {
+    /// `--allow-connect PORT[,PORT...]`.
+    pub allow_connect: Vec<u16>,
+    /// `--way-out` (TODO/net.md T-1924).
+    pub way_out: bool,
+}
+
+/// The leading flags of `lab run` and the rest of its arguments.
+pub fn run_flags(mut args: &[String]) -> Result<(RunFlags, &[String]), String> {
+    let mut f = RunFlags::default();
+    loop {
+        let (ports, rest) = match args {
+            [a, rest @ ..] if a == "--way-out" => {
+                f.way_out = true;
+                args = rest;
+                continue;
+            }
+            [a, ports, rest @ ..] if a == "--allow-connect" => (ports.as_str(), rest),
+            [a, rest @ ..] if a.starts_with("--allow-connect=") => {
+                (&a["--allow-connect=".len()..], rest)
+            }
+            _ => return Ok((f, args)),
+        };
+        for p in ports.split(',').filter(|p| !p.is_empty()) {
+            match p.parse::<u16>() {
+                Ok(n) if n > 0 => f.allow_connect.push(n),
+                _ => {
+                    return Err(format!(
+                        "--allow-connect {ports}: each port is a number from 1 to 65535"
+                    ))
+                }
+            }
+        }
+        args = rest;
+    }
+}
+
 /// `podvm lab run`.
 pub fn run(args: &[String]) -> i32 {
     // `--allow-connect PORT[,PORT...]`: the ports that `bind-denied` lets a
     // TCP connect reach (pod-lab `v0.58.0`, podcrates@T-737): the proxy of
-    // a host whose only way out is that proxy.
-    let (allow, args) = match args {
-        [f, ports, rest @ ..] if f == "--allow-connect" => (ports.as_str(), rest),
-        [f, rest @ ..] if f.starts_with("--allow-connect=") => {
-            (&f["--allow-connect=".len()..], rest)
-        }
-        _ => ("", args),
-    };
-    let allow_connect: Vec<u16> = match allow
-        .split(',')
-        .filter(|p| !p.is_empty())
-        .map(str::parse)
-        .collect()
-    {
+    // a host whose only way out is that proxy. `--way-out`: the stand-in
+    // proxy of a network lab sends a CONNECT that its class passes to the
+    // real network (pod-lab `v0.61.0`, podcrates@T-746, TODO/net.md T-1924).
+    let (flags, args) = match run_flags(args) {
         Ok(v) => v,
-        Err(_) => {
-            eprintln!(
-                "podvm lab run: --allow-connect {allow}: each port is a number from 1 to 65535"
-            );
+        Err(e) => {
+            eprintln!("podvm lab run: {e}");
             return EXIT_FLAG_ERROR;
         }
     };
+    let allow_connect = flags.allow_connect;
     let (list, cmd) = match args {
         [list, dash, cmd @ ..] if dash == "--" && !cmd.is_empty() => (list, cmd),
         _ => {
@@ -212,20 +268,38 @@ pub fn run(args: &[String]) -> i32 {
         }
     };
     let profiles = nest_order(profiles);
+    if flags.way_out && !profiles.iter().any(|p| pod_lab::has_proxy(p)) {
+        eprintln!(
+            "podvm lab run: --way-out needs a profile with a stand-in proxy; {list} has none"
+        );
+        return EXIT_FLAG_ERROR;
+    }
     let (first, rest) = (profiles[0], &profiles[1..]);
+    // The lab of the stand-in proxy takes the way out; an inner lab of the
+    // list gets the flag again where it has the proxy.
+    let way_out = flags.way_out && pod_lab::has_proxy(first);
+    let inner_way_out = flags.way_out && rest.iter().any(|p| pod_lab::has_proxy(p));
+    if way_out {
+        // The environment of podvm holds the proxy of the host and its
+        // credential; the way out keeps them from the command.
+        pod_lab::net::not_dumpable();
+    }
     let opts = Options {
         partial: false,
         stdout: None,
         allow_connect: allow_connect.clone(),
-        // podcrates `v0.61.0` (podcrates@T-746): the way out of a network
-        // lab; podvm gives no flag for it yet (TODO/net.md T-1924).
-        way_out: false,
+        way_out,
         // podcrates `v0.62.0` (podcrates@T-759): no served port of the
         // command; podvm gives no flag for it.
         serve: Vec::new(),
         serve_ca: None,
     };
-    match pod_lab::run(&settings(), first, &inner(rest, &allow_connect, cmd), opts) {
+    match pod_lab::run(
+        &settings(),
+        first,
+        &inner(rest, &allow_connect, inner_way_out, cmd),
+        opts,
+    ) {
         Ok(ran) => pod_lab::exit_code(ran.status),
         Err(RunError::Refused(v)) => {
             print(&v);

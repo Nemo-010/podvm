@@ -8,6 +8,26 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `podvm lab run --way-out`, 2026-11-16
+
+Record: T-1924 (podcrates `v0.61.0`).
+Deployed: none yet.
+
+- `podvm lab run --way-out PROFILE -- CMD` lets the stand-in proxy of a
+  network lab send a `CONNECT` that its class passes to the real network,
+  directly or through the proxy of the host. CMD never gets the proxy of
+  the host or its credential.
+
+### Fixed: `podvm lab run proxy-only` did not hold, 2026-11-16
+
+Record: T-1924.
+Deployed: none yet.
+
+- The stand-in proxy of a network lab died when a client closed its
+  socket before the answer, and each later `CONNECT` got "Connection
+  refused". The lab process now keeps the stand-in alive, and CMD still
+  gets the default SIGPIPE.
+
 ### Added: the manual page and `llms.txt` with each release, 2026-11-16
 
 Record: T-1917.

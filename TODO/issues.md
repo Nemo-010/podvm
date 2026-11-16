@@ -348,6 +348,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #452 | COORD-159: pod-enter: Plan::userns_ids for a caller that is uid 0 of a user namespace (a nested namespace), for a foreground podvm run (podvm T-1927) (to podcrates) | closed (podcrates@T-787 in podcrates `v0.63.0`) | T-1927 |
 | #453 | COORD-160: podvm took podcrates v0.63.0; the foreground run has the ids of the plan (the answer to PodUtils/podcrates#211) (to podcrates) | open | T-1927 |
 | #454 | COORD-161: the answer to PodUtils/podrunner#199: a 1.4 GiB initrd needs more than 4G of guest memory; give the unit 8G (to podrunner) | closed (PodUtils/podrunner#199 closed) | T-1922 |
+| #455 | COORD-162: pod-lab: the certificate file of a lab with a way out has no roots of the host; the stand-in dies of SIGPIPE in a consumer with the default SIGPIPE (to podcrates) | open | T-1924 |
 
 ## Messages whose title does not start with COORD-NNN
 

@@ -723,7 +723,7 @@ A profile that a host cannot hold is refused by name, part by part; a lab never 
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** open
+**Status:** done
 
 ## Problem
 
@@ -743,4 +743,12 @@ Not in the take of `v0.61.0`: a new flag needs its help, its parity row and its 
 
 ## Prove
 
-`podvm lab run --way-out PROFILE -- podvm pull IMAGE` in a profile with a stand-in proxy exits 0, and the same with no `--way-out` fails at the `CONNECT`.
+`podvm lab run --way-out proxy-only -- podvm pull IMAGE` (a profile with a stand-in proxy) exits 0, and the same with no `--way-out` fails at the `CONNECT`.
+
+## Correction
+
+2026-11-16. With no `--way-out`, the stand-in proxy answers a `CONNECT` to a name outside the lab with the server of the lab, so the pull fails at the first answer (the manifest or the TLS check), not at the `CONNECT`. The Prove reads "fails" for that case.
+
+## Done
+
+**Done (2026-11-16).** `podvm lab run --way-out` (`crates/podvm/src/lab/host.rs`, `run_flags`) sets `Options::way_out` for the lab of the stand-in proxy, and passes `--way-out` to an inner lab of a list that has one; a list with no such profile is a flag error (2). The usage and the parity table have the flag (and `--allow-connect`, which had no row). The lab process makes the process not dumpable before the way out starts, as `podlab` does. Measured as uid 1000 on the cloud host (`proxy-only`): `lab run --way-out proxy-only -- sh -c 'SSL_CERT_FILE=HOST-CA podvm pull mirror.gcr.io/library/alpine:3.20'` exits 0 ("Downloaded newer image"); the same with no `--way-out` exits 125 (the server of the lab answers). Two findings: (1) the stand-in died of SIGPIPE in each run of `proxy-only` on this host (a probe closed its socket before the answer; podvm sets SIGPIPE to its default, T-1769), so each later probe got "Connection refused" and the lab did not hold, also with no `--way-out`. The lab process now has a SIGPIPE handler that does nothing, which an `exec` of CMD sets back to the default. (2) The certificate file of the lab (`SSL_CERT_FILE`) holds only the CAs of the lab, and podvm, curl and most clients take that file in place of their roots, so a TLS client in a class that does not terminate TLS cannot check a real server through the way out. The Prove sets the CA of the host in CMD; COORD-162 asks podcrates to add the roots of the host to the file where the lab has a way out. Unit tests: `lab::host::tests` (6).
