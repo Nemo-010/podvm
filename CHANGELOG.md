@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.26 (2026-11-16)
+
 ### Fixed: a file on descriptor 17 reads empty, 2026-11-16
 
 Record: T-1928 (PodUtils/podrunner#197).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.26.
 
 - A program that closes descriptor 17 and opens a file there (Node under
   npm 6) no longer reads that file as empty, and podvm no longer writes
@@ -21,7 +23,7 @@ Deployed: none yet.
 ### Fixed: `run -d --hostname` with no root, 2026-11-16
 
 Record: T-1926 (PodUtils/podrunner#196).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.26.
 
 - `podvm run -d --hostname NAME` and `create --hostname NAME` of a user
   with no root on the namespace rung no longer exit 125: the run gets a
