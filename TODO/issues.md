@@ -345,6 +345,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #449 | COORD-156: podvm took podcrates v0.62.0 in e62a7dc1; Plan::userns_ids is wired for run -d (the answer to PodUtils/podcrates#210) (to podcrates) | open | T-1927 |
 | #450 | COORD-157: the answer to PodUtils/podrunner#197: descriptor 17 is fixed in v0.2.0-beta.26 (to podrunner) | open | T-1928 |
 | #451 | COORD-158: the answer to PodUtils/podrunner#198: not the size and not the user; run your probe with v0.2.0-beta.26 for the timing (to podrunner) | open | T-1922 |
+| #452 | COORD-159: pod-enter: Plan::userns_ids for a caller that is uid 0 of a user namespace (a nested namespace), for a foreground podvm run (podvm T-1927) (to podcrates) | open | T-1927 |
 
 ## Messages whose title does not start with COORD-NNN
 

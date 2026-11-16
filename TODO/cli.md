@@ -5875,7 +5875,7 @@ On a host with no root, `sh install.sh` puts podvm under its prefix in seconds, 
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5899,6 +5899,8 @@ A dry run prints each change before the workflow first closes or reopens an issu
 
 ## Done
 
+**Done (2026-11-16).** Both clauses of Prove hold. `podvm-gate` fails on a row whose state differs from GitHub: with #440 set open in `TODO/github.txt` (GitHub's states, which `scripts/check-github-numbers.py` holds to GitHub) and closed in its row, it exits 1 with "issue #440 is open on GitHub, and its row says closed". After a push that marks the entries of an open issue done, `issue-sync.yml` closes the issue with the status block that names the tag: #443 (T-1921, podcrates `v0.61.0`) and #395 (T-1850, `v0.2.0-beta.22`) on 2026-11-16, and #440 after its row was fixed. The sync runs on each push to `main` (runs 43816598500 onward) and each day.
+
 **Blocked (2026-11-15).** The workflow and the check of podcrates@T-703. Clears when a tag of podcrates carries them.
 
 **Blocked, amended (2026-11-16).** podvm takes podcrates `v0.55.0` (COORD-115, PodUtils/podcrates#194), whose `pod-todo` holds the rules of the issues and whose `issue-sync.yml` writes them. With `issue_rules = "on"`, `podvm-todo check` gave 52 problems: 5 open reports whose entries are done (podvm closed #272, #353 and #401; #149 and #162 are references), and 47 references "(report) names no entry". A reference holds no work, and no kind of `pod-todo` fits it. COORD-145 (PodUtils/podvm#435) asks for a kind `reference`. Clears when a tag carries it; then the rules go on, and `issue-sync.yml` is called with a dry run first.
@@ -5910,6 +5912,7 @@ A dry run prints each change before the workflow first closes or reopens an issu
 **Partial (2026-11-16, the dry run read).** With podcrates `v0.57.0` (COORD-146 answered: the build of `pod-todo` runs from `$RUNNER_TEMP`), the dry run passed (run 43775969796, request 438): it would write the status block into 291 issues, close #395 (COORD-129, open on GitHub and closed in the record, as `v0.52.0` answered it), and leave 30 issues from outside the team unchanged until they carry the label `confirmed`. `issue-sync.yml` now runs on each push to `main` and each day at 06:17 UTC; a dispatch is a dry run by default. The 30 issues from outside the team (#86 to #94, #109, #114, #213 to #217, #329, #331 to #337, #352, #354, #356 to #358, #364, with #330 and #353 before) carry the label `confirmed`: each is closed, and each maps to entries that podvm verified and did, or to work of podcrates that podvm took. A push of podvm's account starts no run (Actions is disabled for that account), so the first real run is the schedule at 06:17 UTC. Remaining: that run.
 
 **Partial (2026-11-16, the first runs).** Pushes start runs again. The first real sync (run 43816598500, on `b589bb94`) passed: it closed #395 as the record has it, with the status block that names T-1850 and its tag, and it kept #443 (COORD-150, its entry done) open, as a message waits for its answer. It reopened #441, because it read the record of a commit before the close, and #440, whose row was stale (fixed in `6980523c`); the next sync closes both. Remaining: the check of Prove that `podvm-gate` fails on a row whose state differs from GitHub.
+
 
 # T-1925: The installer takes the core of podcrates `v0.61.0`: `core-net.sh` and the signature of `SHA256SUMS`
 

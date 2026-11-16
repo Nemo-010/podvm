@@ -581,7 +581,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1916](net.md) | P2 | L | none | net | partial | Lab profiles: each hostile host class as a profile that a project brings up |
 | [T-1917](cli.md) | P3 | M | none | cli | partial | The help and the manual on the shared crate of PodUtils |
 | [T-1918](cli.md) | P2 | S | none | cli | partial | podvm has no installer: the user downloads and checks the binary by hand |
-| [T-1919](cli.md) | P2 | M | none | cli | partial | The state of an issue is written by hand |
+| [T-1919](cli.md) | P2 | M | none | cli | done | The state of an issue is written by hand |
 | [T-1920](enter.md) | P1 | M | none | enter | done | A volume moves a run off the namespace rung, and a raw syscall there sees host paths |
 | [T-1921](probe.md) | P1 | S | none | probe | done | `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM |
 | [T-1922](machine.md) | P1 | M | none | machine | partial | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
@@ -594,7 +594,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-525 entries: 8 open, 18 partial, 2 blocked, 497 done.
+525 entries: 8 open, 17 partial, 2 blocked, 498 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -605,9 +605,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
 | P1 | 0 | 6 | 0 | 211 | 217 |
-| P2 | 6 | 8 | 2 | 169 | 185 |
+| P2 | 6 | 7 | 2 | 170 | 185 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 8 | 18 | 2 | 497 | 525 |
+| **All** | 8 | 17 | 2 | 498 | 525 |
 
 ## Work order
 

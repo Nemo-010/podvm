@@ -57,6 +57,8 @@ file when each step below is done.
   podrunner for its run with beta.26.
 * The size ceiling moved to 8 500 000 bytes (call C23, T-0910).
 * Run 43783602911 read into T-1867 and T-1350; #441 closed.
+* T-1919 done: `podvm-gate` names a row whose state differs from GitHub,
+  and `issue-sync.yml` closes an issue whose entries are done.
 
 ## Next steps, in order
 
@@ -67,16 +69,15 @@ file when each step below is done.
    #439, #442 and #444 (older answers to podrunner; close each when
    podrunner confirms).
 3. Release the next beta for T-1927 (`run -d` as the image's `USER`) when
-   it fits; then do the user namespace of a foreground `run` (the rest of
-   T-1927).
+   it fits. The rest of T-1927 (a foreground `run`) waits for COORD-159
+   (#452): pod-enter changes nothing for a caller that is uid 0, which a
+   foreground `run` is inside podvm's own namespace.
 4. Close COORD-152, COORD-153 and COORD-156 (#445, #446, #449, the takes of
    `v0.60.0` to `v0.62.0`) when podcrates reads them.
 5. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
    the real error of Setup.
-6. T-1919: prove that `podvm-gate` fails on a row whose state differs
-   from GitHub, then set it done.
-7. Then the work order of `TODO/PROGRESS.md` (T-1917 remainder, T-1911,
+6. Then the work order of `TODO/PROGRESS.md` (T-1917 remainder, T-1911,
    T-1868, T-1924, T-1925).
 
 ## Rules learned
