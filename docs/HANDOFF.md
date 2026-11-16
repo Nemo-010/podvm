@@ -1,8 +1,8 @@
 # Handoff
 
 The state on 2026-11-16, 16:15 (UTC), at the end of a session. `main` is at the commit that adds
-this file. `0.2.0-beta.28` is the last release (release run 43882348294
-on `3f26f5a1`). A fresh session with no memory reads this file first,
+this file. `0.2.0-beta.29` is the last release (release run 43913242822
+on `978e38dd`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
 file when each step below is done.
 
@@ -81,13 +81,13 @@ file when each step below is done.
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
 2. A new ask of a peer first. Open and waiting: #439 (podrunner), #445,
-   #446, #449, #453, #455, #456 (podcrates).
+   #446, #449, #453, #455, #456, #457 (podcrates), #458 (podrunner).
 3. Read `kvm.yml` run 43898543916: the WinPE logs of T-1867 give the
    error of Setup. Then fix the cause, and run the install again (it now
    carries the guest tools of T-1868).
-4. Cut `0.2.0-beta.29` when the gate is green: it proves T-1917 and
-   T-1925 (the release assets and the signature of `SHA256SUMS`). Run
-   `arm.yml` and the nightly trial on the commit of the bump first.
+4. `0.2.0-beta.29` is released (run 43913242822): T-1925 done, T-1917
+   has its assets. T-1930 (P1, PodUtils/podrunner#200) waits for
+   COORD-164 (#457); take the tag of podcrates that carries it first.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries).
 
@@ -95,7 +95,7 @@ file when each step below is done.
 
 * `main` is pushed; read the last gate run before work.
 * The open issues of podvm that wait for a peer: #439 (podrunner), #445,
-  #446, #449, #453, #455, #456 (podcrates).
+  #446, #449, #453, #455, #456, #457 (podcrates), #458 (podrunner).
 
 ## Rules learned
 

@@ -7,16 +7,15 @@ start.
 
 ## State
 
-527 entries: 6 open, 16 partial, 3 blocked, 502 done.
+527 entries: 6 open, 15 partial, 3 blocked, 503 done.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.28` (2026-11-16, release run
-  43882348294 on `3f26f5a1`; the gate 43879185413, `arm.yml` 43879192735
-  and the nightly trial 43879198356 passed first): T-1922 (the memory of
-  a guest for its initrd), T-1927 (a foreground `run` as the image's
-  `USER`), `podvm man --llms`. Before it, beta.27 (T-1927 for `run -d`)
-  and beta.26 (T-1928, T-1926). `release.yml` needs a successful gate run
+* The newest release is `v0.2.0-beta.29` (2026-11-16, release run
+  43913242822 on `978e38dd`; the gate 43911119256, `arm.yml` 43911127191
+  and the nightly trial 43911120782 passed first): T-1786, T-1911 (part),
+  T-1917 (`podvm.1`, `podvm-llms.txt`), T-1924, T-1925 (the signed
+  `SHA256SUMS`), T-1868 (part). Before it, beta.28 (T-1922, T-1927). `release.yml` needs a successful gate run
   on its commit; dispatch `nightly.yml` with `trial=true` and `arm.yml` on
   `main` first, and push nothing to `main` until the release run ends
   (call C22).

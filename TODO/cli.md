@@ -5825,6 +5825,8 @@ podvm keeps the parity table as the one source of the flags; the crate renders i
 
 ## Done
 
+**Partial (2026-11-16, the release).** `v0.2.0-beta.29` (release run 43913242822) carries `podvm.1` and `podvm-llms.txt`, each with its `.sha256` and `.sigstore`; the x86_64 leg linted the page with `mandoc -Tlint -Wwarning`. Remaining: the text through `pod-manual`'s writer and pager, the facts and their checks, and the rule of no work ids in the text.
+
 **Partial (2026-11-16, the assets).** The x86_64 leg of `nightly.yml` writes `podvm.1` (`podvm man --roff`) and `podvm-llms.txt` (`podvm man --llms`) from the release binary, with `SOURCE_DATE_EPOCH` of the commit, and fails when `mandoc -Tlint -Wwarning` names a line or the text is empty. The publish job signs, attests and uploads them with the binaries, and `release.yml` refuses a release without each of the two files, its `.sha256` and its `.sigstore`. Measured on the cloud host with the build of `20e8d09a`: 3129 lines of roff, `mandoc -Tlint -Wwarning` gives no line (exit 0), and `--llms` gives 2904 lines. Remaining: a release that carries them (the Prove), the text through `pod-manual`'s writer and pager, the facts and their checks, and the rule of no work ids in the text.
 
 **Partial (2026-11-16).** `podvm man --llms` writes the whole model as one `llms.txt` (`pod_manual::llms::full`, 2904 lines), with its row of the parity table; the date of the model comes from `SOURCE_DATE_EPOCH` where it is set (a reproducible build: `SOURCE_DATE_EPOCH=0` gives `1970-01-01`), else today. So a release can write `podvm.1` and `llms.txt` from its own binary, and no copy in the tree can drift. Remaining: those two files as assets of `release.yml` (with `mandoc -Tlint`), the text through `pod-manual`'s writer and pager, the facts and their checks, and the rule of no work ids in the text.
@@ -5925,7 +5927,7 @@ A dry run prints each change before the workflow first closes or reopens an issu
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5950,6 +5952,8 @@ A separate entry: the take of the crates of `v0.61.0` changes no release asset, 
 On a hosted runner with `cosign`, `podvm-install.sh` of a release installs and checks the signature; a changed `SHA256SUMS` is refused; a second run changes nothing.
 
 ## Done
+
+**Done (2026-11-16).** `v0.2.0-beta.29` (release run 43913242822, the publish job of nightly run 43915911525 on the tag) carries `SHA256SUMS` and `SHA256SUMS.sigstore.json`. The steps of the publish job passed on a hosted runner with cosign: the offline install and a second run that says "already installed"; `cosign sign-blob` of `SHA256SUMS` for `nightly.yml@refs/tags/v0.2.0-beta.29`; its check, which also fails on a changed copy and on the identity of `refs/heads/main`; and the published installer from the files of the release (`PODVM_MIRROR=file://`), which says "the signature of SHA256SUMS: ok (cosign, ...)", then "already installed" on a second run. `release.yml` found each asset.
 
 **Partial (2026-11-16).** podvm takes podcrates `v0.63.0` (the tag of the crates of `Cargo.toml`); its core differs from `v0.61.0` in one case: a copy with no pins says that it is not compared with `SHA256SUMS`. `scripts/install/core.sh`, `core-net.sh` and `pins.py` are those of `v0.63.0`. `scripts/install/podvm.sh` includes both files of the core and sets `INST_WORKFLOW=nightly.yml`. The core then fetches the release assets `SHA256SUMS` and `SHA256SUMS.sigstore.json`, and runs `cosign verify-blob --bundle` with the identity `https://github.com/PodUtils/podvm/.github/workflows/nightly.yml@refs/tags/vVERSION` (as `crates/podvm-release/src/identity.rs`) and the issuer `https://token.actions.githubusercontent.com`. The publish job of `nightly.yml` checks the SHA-256 of the three core files, stamps the installer from the sums of the binaries, and writes `SHA256SUMS` of the binaries, the installer and the bundle (in place of `podvm-SHA256SUMS`). It installs from the bundle twice, refuses a run whose ref is not `refs/tags/vVERSION`, and signs `SHA256SUMS` with `cosign sign-blob --bundle SHA256SUMS.sigstore.json`. The check of the signature must pass, and must fail on a changed copy and on the identity of `main`. Then the published installer installs from `dist` (`PODVM_MIRROR=file://`) with `cosign`, and a second run changes nothing. The release attaches both files, and `release.yml` checks them with the installer, the bundle and their `.sigstore`.
 
