@@ -332,6 +332,6 @@
 440 issue closed
 441 issue closed
 442 issue open
-443 issue open
+443 issue closed
 444 issue open
 445 issue open

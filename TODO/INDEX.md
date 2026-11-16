@@ -586,10 +586,12 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1921](probe.md) | P1 | S | none | probe | done | `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM |
 | [T-1922](machine.md) | P1 | M | none | machine | partial | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
 | [T-1923](probe.md) | P1 | S | none | probe | done | The namespace rung is taken through a user namespace where `chroot` is refused there |
+| [T-1924](net.md) | P2 | S | none | net | open | `podvm lab run --way-out` for a live lane in a network class |
+| [T-1925](cli.md) | P2 | M | none | cli | open | The installer takes the core of podcrates `v0.61.0`: `core-net.sh` and the signature of `SHA256SUMS` |
 
 ## Counts
 
-520 entries: 6 open, 17 partial, 2 blocked, 495 done.
+522 entries: 8 open, 17 partial, 2 blocked, 495 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -600,9 +602,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 210 | 215 |
-| P2 | 4 | 8 | 2 | 169 | 183 |
+| P2 | 6 | 8 | 2 | 169 | 185 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 6 | 17 | 2 | 495 | 520 |
+| **All** | 8 | 17 | 2 | 495 | 522 |
 
 ## Work order
 

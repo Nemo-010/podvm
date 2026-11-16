@@ -26,35 +26,9 @@ pub mod report;
 pub mod select;
 
 pub use pod_hostprobe::{
-    binfmt, cgroup, child, identity, interp, machine, mounts, supervise, sys, verdict, writable,
-    Findings, Settings,
+    binfmt, cgroup, child, identity, interp, machine, mounts, probes, supervise, sys, verdict,
+    writable, Findings, Settings,
 };
-
-/// The probes of `pod-hostprobe`, with one answer of podvm's own.
-///
-/// TODO/probe.md T-1921: since podcrates `v0.59.0` (podcrates@T-744) the
-/// table holds the row [`USERNS_CHROOT`](pod_hostprobe::probes::USERNS_CHROOT),
-/// `chroot(/tmp)` inside a user namespace of the probe. The crate's
-/// `chroot_usable` takes each row whose name starts with `chroot(`, so on a
-/// host that refuses `chroot` to the caller but opens a user namespace it
-/// said yes, and `exec` ran the chroot sequence into `EPERM`. The function
-/// here shadows the crate's and reads the caller's own row only, until
-/// podcrates fixes it (COORD-150).
-pub mod probes {
-    pub use pod_hostprobe::probes::*;
-
-    /// The row of `chroot(2)` for the caller itself, outside any namespace.
-    pub const HOST_CHROOT: &str = "chroot(/tmp)";
-
-    /// Whether the caller itself can `chroot`: the row [`HOST_CHROOT`] with
-    /// an `Ok` verdict, and no other row.
-    pub fn chroot_usable(findings: &crate::Findings) -> bool {
-        findings
-            .rows
-            .iter()
-            .any(|(n, out)| *n == HOST_CHROOT && matches!(out.verdict, crate::verdict::Verdict::Ok))
-    }
-}
 
 /// The private argument a probe child is re-executed with.
 ///
@@ -70,6 +44,9 @@ pub fn settings() -> Settings {
         child_flag: CHILD_FLAG.to_string(),
         child_name: "podvm".to_string(),
         directory_setting: Some("$PODVM_STORE".to_string()),
+        // podcrates `v0.61.0` (podcrates@T-751): the rows that send a packet
+        // out stay off; podvm's probe sends nothing past the host.
+        network: None,
     }
 }
 
@@ -128,7 +105,8 @@ mod tests {
     }
 
     /// TODO/probe.md T-1921: the leg in a user namespace is not the
-    /// caller's `chroot`.
+    /// caller's `chroot` (podcrates@T-758 in `v0.61.0`; podvm held a
+    /// shadow of the function before).
     #[test]
     fn chroot_usable_reads_the_callers_own_row_only() {
         use verdict::Outcome;
@@ -139,7 +117,7 @@ mod tests {
             self_exe: String::new(),
         };
         let leg = probes::USERNS_CHROOT;
-        let host = probes::HOST_CHROOT;
+        let host = probes::CHROOT;
         assert!(
             probes::find(host).is_some(),
             "the crate has the row {host:?}"

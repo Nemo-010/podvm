@@ -7,7 +7,7 @@ start.
 
 ## State
 
-520 entries: 6 open, 17 partial, 2 blocked, 495 done.
+522 entries: 8 open, 17 partial, 2 blocked, 495 done.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
@@ -24,12 +24,12 @@ The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
   dispatches each workflow. A newer push cancels the gate of an older
   commit. The issue `[gh action] requested` is the fallback only
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.60.0` (since `v0.59.0`, `aa281ba7`):
-  `Plan::volumes` of pod-enter, and the row `chroot(/tmp) in
-  unshare(NEWUSER+maps)` of pod-hostprobe, whose `chroot_usable` podvm
-  shadows until COORD-150 (#443) is answered (T-1921). podvm takes
-  `v0.60.0` (PodUtils/podcrates#206) on 2026-11-16, with no change of its
-  code.
+* podvm takes the crates of PodUtils/podcrates at `v0.61.0`
+  (PodUtils/podcrates#209): `Plan::volumes` of pod-enter, the row
+  `chroot(/tmp) in unshare(NEWUSER+maps)` of pod-hostprobe, and its
+  `chroot_usable` fixed for COORD-150 (#443, T-1921). The way out of a
+  network lab (T-1924) and the installer core of `v0.61.0` (T-1925) are
+  open.
   A change of moved code goes to podcrates as a COORD issue.
 * KVM is free (the owner, 2026-11-09). The cloud host has no `/dev/kvm`;
   `kvm.yml` (T-1682) gives a hosted runner with it, and `arm.yml` a

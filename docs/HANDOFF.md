@@ -22,11 +22,10 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.60.0` (no adoption patch for podvm; the
-  build, clippy, the unit tests and the uid-1000 suite pass; COORD-152,
-  #445). podvm shadows `chroot_usable` of
-  pod-hostprobe in `podvm-probe` (T-1921) until COORD-150 (#443) is
-  answered.
+* podcrates is taken up to `v0.61.0` (PodUtils/podcrates#209), which
+  fixes `chroot_usable` (COORD-150, #443, closed): podvm's shadow is gone.
+  The way out of a network lab (T-1924) and the installer core of the tag
+  (T-1925) are open entries.
 * The record is in the format of `pod-todo`. `podvm-count` writes the
   rows and the counts of `TODO/INDEX.md`; edit the count line of
   `TODO/PROGRESS.md` by hand to the numbers that it prints.
@@ -59,11 +58,9 @@ file when each step below is done.
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
 2. A new ask of a peer first: watch #444 (podrunner's stderr with
-   beta.25), #439 and #442 (podrunner confirms the binds), #443
-   (podcrates answers COORD-150; then take the tag, remove the shadow in
-   `crates/podvm-probe/src/lib.rs`, and close T-1921's COORD).
-3. Close COORD-152 (#445, the take of `v0.60.0`) when podcrates reads
-   it.
+   beta.25), #439 and #442 (podrunner confirms the binds).
+3. Close COORD-152 (#445) and COORD-153 (the takes of `v0.60.0` and
+   `v0.61.0`) when podcrates reads them.
 4. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
    the real error of Setup.

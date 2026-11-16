@@ -715,3 +715,32 @@ A profile that a host cannot hold is refused by name, part by part; a lab never 
 **Partial (2026-11-15).** The host form, as PodUtils/podrunner#182 asks before the crate (`crates/podvm/src/lab/host.rs`, `host/probe.rs`): `podvm lab profiles`, `podvm lab run PROFILE[,PROFILE...] -- CMD` and `podvm lab check PROFILE[,...]` for `bind-denied` (a seccomp filter: `bind` and `connect` with the length of a `sockaddr_in` or `sockaddr_in6` give EACCES; a filter cannot read the family, so an `AF_UNIX` path of exactly 13 or 25 bytes is refused too), `getsockname-denied` (EOPNOTSUPP), `userns-off` (`unshare` and `clone` with `CLONE_NEWUSER` give EPERM, `clone3` ENOSYS), `small-tmp` and `noexec-tmp` (a user and a mount namespace that keep the ids, a tmpfs of 1 GiB on `/tmp`, `TMPDIR=/tmp`), and `inherited-fds` (3 to 20 open with no `FD_CLOEXEC`). The rules compile with `pod_confine::deny::program`. `check` runs podvm's own probe in the lab through `/proc/self/exe`. Where the host refuses a user namespace, `small-tmp` refuses by name with exit 125 (measured under the `deny-unshare` fixture). Evidence (kernel 6.18, uid 1000): `experiments/462-lab-profiles.sh` PASS (`experiments/results/lab-profiles.txt`): each part of the six profiles holds, the control outside a lab does not hold, `unshare -Ur true` fails in `userns-off`, a copy of `true` in `/tmp` exits 126 in `noexec-tmp`. Remaining: the guest form (`--podvm-lab PROFILE` of the machine tier) and the profiles as data of `pod-lab`, after the tag of podcrates that carries part 1 (the blocker above).
 
 **Partial (2026-11-15, pod-lab).** podvm takes podcrates `v0.54.0` (COORD-113, PodUtils/podcrates#188) and its `pod-lab` (podcrates@T-692 part 1): `podvm lab profiles`, `run` and `check` now take the 16 profiles of its table, its check against the rows of `pod-hostprobe`, and its run, which sets each part, checks the profile from inside the lab, and only then runs CMD (`crates/podvm/src/lab/host.rs`; podvm's own seccomp rules and probe left). podvm gives it its probe children and a lab flag of its own (`--podvm-lab-process`, from `userns::enter_if`, first in `main`), and keeps the list of profiles: a list runs as nested labs, with each profile of a tmpfs outermost (an outer `userns-off` refused the user namespace of an inner `small-tmp` with EPERM). Changed for a caller: `check` measures this host (0 holds, 1 fails, 3 unseen); `inherited-fds` holds descriptors 3 to 9. `experiments/462-lab-profiles.sh` PASS as uid 1000 (`experiments/results/lab-profiles.txt`): the six profiles of PodUtils/podrunner#182 as one list run `true`; `check` of the list on the host fails with 3 parts; `unshare -Ur` fails under `userns-off`; a copy of `true` in `/tmp` exits 126 under `noexec-tmp`; descriptors 3 to 9 are open under `inherited-fds`. Remaining: the guest form (`--podvm-lab PROFILE` of the machine tier), part 2 of podcrates@T-692.
+
+# T-1924: `podvm lab run --way-out` for a live lane in a network class
+
+**Source:** podcrates `v0.61.0` (PodUtils/podcrates#209, podcrates@T-746)
+**Category:** net
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** open
+
+## Problem
+
+podcrates `v0.61.0` gives `pod_lab::Options::way_out`: a `CONNECT` that the rules of a network class pass, to a name that is not of the lab, goes out to the real network through the stand-in proxy, and the command never gets the proxy of the host or its credential. `podvm lab run` passes `way_out: false` and has no flag for it, so a live lane of podvm in a network class cannot reach the network. podcrates asks each project for a live lane in a network class with the way out.
+
+## Premise
+
+Only a profile with a stand-in proxy takes the way out; `pod_lab::run` refuses it for another profile.
+
+## Approach
+
+A flag `--way-out` of `podvm lab run`, passed as `Options::way_out`, with a row of the parity table and a line of the help; then a live lane of a network class with it (for example `podvm pull` of a small image through the lab).
+
+## Decision
+
+Not in the take of `v0.61.0`: a new flag needs its help, its parity row and its lane.
+
+## Prove
+
+`podvm lab run --way-out PROFILE -- podvm pull IMAGE` in a profile with a stand-in proxy exits 0, and the same with no `--way-out` fails at the `CONNECT`.

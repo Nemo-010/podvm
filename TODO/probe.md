@@ -2038,6 +2038,8 @@ A shadow in `podvm-probe` and not a change of each caller: the callers keep the 
 
 **Done (2026-11-16).** `podvm-probe` shadows `chroot_usable` with a check of the row `chroot(/tmp)` only, and `rung_why.rs` reads that row by name. Measured as uid 1000 on the cloud host: `tmpfs_exec` failed with EPERM in the chroot sequence before the change, and passes after it; `exec` of the stopped run takes the loader family. The unit test holds the leg `Ok` with the caller's row `Denied` to false.
 
+**Done, amended (2026-11-16).** podcrates answered COORD-150 with `v0.61.0` (podcrates@T-758): its `chroot_usable` reads the row `probes::CHROOT` alone. podvm takes the tag and drops its shadow; the unit test of `podvm-probe` now holds the crate's function to the same answer.
+
 # T-1923: The namespace rung is taken through a user namespace where `chroot` is refused there
 
 **Source:** `arm.yml` run 43819553294 (experiment 356, on `77a44998`)
