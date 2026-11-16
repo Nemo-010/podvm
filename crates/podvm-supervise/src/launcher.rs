@@ -98,6 +98,10 @@ fn enter_in_launcher(
     if table::memo_fd_of(&env).is_none() {
         env.push(table::memo_fd_env());
     }
+    // TODO/enter.md T-1920: the volumes that pod-enter binds on the
+    // namespace rung ride in `PODVM_BINDS`; the payload does not see it.
+    let binds = binds_of(&env);
+    env.retain(|e| !e.starts_with("PODVM_BINDS="));
     let mut plan = Plan {
         argv: container.argv.clone(),
         env: env.clone(),
@@ -127,10 +131,13 @@ fn enter_in_launcher(
                     .map(str::to_string)
             })
             .flatten(),
-        // TODO/enter.md T-1920: the volumes of a detached run on the
-        // namespace rung (pod-enter `v0.59.0`) follow; until then a volume
-        // takes the loader family (T-1761).
-        volumes: Vec::new(),
+        // TODO/enter.md T-1920: pod-enter binds them on the namespace
+        // rung (podcrates `v0.59.0`); the loader family keeps its table.
+        volumes: if container.userland_exec.is_empty() {
+            binds
+        } else {
+            Vec::new()
+        },
     };
 
     // ⭐ TODO/image.md T-0204 and T-0211. The image lock is taken here and
@@ -193,3 +200,25 @@ fn enter_in_launcher(
 
 #[cfg(test)]
 mod tests;
+
+/// The volumes of `PODVM_BINDS` (`GUEST:HOST[:ro]`, comma separated), as
+/// pod-enter binds them (TODO/enter.md T-1920).
+fn binds_of(env: &[String]) -> Vec<podvm_enter::VolumeBind> {
+    let Some(v) = env.iter().find_map(|e| e.strip_prefix("PODVM_BINDS=")) else {
+        return Vec::new();
+    };
+    v.split(',')
+        .filter_map(|p| {
+            let (guest, rest) = p.split_once(':')?;
+            let (host, read_only) = match rest.strip_suffix(":ro") {
+                Some(h) => (h, true),
+                None => (rest, false),
+            };
+            Some(podvm_enter::VolumeBind {
+                host: host.to_string(),
+                guest: guest.to_string(),
+                read_only,
+            })
+        })
+        .collect()
+}

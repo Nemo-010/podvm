@@ -187,6 +187,7 @@ pub(super) fn hostname_env(
             return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
         }
     }
+    super::binds::push_env(&o.volumes, &o.ro_volumes, userland.is_none(), env); // T-1920
     let Some(name) = o.hostname.clone() else {
         return Ok(());
     };

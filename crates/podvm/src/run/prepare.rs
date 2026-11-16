@@ -111,7 +111,6 @@ pub(crate) fn prepare(
     // ⭐ TODO/enter.md T-1411. The probe runs HERE, before the fetch, the
     // lock, the extraction and every fixup: the two-tier gate below
     // refuses now, naming what is missing, with the rootfs untouched.
-    // The machine tier returned above and never chroots.
     // `findings` is reused for the banner below, so the probe runs once.
     let findings = super::probe_cache::findings(verb, store); // T-1746
                                                               // ⭐ TODO/enter.md T-0503. The flag-specific refusal fires where the
@@ -263,9 +262,10 @@ pub(crate) fn prepare(
             a,
         )?)
     } else {
-        // T-1761, T-1920: a volume takes the loader family, but a bind in a run's userns.
+        // T-1761, T-1920: a volume takes the loader family where no bind holds it.
+        let bound = super::binds::bound(verb, o.detach, &o.volumes, &findings);
         crate::lifecycle::decide_entry_prefer(
-            (!o.volumes.is_empty() && !crate::userns::active()) || o.read_only,
+            (!o.volumes.is_empty() && !bound) || o.read_only,
             verb,
             &maps,
             &argv,

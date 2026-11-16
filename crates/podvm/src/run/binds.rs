@@ -1,0 +1,76 @@
+//! TODO/enter.md T-1920: the volumes of a detached run (`run -d`,
+//! `create`) as binds of pod-enter on the namespace rung (podcrates
+//! `v0.59.0`, `Plan::volumes`), not a path rewrite of the loader family.
+//!
+//! The record carries them in `PODVM_BINDS` (`GUEST:HOST[:ro]`, comma
+//! separated); the launcher reads them into `Plan::volumes` and drops the
+//! variable from the env of the payload.
+
+use std::sync::atomic::{AtomicBool, Ordering};
+
+/// The variable of the record.
+pub const VAR: &str = "PODVM_BINDS";
+
+static PLANNED: AtomicBool = AtomicBool::new(false);
+
+/// Does pod-enter bind the volumes of this run? A detached run or `create`
+/// of a caller outside podvm's own user namespace, where the namespace rung
+/// is reachable. A foreground run in that namespace binds them itself
+/// (`userns::bind_volumes`).
+pub(super) fn served(
+    verb: &str,
+    detach: bool,
+    volumes: &[podvm_enter::userland::Volume],
+    findings: &podvm_probe::Findings,
+) -> bool {
+    // A comma or a colon in a path cannot ride in `PODVM_BINDS`: such a
+    // volume keeps the loader family.
+    let fits = volumes
+        .iter()
+        .all(|v| !v.host.contains([',', ':']) && !v.guest.contains([',', ':']));
+    let yes = !volumes.is_empty()
+        && fits
+        && (detach || verb == "create")
+        && !crate::userns::active()
+        && crate::ladder::ns_reachable(findings);
+    PLANNED.store(yes, Ordering::Relaxed);
+    yes
+}
+
+/// Is each volume of this run a bind: podvm's own in its user namespace
+/// (`userns::bind_volumes`), or pod-enter's ([`served`])?
+pub(super) fn bound(
+    verb: &str,
+    detach: bool,
+    volumes: &[podvm_enter::userland::Volume],
+    findings: &podvm_probe::Findings,
+) -> bool {
+    crate::userns::active() || served(verb, detach, volumes, findings)
+}
+
+/// True where [`served`] planned the binds of this run.
+pub fn planned() -> bool {
+    PLANNED.load(Ordering::Relaxed)
+}
+
+/// `PODVM_BINDS` of the volumes, in `env`, where pod-enter binds them on
+/// the namespace rung of this run.
+pub(super) fn push_env(
+    volumes: &[podvm_enter::userland::Volume],
+    ro: &[String],
+    on_namespace: bool,
+    env: &mut Vec<String>,
+) {
+    env.retain(|e| !e.starts_with("PODVM_BINDS="));
+    if !planned() || !on_namespace || volumes.is_empty() {
+        return;
+    }
+    let pairs: Vec<String> = volumes
+        .iter()
+        .map(|v| {
+            let ro = if ro.contains(&v.guest) { ":ro" } else { "" };
+            format!("{}:{}{ro}", v.guest, v.host)
+        })
+        .collect();
+    env.push(format!("{VAR}={}", pairs.join(",")));
+}
