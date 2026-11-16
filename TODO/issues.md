@@ -334,7 +334,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #438 | [gh action] requested | closed (run 43775969796) | the dry run of issue-sync.yml at podcrates v0.57.0 (T-1919) |
 | #439 | COORD-147: the answer to PodUtils/podrunner#189: raw syscalls on the loader family; a volume moves a run off the namespace rung (to podrunner) | open | T-1920, T-1740 |
 | #440 | COORD-148: pod-enter: bind the volumes of a plan on the namespace rung through a user namespace (to podcrates) | open | T-1920 |
-| #441 | [gh action] requested | open | the kvm.yml run for the install of 8 GiB (T-1867) and ValidationOS (T-1350) from 1298b66a |
+| #441 | [gh action] requested | closed (run 43783602911, read into T-1867 and T-1350) | the kvm.yml run for the install of 8 GiB (T-1867) and ValidationOS (T-1350) from 1298b66a |
 | #442 | COORD-149: the answer to PodUtils/podrunner#193: Node 26 on the loader family; the microVM of a user with no root (to podrunner) | open | T-1920 |
 | #443 | COORD-150: pod-hostprobe: chroot_usable takes the row chroot(/tmp) in unshare(NEWUSER+maps) as the caller's chroot (podvm T-1921) (to podcrates) | open | T-1921 |
 
