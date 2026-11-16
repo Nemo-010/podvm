@@ -8,6 +8,14 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `podvm man --llms`, 2026-11-16
+
+Record: T-1917.
+Deployed: none yet.
+
+- `podvm man --llms` prints the whole manual as one `llms.txt`. The date
+  of `podvm man --roff` comes from `SOURCE_DATE_EPOCH` where it is set.
+
 ## 0.2.0-beta.27 (2026-11-16)
 
 ### Changed: `run -d` runs as the user of the image with no root, 2026-11-16

@@ -95,10 +95,17 @@ pub fn manual(help: &dyn Fn(&str) -> Option<String>) -> Manual {
             ..Command::default()
         });
     }
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
+    // TODO/cli.md T-1917: `SOURCE_DATE_EPOCH` of a reproducible build gives
+    // the date of the page; with none, today.
+    let now = std::env::var("SOURCE_DATE_EPOCH")
+        .ok()
+        .and_then(|v| v.trim().parse::<u64>().ok())
+        .unwrap_or_else(|| {
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0)
+        });
     Manual {
         name: "podvm".to_string(),
         version: env!("CARGO_PKG_VERSION").to_string(),

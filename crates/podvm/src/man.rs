@@ -19,7 +19,7 @@ mod model;
 use crate::parity::{self, Row, Status};
 
 pub const MAN_USAGE: &str = "\
-usage: podvm man [--no-pager | --json | --roff] [verb]
+usage: podvm man [--no-pager | --json | --roff | --llms] [verb]
 
   man            render the manual from the binary's own usage strings
                  and the parity table
@@ -27,6 +27,7 @@ usage: podvm man [--no-pager | --json | --roff] [verb]
   --no-pager     print to stdout even on a terminal
   --json         the manual as one JSON object (the model of pod-manual)
   --roff         the manual as one man(7) page
+  --llms         the whole manual as one llms.txt
 ";
 
 /// The verbs that get a command-reference section: every implemented table
@@ -184,13 +185,14 @@ fn run(args: &[String], help: &dyn Fn(&str) -> Option<String>) -> i32 {
         }
     };
     let mut no_pager = false;
-    let (mut json, mut roff) = (false, false);
+    let (mut json, mut roff, mut llms) = (false, false, false);
     let mut want: Option<&str> = None;
     for a in &args {
         match a.as_str() {
             "--no-pager" => no_pager = true,
             "--json" => json = true,
             "--roff" => roff = true,
+            "--llms" => llms = true,
             "-h" | "--help" => {
                 print!("{MAN_USAGE}");
                 return 0;
@@ -222,6 +224,11 @@ fn run(args: &[String], help: &dyn Fn(&str) -> Option<String>) -> i32 {
                  the parity table (TOOL.md section 6.8)"
         );
         return podvm_image::error::EXIT_CLI_ERROR;
+    }
+    // TODO/cli.md T-1917: the whole manual as llms.txt, with no other page.
+    if llms {
+        print!("{}", pod_manual::llms::full(&model::manual(help), &[]));
+        return 0;
     }
     // TODO/cli.md T-1917: the writers of pod-manual over the same sources.
     if json || roff {
@@ -425,5 +432,18 @@ mod tests {
         let limits = include_str!("../../../docs/limits.md");
         assert!(!limits.contains("A dynamic program and a detached"));
         assert_eq!(help_argv("prune").join(" "), "image prune");
+    }
+
+    /// TODO/cli.md T-1917: `--llms` writes the whole model as llms.txt.
+    #[test]
+    fn llms_writes_the_whole_model() {
+        let m = model::manual(&stub);
+        let t = pod_manual::llms::full(&m, &[]);
+        assert!(t.contains("podvm"), "{t}");
+        assert!(t.contains("run"), "{t}");
+        assert!(MAN_USAGE.contains("--llms"));
+        assert!(crate::parity::TABLE
+            .iter()
+            .any(|r| r.verb == "man" && r.flag == Some("--llms")));
     }
 }
