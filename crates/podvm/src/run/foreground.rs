@@ -280,6 +280,9 @@ fn run_inner(args: &[String], r: &mut super::report::Report) -> i32 {
             // T-1707: a relative program resolves against the workdir.
             let argv0 = plan.argv.first().cloned().unwrap_or_default();
             let argv0 = podvm_enter::program_in(&argv0, &plan.working_dir);
+            // TODO/supervise.md T-1786: the hold, as on the other rungs.
+            let hold = &mut fg.hold;
+            let (st, id) = (&store, fg.id.clone());
             match crate::ladder::enter_forced(
                 &root,
                 &plan,
@@ -290,6 +293,7 @@ fn run_inner(args: &[String], r: &mut super::report::Report) -> i32 {
                 &p.findings,
                 store.root(),
                 &p.record.manifest_digest,
+                &mut |pid, err| take_hold(st, &id, pid, hold, err),
                 &mut err,
             ) {
                 Ok(c) => c,

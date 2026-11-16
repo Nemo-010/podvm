@@ -4324,3 +4324,33 @@ As uid 1000: `podvm run -d IMAGE id -u` of an image with `USER 1001` logs 1001, 
 **Done (2026-11-16).** podcrates answered COORD-159 with `v0.63.0` (podcrates@T-787): where the caller is uid 0 of a user namespace that is not the initial one, pod-enter nests a user namespace with the ids of the plan after the mounts. podvm takes the tag, and a foreground `run` records and hands the ids as `run -d` does (`run/user_ns.rs`, `run/foreground.rs`); a host root (`userns::host_root`) records none, as pod-enter changes nothing for it. Measured as uid 1000 on the cloud host: a foreground `run` of an image with `USER runner` gives the payload `uid_map` `1001 0 1` (1001 over podvm's 0, which is the caller); `--user 1001` gives the same; `--user 0` gives `0 1000 1`; `run -d` gives `1001 1000 1`; as host root the map stays the host's. `crates/podvm/tests/user_ns_detached.rs` holds the detached and the foreground cases as uid 1000.
 
 **Partial (2026-11-16).** podcrates answered COORD-154 with `v0.62.0` (`Plan::userns_ids`, podcrates@T-786), and podvm takes the tag. `run -d` and `create` on the namespace rung resolve `--user`, else the image's `USER`, against the tree (`run/user_ns.rs`), record `PODVM_USERNS_IDS=UID:GID`, and the launcher gives the ids to the plan; uid 0 records nothing, and the banner no longer says that the run keeps uid 0 where the ids apply. Measured as uid 1000 on the cloud host: an image with `USER runner` (1001) gives the payload `uid_map` `1001 1000 1`; `--user 0` gives `0 1000 1`; `--user runner` and `--user 1001:1001` give 1001. The integration test `crates/podvm/tests/user_ns_detached.rs` holds the three cases as uid 1000 and skips for root. Remaining: the user namespace of a foreground `run` (T-1909, podvm's own code) still maps the caller to 0. pod-enter gives no change to a caller that is uid 0, and the payload of a foreground `run` is spawned from inside podvm's own namespace as uid 0 (measured: `run --rm --user 1001` gives `uid_map` `0 1000 1`). COORD-159 (#452) asks podcrates for a nested user namespace in that case.
+
+# T-1929: `PODVM_MODE=rundir` and `tmpfs` refuse each tree of root: the device nodes of the fixups
+
+**Source:** the proof of T-1786 (2026-11-16)
+**Category:** enter
+**Milestone:** none
+**Priority:** P3
+**Effort:** S
+**Status:** open
+
+## Problem
+
+As root, a run with `PODVM_MODE=rundir` or `PODVM_MODE=tmpfs` exits 125 before the payload, also as the first run of an image: "PODVM_MODE=rundir was forced but .../rootfs/dev/random: not a file, directory or symlink: refusing rather than staging a tree that is not the image's". Measured on the cloud host with `mirror.gcr.io/library/busybox:musl` and alpine:3.20. As uid 1000 the same modes refuse on the copy of the node. The fixups of the tree put real device nodes into `dev/` where `mknod(2)` passes, and `pod_enter::stage::copy_tree` refuses each node that is not a file, a directory or a link.
+
+## Premise
+
+`PODVM_MODE` is a switch for measurements; no user path forces these rungs. The device nodes are podvm's own, not the image's, so the refusal names the wrong cause.
+
+## Approach
+
+The staging skips the device nodes that podvm's fixups made (the set of `dev/` that the fixups record), and the staged root gets them again by the same fixups; or `copy_tree` of pod-enter recreates a character device where `mknod(2)` passes (a COORD issue to podcrates).
+
+## Decision
+
+-
+
+## Prove
+
+As root on the cloud host: `PODVM_MODE=rundir podvm run --rm IMAGE true` and `PODVM_MODE=tmpfs podvm run --rm IMAGE true` exit 0 for `mirror.gcr.io/library/busybox:musl`, and the payload reads 16 bytes from `/dev/urandom`.
+

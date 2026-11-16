@@ -1440,7 +1440,7 @@ path: its emulator ends with its own bound (T-1656).
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -1471,6 +1471,8 @@ The holder belongs to `pod-supervise`, beside its launcher: COORD-094
 During a foreground run that sleeps 10 s: `ps` lists it, `system df` counts it running, `kill` signals it, `wait` gives its code, and `stop` ends the payload within its grace
 
 ## Done
+
+**Done (2026-11-16).** The last clause: a run that `PODVM_MODE` forces through the ladder. `pod_enter::spawn_ladder` (public in podcrates `v0.63.0`) returns the child, so `ladder.rs` no longer calls `run_ladder`: `run_held` spawns, closes the copy of the memfd in the parent, gives the pid to the hold of the run (`take_hold`, as on each other rung), then waits; the forced memfd entry with no chroot does the same with `spawn_userland`. COORD-122 (#384) is answered by that function, with no change of podcrates. Measured as root on the cloud host with `PODVM_MODE=memfd` and `mirror.gcr.io/library/busybox:musl`: during `run --name fgm sleep 6`, `ps` lists `fgm Up`, `system df` says "1 (1 running)", and `wait` gives 0; `kill` of a `sleep 10` ends the run 137, and `stop -t 2` ends it 143, each in less than 0.01 s. The forced `rundir` and `tmpfs` rungs take the same function, and refuse on this host before the payload for another cause (T-1929). The ladder tests pass (`ladder::tests`, 481 unit tests of podvm).
 
 **Partial 2026-11-14.** podvm takes podcrates `v0.44.0`, whose
 `pod_supervise::foreground` holds the record of a payload that the caller

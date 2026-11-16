@@ -219,7 +219,7 @@
 327 issue closed
 328 issue closed
 329 issue closed
-330 issue open
+330 issue closed
 331 issue closed
 332 issue closed
 333 issue closed
@@ -273,7 +273,7 @@
 381 issue closed
 382 issue closed
 383 issue closed
-384 issue open
+384 issue closed
 385 issue closed
 386 issue open
 387 issue closed

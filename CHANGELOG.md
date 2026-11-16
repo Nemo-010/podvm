@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a run that `PODVM_MODE` forces is `Up` while it runs, 2026-11-16
+
+Record: T-1786 (issue 330).
+Deployed: none yet.
+
+- A foreground run on a rung that `PODVM_MODE` forces is recorded
+  running while its payload runs: `ps`, `system df`, `kill`, `wait` and
+  `stop` see it, as on each other rung.
+
 ### Fixed: `-u` with the subordinate range, and `cp` and `exec` of its trees, 2026-11-16
 
 Record: T-1911.

@@ -162,6 +162,34 @@ fn stage_rundir(
     Ok(dir)
 }
 
+/// The hold of a foreground run (TODO/supervise.md T-1786): called with
+/// the pid of the payload after the spawn and before the wait.
+pub(crate) type OnPid<'a> = &'a mut dyn FnMut(i64, &mut dyn Write);
+
+/// `run_ladder` with the pid of the payload before its wait, so that the
+/// record of the run reads `Running` (TODO/supervise.md T-1786, COORD-122).
+/// The copy of the memfd in the parent closes after the spawn, on each
+/// path, as `run_ladder` closes it.
+fn run_held(
+    root: &RootDir,
+    plan: &Plan,
+    mode: Mode,
+    fd: Option<i64>,
+    on_pid: OnPid,
+    err: &mut dyn Write,
+) -> podvm_enter::Result<i32> {
+    let r = podvm_enter::spawn_ladder(root, plan, mode, fd, err);
+    if let Some(f) = fd {
+        use std::os::fd::FromRawFd as _;
+        // SAFETY: the memfd of the parent is this function's to close; the
+        // child holds its own copy.
+        drop(unsafe { std::os::fd::OwnedFd::from_raw_fd(f as i32) });
+    }
+    let child = r?;
+    on_pid(child.pid, err);
+    child.wait_forwarding(err)
+}
+
 /// Enter a caller-staged directory rung and clean up behind it. `keep`
 /// leaves the tree (the cache rung's persistence); otherwise the staged
 /// root goes when the payload exits, on success and on failure alike.
@@ -170,12 +198,13 @@ fn enter_staged(
     plan: &Plan,
     mode: Mode,
     keep: bool,
+    on_pid: OnPid,
     err: &mut dyn Write,
 ) -> podvm_enter::Result<i32> {
     let staged_str = staged.to_string_lossy().into_owned();
     let code = (|| {
         let staged_root = RootDir::open(&staged_str)?;
-        podvm_enter::run_ladder(&staged_root, plan, mode, None, err)
+        run_held(&staged_root, plan, mode, None, on_pid, err)
     })();
     if !keep {
         let _ = std::fs::remove_dir_all(staged);
@@ -211,6 +240,7 @@ pub(crate) fn enter_forced(
     findings: &Findings,
     store_root: &std::path::Path,
     cache_digest: &str,
+    on_pid: OnPid,
     err: &mut dyn Write,
 ) -> podvm_enter::Result<i32> {
     let mut memfd_up = false;
@@ -249,7 +279,7 @@ pub(crate) fn enter_forced(
                     let fd = memfd::stage_file(payload.file())?;
                     // A forced rung serves no volume (the refusal of
                     // TODO/enter.md T-1653), so the table is the root pair.
-                    return podvm_enter::run_userland(
+                    let child = podvm_enter::spawn_userland(
                         root,
                         plan,
                         &podvm_enter::userland::Maps::of_root(rootfs),
@@ -258,6 +288,14 @@ pub(crate) fn enter_forced(
                         Some(fd),
                         err,
                     );
+                    {
+                        use std::os::fd::FromRawFd as _;
+                        // SAFETY: as in run_held: the copy of the parent.
+                        drop(unsafe { std::os::fd::OwnedFd::from_raw_fd(fd as i32) });
+                    }
+                    let child = child?;
+                    on_pid(child.pid, err);
+                    return child.wait_forwarding(err);
                 }
                 None => {
                     return Err(podvm_enter::runtime(format!(
@@ -284,7 +322,7 @@ pub(crate) fn enter_forced(
         match staged {
             Some(payload) => {
                 let fd = memfd::stage_file(payload.file())?;
-                podvm_enter::run_ladder(root, plan, Mode::Memfd, Some(fd), err)
+                run_held(root, plan, Mode::Memfd, Some(fd), on_pid, err)
             }
             // Admission staged the bytes it chose on. Reaching here means the
             // choice and the staging disagreed, which is a defect rather than
@@ -300,7 +338,7 @@ pub(crate) fn enter_forced(
         ladder::resolve_payload(rootfs, argv0, path_dirs)
             .map_err(|e| podvm_enter::runtime(format!("PODVM_MODE=rundir was forced but {e}")))?;
         let staged = stage_rundir(store_root, rootfs)?;
-        enter_staged(&staged, plan, Mode::RunDir, false, err)
+        enter_staged(&staged, plan, Mode::RunDir, false, on_pid, err)
     } else if chosen == Mode::Cache {
         // ⭐ TODO/packaging.md T-1003. The persistent per-image root:
         // copied once under the digest, reused while its marker names
@@ -312,7 +350,7 @@ pub(crate) fn enter_forced(
                 .map_err(|r| {
                     podvm_enter::runtime(format!("PODVM_MODE=cache was forced but {r}"))
                 })?;
-        enter_staged(&staged, plan, Mode::Cache, true, err)
+        enter_staged(&staged, plan, Mode::Cache, true, on_pid, err)
     } else if chosen == Mode::Tmpfs {
         // ⭐ TODO/packaging.md T-1003. The ephemeral per-run root: resolved
         // first (no rung runs what nothing resolved), mounted and staged
@@ -326,7 +364,7 @@ pub(crate) fn enter_forced(
         let staged_str = staged.to_string_lossy().into_owned();
         let code = (|| {
             let staged_root = RootDir::open(&staged_str)?;
-            podvm_enter::run_ladder(&staged_root, plan, Mode::Tmpfs, None, err)
+            run_held(&staged_root, plan, Mode::Tmpfs, None, on_pid, err)
         })();
         podvm_enter::stage::release_tmpfs(&staged);
         code
@@ -344,7 +382,7 @@ pub(crate) fn enter_forced(
         let mounted_str = mounted.dir.to_string_lossy().into_owned();
         let code = (|| {
             let mounted_root = RootDir::open(&mounted_str)?;
-            podvm_enter::run_ladder(&mounted_root, plan, Mode::Fuse, None, err)
+            run_held(&mounted_root, plan, Mode::Fuse, None, on_pid, err)
         })();
         podvm_enter::fuse::release_mount(&mounted);
         code

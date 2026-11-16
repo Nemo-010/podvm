@@ -460,7 +460,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1783](cli.md) | P2 | S | none | cli | done | Nine verbs print a usage error to stdout |
 | [T-1784](interpose.md) | P2 | S | none | interpose | done | The honest refusal of an identity call says that the payload runs as uid 0 |
 | [T-1785](interpose.md) | P3 | S | none | interpose | done | The notice of `--user` repeats in each process of a run |
-| [T-1786](supervise.md) | P1 | M | none | supervise | partial | A foreground run is recorded `Created` while its payload runs |
+| [T-1786](supervise.md) | P1 | M | none | supervise | done | A foreground run is recorded `Created` while its payload runs |
 | [T-1787](image.md) | P2 | S | none | image | done | `system df` misses the trees and the extractions that no image names, and no verb removes the latter |
 | [T-1800](supervise.md) | P0 | S | none | supervise | done | `ps` aborts with SIGABRT when a command has a multibyte character at byte 17 |
 | [T-1801](cli.md) | P0 | S | none | cli | done | `--report` after the image is read as podvm's, so a payload argument overwrites a host file |
@@ -591,10 +591,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1926](enter.md) | P1 | S | none | enter | done | `run -d --hostname` refuses on the namespace rung that pod-enter enters |
 | [T-1927](enter.md) | P1 | M | none | enter | done | On the namespace rung of a user with no root, the payload is uid 0 of a one-uid namespace, not the user of the image |
 | [T-1928](interpose.md) | P0 | S | none | interpose | done | A payload that closes descriptor 17 and opens a file there gets the ownership memo read and written on that file |
+| [T-1929](enter.md) | P3 | S | none | enter | open | `PODVM_MODE=rundir` and `tmpfs` refuse each tree of root: the device nodes of the fixups |
 
 ## Counts
 
-525 entries: 6 open, 16 partial, 2 blocked, 501 done.
+526 entries: 7 open, 15 partial, 2 blocked, 502 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -604,10 +605,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
-| P1 | 0 | 4 | 0 | 213 | 217 |
+| P1 | 0 | 3 | 0 | 214 | 217 |
 | P2 | 4 | 8 | 2 | 171 | 185 |
-| P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 6 | 16 | 2 | 501 | 525 |
+| P3 | 3 | 4 | 0 | 42 | 49 |
+| **All** | 7 | 15 | 2 | 502 | 526 |
 
 ## Work order
 

@@ -169,6 +169,7 @@ fn a_forced_rundir_over_a_missing_payload_names_it() {
         &usable,
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
@@ -241,6 +242,7 @@ fn a_forced_tmpfs_over_a_missing_payload_names_it() {
         &usable,
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
@@ -293,6 +295,7 @@ fn a_forced_fuse_over_a_missing_payload_names_it() {
         &usable,
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
@@ -346,6 +349,7 @@ fn a_forced_fuse_rung_without_chroot_names_the_denial() {
         &denied,
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
@@ -394,6 +398,7 @@ fn a_forced_memfd_over_a_missing_payload_names_it() {
         &Findings::empty(),
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
@@ -443,6 +448,7 @@ fn a_forced_memfd_over_a_script_refuses_naming_both() {
         &Findings::empty(),
         &store,
         "sha256:test",
+        &mut |_, _| {},
         &mut sink,
     )
     .unwrap_err();
