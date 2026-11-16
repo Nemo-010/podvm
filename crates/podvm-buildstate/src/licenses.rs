@@ -87,6 +87,20 @@ fn main() {
         if let Some(file) = &package.licence_file {
             texts.push(source.join(file));
         }
+        // A member of a Cargo workspace with `license.workspace = true` can
+        // ship no text of its own (pod-qga 0.63.0): the text of the
+        // workspace root is its text, and the copy is checked against that
+        // root.
+        let mut source = source;
+        if texts.is_empty()
+            && let Some(ws) = workspace_root(&source)
+        {
+            if let Err(e) = gather_texts(&ws, &mut texts) {
+                fail(e);
+            }
+            texts.retain(|t| t.parent() == Some(ws.as_path()));
+            source = ws;
+        }
         if texts.is_empty() {
             fail(format!("no retained licence text: {name} {version}"));
         }
@@ -151,6 +165,17 @@ fn main() {
         "release-licenses: retained texts for {} locked registry packages",
         records.len()
     );
+}
+
+/// The nearest directory above `dir` whose `Cargo.toml` declares a
+/// `[workspace]`.
+fn workspace_root(dir: &std::path::Path) -> Option<PathBuf> {
+    dir.ancestors().skip(1).take(4).find_map(|d| {
+        let text = fs::read_to_string(d.join("Cargo.toml")).ok()?;
+        text.lines()
+            .any(|l| l.trim() == "[workspace]")
+            .then(|| d.to_path_buf())
+    })
 }
 
 #[cfg(test)]
