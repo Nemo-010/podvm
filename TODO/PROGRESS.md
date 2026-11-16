@@ -24,11 +24,12 @@ The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
   dispatches each workflow. A newer push cancels the gate of an older
   commit. The issue `[gh action] requested` is the fallback only
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.59.0` (`aa281ba7`):
+* podvm takes the crates of PodUtils/podcrates at `v0.60.0` (since `v0.59.0`, `aa281ba7`):
   `Plan::volumes` of pod-enter, and the row `chroot(/tmp) in
   unshare(NEWUSER+maps)` of pod-hostprobe, whose `chroot_usable` podvm
-  shadows until COORD-150 (#443) is answered (T-1921). `v0.60.0` is out
-  (PodUtils/podcrates#206) and not taken yet.
+  shadows until COORD-150 (#443) is answered (T-1921). podvm takes
+  `v0.60.0` (PodUtils/podcrates#206) on 2026-11-16, with no change of its
+  code.
   A change of moved code goes to podcrates as a COORD issue.
 * KVM is free (the owner, 2026-11-09). The cloud host has no `/dev/kvm`;
   `kvm.yml` (T-1682) gives a hosted runner with it, and `arm.yml` a

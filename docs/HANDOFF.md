@@ -22,7 +22,9 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.59.0`. podvm shadows `chroot_usable` of
+* podcrates is taken up to `v0.60.0` (no adoption patch for podvm; the
+  build, clippy and the unit tests pass; the uid-1000 suite of the take
+  ran in the session that took it). podvm shadows `chroot_usable` of
   pod-hostprobe in `podvm-probe` (T-1921) until COORD-150 (#443) is
   answered.
 * The record is in the format of `pod-todo`. `podvm-count` writes the
@@ -60,8 +62,8 @@ file when each step below is done.
    beta.25), #439 and #442 (podrunner confirms the binds), #443
    (podcrates answers COORD-150; then take the tag, remove the shadow in
    `crates/podvm-probe/src/lib.rs`, and close T-1921's COORD).
-3. Take podcrates `v0.60.0` (PodUtils/podcrates#206), with the
-   `adoption/podvm` files of the tag.
+3. Write the take of `v0.60.0` to podcrates as a COORD issue `(to
+   podcrates)` (`AGENTS.md`, section 9, item 4).
 4. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
    the real error of Setup.
