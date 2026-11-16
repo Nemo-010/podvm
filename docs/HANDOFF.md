@@ -1,8 +1,8 @@
 # Handoff
 
-The state on 2026-11-16, 11:40 (UTC). `main` is at the commit that adds
-this file. `0.2.0-beta.26` is the last release (release run 43848648491
-on `17862c8f`). A fresh session with no memory reads this file first,
+The state on 2026-11-16, 12:45 (UTC). `main` is at the commit that adds
+this file. `0.2.0-beta.27` is the last release (release run 43856299505
+on `290c4de2`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
 file when each step below is done.
 
@@ -43,14 +43,16 @@ file when each step below is done.
 
 ## Done in this session
 
-* Released `0.2.0-beta.25` (T-1920, T-1921, T-1923) and `0.2.0-beta.26`
-  (T-1928, T-1926, the message of T-1922).
+* Released `0.2.0-beta.25` (T-1920, T-1921, T-1923), `0.2.0-beta.26`
+  (T-1928, T-1926, the message of T-1922) and `0.2.0-beta.27` (T-1927).
+* T-1917 partial: `podvm man --llms`, and the date of the page from
+  `SOURCE_DATE_EPOCH`; the assets of `release.yml` remain.
 * T-1928 (P0): a program that reused descriptor 17 got the ownership memo
   read and written on its own file (Node under npm 6 read empty files).
   The host hands `PODVM_MEMO_ID`, and the interposer checks it.
 * T-1926: `run -d --hostname` keeps the name on the namespace rung.
 * T-1927 partial: `run -d` and `create` run as the image's `USER` or
-  `--user` inside the user namespace (on `main`, not released).
+  `--user` inside the user namespace (beta.27).
 * T-1922 partial: experiment 463 shows that neither a user with no root
   nor a root of 300 MiB stops the machine tier; beta.26 names why podvm
   stopped waiting, the time and the initrd. COORD-158 (#451) asks
@@ -68,8 +70,7 @@ file when each step below is done.
    user of the image: write the tag of T-1927 there with the next beta),
    #439, #442 and #444 (older answers to podrunner; close each when
    podrunner confirms).
-3. Release the next beta for T-1927 (`run -d` as the image's `USER`) when
-   it fits. The rest of T-1927 (a foreground `run`) waits for COORD-159
+3. T-1927 is in beta.27 (#448 names the tag). The rest of T-1927 (a foreground `run`) waits for COORD-159
    (#452): pod-enter changes nothing for a caller that is uid 0, which a
    foreground `run` is inside podvm's own namespace.
 4. Close COORD-152, COORD-153 and COORD-156 (#445, #446, #449, the takes of

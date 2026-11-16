@@ -11,14 +11,14 @@ start.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.26` (2026-11-16, release run
-  43848648491 on `17862c8f`; the gate 43845754849, `arm.yml` 43845775404
-  and the nightly trial 43845760609 passed first): T-1928 (descriptor 17
-  and the ownership memo, PodUtils/podrunner#197), T-1926 (`run -d
-  --hostname`) and the message of the machine tier (T-1922). `release.yml`
-  needs a successful gate run on its commit; dispatch `nightly.yml` with
-  `trial=true` and `arm.yml` on `main` first, and push nothing to `main`
-  until the release run ends (call C22).
+* The newest release is `v0.2.0-beta.27` (2026-11-16, release run
+  43856299505 on `290c4de2`; the gate 43854288965, `arm.yml` 43854294082
+  and the nightly trial 43854299624 passed first): T-1927 (`run -d` and
+  `create` as the image's `USER`) and podcrates `v0.62.0`. Before it,
+  `v0.2.0-beta.26` (T-1928, T-1926). `release.yml` needs a successful gate
+  run on its commit; dispatch `nightly.yml` with `trial=true` and
+  `arm.yml` on `main` first, and push nothing to `main` until the release
+  run ends (call C22).
 * GitHub Actions works again for a cloud session (2026-11-16): a push
   starts the gate, `secrets` and `issue-sync`, and `actions_run_trigger`
   dispatches each workflow. A newer push cancels the gate of an older
