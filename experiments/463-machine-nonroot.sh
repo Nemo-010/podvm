@@ -21,7 +21,11 @@
 #   2. as a new user through `sudo -u`, with a fresh HOME and its own store,
 #      the same command exits 0;
 #   3. as that user, with --podvm-mem 1G, it exits 0;
-#   4. no emulator stays after the runs.
+#   4. no emulator stays after the runs;
+#   5. an image with a root of about 300 MiB (PodUtils/podrunner#198: the
+#      runner image of podrunner, 293 MiB, ends before the command for the
+#      lab user) boots with --podvm-mem 4G, as the user of the runner and
+#      as the new user. Skipped with no docker, which builds its tar.
 # Each failed clause keeps its stderr, the limits of the user, and the end
 # of the kernel log in the transcript.
 
@@ -85,6 +89,36 @@ for mem in 4G 1G; do
 	[ "$rc" -eq 0 ] || { bad "clause $n"; keep "$OUT.$n.err"; kernel; }
 	n=$((n + 1))
 done
+
+# Clause 5: a large root. Alpine and 300 MiB of random bytes, which no
+# compression shrinks, imported by each user into its own store.
+if command -v docker >/dev/null 2>&1 && docker pull -q alpine:3.20 >/dev/null 2>&1; then
+	BIG=$(mktemp -d /tmp/podvm-463-big.XXXXXX)
+	cid=$(docker create alpine:3.20 true)
+	docker export "$cid" >"$BIG/big.tar"
+	docker rm "$cid" >/dev/null
+	mkdir -p "$BIG/add" && head -c 314572800 /dev/urandom >"$BIG/add/blob"
+	tar -rf "$BIG/big.tar" -C "$BIG/add" blob && rm -rf "$BIG/add"
+	chmod 0755 "$BIG" && chmod 0644 "$BIG/big.tar"
+	say "big       $(du -m "$BIG/big.tar" | cut -f1) MiB tar"
+	timeout 300 "$P" import "$BIG/big.tar" big:463 >/dev/null 2>&1
+	lab timeout 300 "$P" import "$BIG/big.tar" big:463 >/dev/null 2>&1
+	start=$(date +%s)
+	timeout 900 "$P" run --verbose --rm --podvm-tier=machine --podvm-mem 4G big:463 true \
+		>/dev/null 2>"$OUT.5.err"
+	rc=$?
+	say "clause 5  rc $rc in $(($(date +%s) - start)) s (the user of the runner, a root of 300 MiB)"
+	[ "$rc" -eq 0 ] || { bad "clause 5, the user of the runner"; keep "$OUT.5.err"; kernel; }
+	start=$(date +%s)
+	lab timeout 900 "$P" run --verbose --rm --podvm-tier=machine --podvm-mem 4G big:463 true \
+		>/dev/null 2>"$OUT.6.err"
+	rc=$?
+	say "clause 5  rc $rc in $(($(date +%s) - start)) s (user $LAB through sudo, a root of 300 MiB)"
+	[ "$rc" -eq 0 ] || { bad "clause 5, user $LAB"; keep "$OUT.6.err"; kernel; }
+	rm -rf "$BIG"
+else
+	say "clause 5  skipped: no docker to build the large image"
+fi
 
 # Clause 4: nothing of a guest stays.
 if pgrep -a qemu-system >/dev/null; then

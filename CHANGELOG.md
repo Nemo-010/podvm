@@ -10,6 +10,15 @@ They describe their recorded revision, not the current build.
 
 ## 0.2.0-beta.26 (2026-11-16)
 
+### Changed: the machine tier says why it stopped waiting, 2026-11-16
+
+Record: T-1922 (PodUtils/podrunner#198).
+Deployed: version 0.2.0-beta.26.
+
+- Where the guest ends before the exit code of the payload, the message
+  also says whether the console of the emulator closed or the bound of the
+  run came, the seconds since the start, and the size of the initrd.
+
 ### Fixed: a file on descriptor 17 reads empty, 2026-11-16
 
 Record: T-1928 (PodUtils/podrunner#197).

@@ -47,7 +47,10 @@ pub(super) fn drive(
         let start = podvm_windows::machines::start_of(child.id()).unwrap_or(0);
         let _ = std::fs::write(&k.pidfile, format!("{pid} {start}\n"));
     }
-    let deadline = Instant::now() + r.timeout.unwrap_or(DEFAULT_TIMEOUT);
+    let started = Instant::now();
+    let deadline = started + r.timeout.unwrap_or(DEFAULT_TIMEOUT);
+    // PodUtils/podrunner#198: why the wait for the console ended.
+    let mut console_closed = false;
     let gone = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let errs = stderr::pump(sock.to_path_buf(), deadline, gone.clone());
     // TODO/machine.md T-1751: the host side of the channel.
@@ -126,7 +129,10 @@ pub(super) fn drive(
                     break;
                 }
             },
-            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                console_closed = true;
+                break;
+            }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => break,
         }
         if Instant::now() >= deadline {
@@ -182,7 +188,7 @@ pub(super) fn drive(
             // the one fact of the cause. On this failure it is always said.
             eprintln!(
                 "podvm {}: machine tier: the guest ended before it gave the exit code of \
-                 the payload{}; {}{}",
+                 the payload{}; {}; {}{}",
                 r.verb,
                 if Instant::now() >= deadline {
                     ", at the bound of the run"
@@ -190,6 +196,7 @@ pub(super) fn drive(
                     ""
                 },
                 ended_how(status, ready),
+                waited(started.elapsed(), console_closed, initrd_bytes(argv)),
                 if tail.is_empty() {
                     String::new()
                 } else {
@@ -210,6 +217,26 @@ pub(super) fn drive(
 
 unsafe extern "C" {
     fn kill(pid: i32, sig: i32) -> i32;
+}
+
+/// PodUtils/podrunner#198: what podvm waited for, how long, and the size
+/// of what the guest had to unpack first.
+fn waited(took: Duration, console_closed: bool, initrd: Option<u64>) -> String {
+    let why = if console_closed {
+        "the console of the emulator closed"
+    } else {
+        "the bound of the run came"
+    };
+    let size = initrd.map_or(String::new(), |b| {
+        format!(", with an initrd of {} MiB", b.div_ceil(1 << 20))
+    });
+    format!("{why} {:.1} s after the start{size}", took.as_secs_f64())
+}
+
+/// The size of the file of `-initrd` in the emulator's arguments.
+fn initrd_bytes(argv: &[String]) -> Option<u64> {
+    let at = argv.iter().position(|a| a == "-initrd")?;
+    std::fs::metadata(argv.get(at + 1)?).ok().map(|m| m.len())
 }
 
 /// The lines of the console that the message of a failed start keeps.
@@ -320,5 +347,21 @@ mod tests {
             "the emulator ended on signal 9, after the guest started the command"
         );
         assert!(ended_how(None, false).starts_with("the emulator was still running"));
+    }
+
+    /// PodUtils/podrunner#198: the wait, its time and the initrd are named.
+    #[test]
+    fn the_wait_is_named_with_its_time_and_the_initrd() {
+        use super::{initrd_bytes, waited};
+        use std::time::Duration;
+        assert_eq!(
+            waited(Duration::from_millis(2500), true, Some(300 << 20)),
+            "the console of the emulator closed 2.5 s after the start, with an initrd of 300 MiB"
+        );
+        assert_eq!(
+            waited(Duration::from_secs(600), false, None),
+            "the bound of the run came 600.0 s after the start"
+        );
+        assert_eq!(initrd_bytes(&["-m".to_string(), "512M".to_string()]), None);
     }
 }
