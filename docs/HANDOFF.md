@@ -1,87 +1,96 @@
 # Handoff
 
-The state on 2026-11-15, night. `0.2.0-beta.22` is released (request 410,
-release run 43708756057, with attestations: T-1905 done). `0.2.0-beta.23`
-waits on request 412 (`86574c96`): it fixes defects of the user-namespace
-entry of beta.22 (T-1909: a tree left by each run, placeholder `/dev`
-nodes, noise of the first extraction, a race of two fills across PID
-namespaces), adds `exec` and `cp` into such a run (T-1910) and `exec` with
-the name of `--hostname` (T-1908), and takes podcrates `v0.51.0` (the
-arm64 guest fetches its pinned kernel, T-1890). The local commits after
-`86574c96` wait in `.work/HOLD` until request 412 ran. Request 411 runs
-the Windows install in three legs (run 43709734103); its store leg failed
-in the TCG refusal step, fixed in `e69bd045`.
-A fresh
-session with no memory reads this file first, then `AGENTS.md`,
-`TODO/PROGRESS.md`, `TODO/RESUME.md` and `docs/decisions.md`. Remove this
-file when each step below is done.
+The state on 2026-11-16, 04:00 (UTC). `main` is at the commit that adds
+this file, after `ecb37294` (T-1920 done). `0.2.0-beta.24` is the last
+release. A fresh session with no memory reads this file first, then
+`AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this file
+when each step below is done.
 
 ## Where things are
 
 * The repository is PodUtils/podvm on `main`. No work lives in a local
-  worktree or a branch. The branch `archive/podbox-worktree` is an
-  archive; never merge or delete it.
-* **A cloud session cannot start a workflow run** (`TODO/PROGRESS.md`,
-  State). Each run is an issue titled `[gh action] requested` in the form
-  of `AGENTS.md`, section 9, item 5. While a request that checks the head
-  of `main` is open, push nothing to `main`. The owner's local agent ran
-  issue 287 in about 50 minutes, and it reported the run ids.
-* The record is in the format of `pod-todo` (T-1672, call C17).
-  `podvm-count --set T-NNNN STATUS` writes the status line and the row;
-  a done entry needs `## Done` with a date, and a partial entry also puts
-  its state under `## Done`. A foreign entry id carries its repository
-  (`PodUtils/podrunner@T-096`), or check 35 refuses it. A path of another
-  repository in an entry is named in words, not in backticks.
-* incus runs on the cloud host (`docs/decisions.md`, "Missing tools"). The
-  host has no `/dev/kvm`; the machine tier runs TCG there.
+  worktree, a stash or a branch. The branch `archive/podbox-worktree` is
+  an archive; never merge or delete it.
+* **A cloud session cannot start a workflow run.** Each run is an issue
+  titled `[gh action] requested` in the form of `AGENTS.md`, section 9,
+  item 5. While a request that checks the head of `main` is open, push
+  nothing to `main`. No such request is open now: #441 ran (see below).
+* The record is in the format of `pod-todo`. `podvm-count --set T-NNNN
+  STATUS` writes the status line and the row; edit the count line of
+  `TODO/PROGRESS.md` by hand to the numbers that it prints. The first
+  paragraph of `## Done` of a done entry starts with `**Done`.
+* podcrates is taken up to `v0.59.0` (`Plan::volumes` of pod-enter).
+* incus runs on the cloud host. The host has no `/dev/kvm`.
+* Integration tests run as uid 1000: `setpriv --reuid 1000 --regid 1000
+  --clear-groups env HOME=$T TMPDIR=$T PATH=$PATH
+  CARGO_MANIFEST_DIR=$PWD/crates/podvm TESTBIN`, with `T` a new directory
+  under `/var/tmp` with mode 777. Root hides defects of the user
+  namespace.
 
-## The QA pass
+## Done in the last session
 
-Experiment 443 (`experiments/443-qa-surface.sh`) drives the CLI on the
-namespace rung and on the chroot-denied fixture (`ul`). The first pass
-gave 518 PASS and 64 FAIL, and T-1753 to T-1771; the reruns found T-1772
-to T-1775. One full run on the published `v0.2.0-beta.14` (2026-11-14) gives 583
-PASS, 0 FAIL and 13 INFO, with no merge of earlier runs.
+* T-1920 done (`ecb37294`): `run -d` and `create` bind each volume through
+  pod-enter's `Plan::volumes` and keep the namespace rung
+  (`crates/podvm/src/run/binds.rs`, `PODVM_BINDS` in the record, read by
+  `crates/podvm-supervise/src/launcher.rs`). COORD-148 (#440) is closed.
+* T-1747 done (cgroup2 limits), T-1912 done, T-1907 done, the installer
+  (T-1918) and `podvm lab run --allow-connect` are on `main`.
 
-## Open COORD issues
+## Open defect: `tmpfs_exec` fails on `main` (first task)
 
-* COORD-041 (#260): `pod-netlab` for T-1662.
-* COORD-112 (#366): the answer to PodUtils/podrunner#102 (T-1889, T-1890).
-* COORD-117 (#374): podvm took podcrates `v0.48.0`.
-* COORD-120 (#380): podvm took `v0.49.0`; a Validation OS run under KVM
-  timed out on one cold boot of two (T-1864); it did not recur.
-* COORD-122 (#384): the hook of the run ladder for T-1786.
-* COORD-123 (#386): a FAT writer with directories for `-v` of a Windows
-  guest (T-1872).
-* COORD-124 (#389): `pod-services` lists `api.ghcr.pkgforge.dev` (T-1875);
-  until then the host is in `WAITING` of `crates/podvm/src/hosts_tests.rs`.
-* COORD-125 (#390): a leg of `pod-hostprobe` for a delegated cgroup2
-  subtree (T-1747).
-* COORD-127 (#393): a client of the QEMU Guest Agent (T-1868).
-* COORD-128 (#394): the aarch64 netboot pins in `pod-services` (T-1890).
-* COORD-131 (#404): the answer to PodUtils/podrunner#115 (`--hostname`).
-* COORD-132 (#406): the user namespace in pod-enter, for `run -d` and
-  `create` (T-1909 serves the foreground `run` in podvm).
-* COORD-133 (#407): the `kvm` leg of `pod-hostprobe` checks the
-  architecture of the guest (T-1907).
+The integration test `crates/podvm/tests/tmpfs_exec.rs` fails as uid 1000
+on `ac370178` and on `ecb37294`. It passed on `aa281ba7` (the take of
+`v0.59.0`) in the full suite, so the cause is likely in `aa281ba7` (the
+podcrates `v0.59.0` update), in `21a607fd`, or in the state of the host.
+Measured: `-` (bisect not done).
 
-Each other COORD issue is closed; `TODO/issues.md` gives the state of
-each one.
+Reproduce as uid 1000: `echo run | podvm run -i --name ty
+busybox:1.37.0-musl tee /tmp/x`, then `podvm exec ty cat /tmp/x` gives
+"chroot into the rootfs failed with EPERM", exit 125. The run records
+`"Rung":"namespace"` (foreground `run` enters podvm's own user namespace,
+T-1909). `exec` of the stopped run is not in that namespace. Its probe
+gives `chroot=EPERM`, and its `--verbose` banner says `mode=chroot` and
+"this machine would permit `namespace`", but `decide_entry` gives no
+userland family and the chroot sequence runs. Read
+`crates/podvm/src/exec/enter.rs` (lines 100 to 170, 410 to 440) and
+`crates/podvm/src/lifecycle/entry.rs` (`chroot_ok_for`,
+`decide_entry_prefer`). The fix probably is: `exec` of a run that is not
+running, on a host where `chroot` is refused but the user-namespace leg
+passes, enters through a user namespace (as `run` does), or takes the
+userland family. Record it as a new entry with the Source "integration
+test tmpfs_exec". The test `completion_reach` is flaky (known).
+
+## kvm run 43783602911 (request #441)
+
+The cgroup, Linux guest and aarch64 jobs pass. The ValidationOS job fails
+again (T-1350, intermittent; its log tail shows only the clean-up; read
+the artifact `kvm-windows-transcript`). Both Windows install legs fail:
+`ubuntu-qemu` (4 GiB) and `ubuntu-qemu-8g` (8 GiB, 4 CPUs) (T-1867). Read
+their logs and the step "the logs of Setup", record the result in T-1867
+and T-1350, then close #441 with the evidence. The owner's agent wrote
+the result as comment 6906673035 on #441.
 
 ## Next steps, in order
 
-1. Start the session (`AGENTS.md`, section 8).
-2. Request 412 releases beta.23. Push nothing to `main` until it ran;
-   then push the held commits, record the run ids, and close 412.
-3. Run 43709734103 (request 411): read the screenshots of the legs
-   `ubuntu-qemu` and `no-hyperv` (`gh api
-   repos/PodUtils/podvm/actions/artifacts/ID/zip`). The leg that passes
-   names the cause of the stall at "56% complete"; record it in T-1867.
-   The store leg needs a new run (its step was fixed after the dispatch).
-4. A tool of the record (`podvm-gate`, `podvm-count`) finds the repository
-   from its own path: in a worktree, build it in the worktree's own
-   `target/`, or it reads and writes the main checkout. Commit no
-   symbolic link: issue 305 stopped on one.
-5. Before an entry is set done, run `cargo test -p podvm`. Do not edit
-   `TODO/` while `cargo test --workspace` runs, and do not edit
-   `experiments/443-qa-surface.sh` while it runs.
+1. Start the session (`AGENTS.md`, section 8), with the watcher.
+2. Fix `tmpfs_exec` (above). Run the whole uid-1000 suite before the push.
+3. Read run 43783602911; update T-1867 and T-1350; close #441.
+4. Amend COORD-147 (#439, to podrunner) with a state line: T-1920 is done
+   on `main` at `ecb37294` for `run`, `run -d` and `create`; it ships in
+   the next release. Then close it when the release carries it.
+5. Release `0.2.0-beta.25` (T-1920, T-1747, the installer T-1918, the
+   machine-tier message for PodUtils/podrunner#193) through a
+   `[gh action] requested` issue for `release.yml`. Then tell podrunner
+   the tag (#439, #442) and run the installer in the labs.
+6. Verify the first scheduled run of `issue-sync.yml` (06:17 UTC) and
+   finish T-1919.
+7. Then the work order of `TODO/PROGRESS.md` (T-1917 remainder, T-1911,
+   T-1868).
+
+## Rules learned
+
+* A tool of the record (`podvm-gate`, `podvm-count`) finds the repository
+  from its own path: in a worktree, build it in the worktree's own
+  `target/`.
+* Before an entry is set done, run its proof and the uid-1000 suite.
+* The disk is small: remove `target/debug` and stale `deps` when it fills.
