@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: the manual page and `llms.txt` with each release, 2026-11-16
+
+Record: T-1917.
+Deployed: none yet.
+
+- Each release carries `podvm.1` (`podvm man --roff`) and
+  `podvm-llms.txt` (`podvm man --llms`), each with its SHA-256 and its
+  signature bundle. The release binary writes them, with the date of the
+  release commit. `mandoc -Tlint` checks the page in the build.
+
 ## 0.2.0-beta.28 (2026-11-16)
 
 ### Changed: the machine tier sizes the memory for a large image, 2026-11-16

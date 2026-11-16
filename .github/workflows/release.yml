@@ -161,5 +161,9 @@ jobs:
               printf '%s\n' "$assets" | grep -qx "$name" || { echo "release: $tag has no $name" >&2; missing=1; }
             done
           done
+          # TODO/cli.md T-1917: the manual page and llms.txt of the release.
+          for name in podvm.1 podvm.1.sha256 podvm.1.sigstore podvm-llms.txt podvm-llms.txt.sha256 podvm-llms.txt.sigstore; do
+            printf '%s\n' "$assets" | grep -qx "$name" || { echo "release: $tag has no $name" >&2; missing=1; }
+          done
           [ "$missing" = 0 ]
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body

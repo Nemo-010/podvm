@@ -167,6 +167,18 @@ jobs:
             # signed with the binaries by the dist/podvm-* glob.
             cp crates/podvm/schemas/run-report.v1.schema.json dist/podvm-run-report.v1.schema.json
             (cd dist && sha256sum podvm-run-report.v1.schema.json > podvm-run-report.v1.schema.json.sha256)
+            # TODO/cli.md T-1917. The manual page and llms.txt come from
+            # this binary, with the date of the commit, so no copy in the
+            # tree can drift. mandoc lints the page; a warning fails the leg.
+            podvm=target/${{ matrix.triple }}/release/podvm
+            epoch=$(git log -1 --format=%ct)
+            SOURCE_DATE_EPOCH=$epoch "$podvm" man --roff > dist/podvm.1
+            SOURCE_DATE_EPOCH=$epoch "$podvm" man --llms > dist/podvm-llms.txt
+            sudo apt-get install -y --no-install-recommends mandoc > /dev/null \
+              || { sudo apt-get update > /dev/null && sudo apt-get install -y --no-install-recommends mandoc > /dev/null; }
+            mandoc -Tlint -Wwarning dist/podvm.1
+            [ -s dist/podvm-llms.txt ] || { echo "nightly: podvm man --llms wrote nothing" >&2; exit 1; }
+            (cd dist && sha256sum podvm.1 > podvm.1.sha256 && sha256sum podvm-llms.txt > podvm-llms.txt.sha256)
           fi
 
       # TODO/packaging.md T-1737. The packager and the licence inventory are
@@ -212,7 +224,7 @@ jobs:
         run: |
           cd dist
           for d in podvm-nightly-*/; do mv "$d"* . && rmdir "$d"; done
-          ls -l podvm-*
+          ls -l podvm-* podvm.1*
 
       # TODO/cli.md T-1918 (the owner's ruling "Installer"): podvm-install.sh
       # on the installer core of podcrates, with the pins of this release,
@@ -246,13 +258,13 @@ jobs:
       - name: sign the artefacts
         run: |
           cd dist
-          for bin in podvm-*; do
+          for bin in podvm-* podvm.1; do
             case "$bin" in
               *.sigstore | *.sha256) continue ;;
             esac
             cosign sign-blob --yes --bundle "$bin.sigstore" "$bin"
           done
-          ls -l podvm-*
+          ls -l podvm-* podvm.1*
 
       # TODO/packaging.md T-1905 (issue 399): a build provenance attestation
       # in GitHub's store, which `gh attestation verify` reads, for each
@@ -260,7 +272,7 @@ jobs:
       - name: the subjects of the attestation
         run: |
           cd dist
-          for f in podvm-*; do
+          for f in podvm-* podvm.1; do
             case "$f" in
               *.sigstore | *.sha256) continue ;;
             esac
@@ -297,7 +309,7 @@ jobs:
         run: |
           tag="${{ github.ref_name }}"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" --clobber dist/podvm-*
+            gh release upload "$tag" --clobber dist/podvm-* dist/podvm.1*
           else
-            gh release create "$tag" --title nightly --prerelease --notes-file release-notes.txt dist/podvm-*
+            gh release create "$tag" --title nightly --prerelease --notes-file release-notes.txt dist/podvm-* dist/podvm.1*
           fi
