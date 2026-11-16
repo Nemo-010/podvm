@@ -4,7 +4,8 @@
 //! The file installs on a GPT disk for UEFI, takes the image of the ISO by
 //! its index, sets the locale, makes one local administrator `podvm` with
 //! one automatic logon, skips the out-of-box screens, turns on Remote
-//! Desktop and its firewall group, turns off sleep, and ends its first logon
+//! Desktop and its firewall group, turns off sleep, installs the virtio-win
+//! guest tools (`crate::guest_tools`, T-1868), and ends its first logon
 //! with a `READY` marker on the first serial port and a shutdown. The
 //! windowsPE pass starts the copy of the logs of WinPE to the log stick
 //! (`crate::pelogs`, T-1867). Windows 11
@@ -145,6 +146,9 @@ pub fn xml(a: &Answer) -> String {
         // first logon is a full one and each run of the golden image is a
         // cold boot that fires the `onstart` task of the agent (COORD-120).
         "powercfg /h off",
+        // TODO/machine.md T-1868: the virtio-win drivers and the QEMU
+        // Guest Agent, from the virtio-win CD, before the marker.
+        crate::guest_tools::SETUP,
         &format!("cmd /c echo {READY}> COM1"),
         // TODO/machine.md T-1867: the installer of the mailbox agent
         // (`pod_guest::agent::SETUP_CMD`) registers the agent and shuts
@@ -290,6 +294,9 @@ mod tests {
             assert!(x.contains("fDenyTSConnections"), "{t:?}");
             // TODO/machine.md T-1867: WinPE starts the copy of its logs.
             assert!(x.contains(crate::pelogs::SCRIPT), "{t:?}");
+            // TODO/machine.md T-1868: the guest tools before the marker.
+            let tools = x.find(crate::guest_tools::SCRIPT).expect("the guest tools");
+            assert!(tools < x.find(&format!("echo {READY}")).unwrap(), "{t:?}");
             assert_eq!(x.contains("BypassTPMCheck"), t == Target::Win11, "{t:?}");
             // The password is escaped, and appears only in its two places.
             assert!(x.contains("Pv-canary-&lt;&amp;&gt;&quot;"), "{t:?}");

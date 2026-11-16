@@ -28,13 +28,19 @@ const STOP_GRACE: Duration = Duration::from_secs(10);
 fn plan_of(r: &Record, dir: &Path, accel: Accel) -> Plan {
     let (code, _) = super::plan::firmware();
     let options = match r.flavor.as_str() {
-        "desktop" => podvm_windows::options::desktop(
-            accel,
-            r.forwards
-                .split(',')
-                .filter_map(crate::run::publish::forward_of)
-                .collect(),
-        ),
+        "desktop" => {
+            let forwards = r.forwards.split(',');
+            let mut o = podvm_windows::options::desktop(
+                accel,
+                forwards
+                    .filter_map(crate::run::publish::forward_of)
+                    .collect(),
+            );
+            // TODO/machine.md T-1868: the channel of the QEMU Guest Agent.
+            let qga = machines::qga_socket(&machines::root(), &r.name);
+            o.channels.push(podvm_windows::qga::channel(&qga));
+            o
+        }
         _ => podvm_windows::options::mailbox(),
     };
     Plan {
@@ -71,6 +77,7 @@ fn base_of(verb: &str, image: &str) -> Result<(PathBuf, &'static str), i32> {
         Kind::DosZip => Ok((super::pull::dos_base(verb)?, "dos")),
         Kind::ValidationOs => Ok((super::named::vos_image(verb, e)?, "mailbox")),
         Kind::Iso => Ok((super::named::golden_image(verb, e)?, "desktop")),
+        Kind::Drivers => Err(super::named::no_guest(verb, e)),
     }
 }
 
@@ -264,6 +271,8 @@ pub(crate) fn keeper(args: &[String]) -> i32 {
     // TODO/machine.md T-1899: the screen on a VNC socket, for `windows view`.
     let vnc = machines::vnc_socket(&root, name);
     let _ = std::fs::remove_file(&vnc);
+    let qga = machines::qga_socket(&root, name); // TODO/machine.md T-1868
+    let _ = std::fs::remove_file(&qga);
     let argv = if r.flavor == "dos" {
         podvm_windows::dos::argv(
             accel,
@@ -320,6 +329,7 @@ pub(crate) fn keeper(args: &[String]) -> i32 {
     let _ = machines::write(&root, &now);
     let _ = std::fs::remove_file(&plan.monitor);
     let _ = std::fs::remove_file(&vnc);
+    let _ = std::fs::remove_file(&qga);
     0
 }
 
@@ -330,7 +340,8 @@ pub(crate) fn find(name: &str) -> Option<Record> {
         .flatten()
 }
 
-/// End the emulator of `name`: ACPI power-off, then QMP `quit`, then
+/// End the emulator of `name`: `guest-shutdown` through the agent of a
+/// full Windows guest (T-1868), then ACPI power-off, then QMP `quit`, then
 /// SIGKILL to its process group; then wait for the keeper. Gives the end
 /// that it wrote, or `None` where the machine did not run.
 fn stop_record(root: &Path, name: &str) -> Option<String> {
@@ -340,7 +351,13 @@ fn stop_record(root: &Path, name: &str) -> Option<String> {
     }
     let sock = machines::socket(root, name);
     let mut how = "SIGKILL";
-    if let Ok(mut m) = podvm_windows::qmp::Monitor::connect(&sock, Duration::from_secs(2)) {
+    if r.flavor == "desktop" && agent::graceful(root, &r) {
+        how = "guest-shutdown";
+    }
+    let qmp = r
+        .running()
+        .then(|| podvm_windows::qmp::Monitor::connect(&sock, Duration::from_secs(2)));
+    if let Some(Ok(mut m)) = qmp {
         let _ = m.call("system_powerdown");
         let t0 = Instant::now();
         // A Linux guest boots with `acpi=off` and takes no power button.
@@ -412,82 +429,10 @@ pub(crate) fn detach_if(verb: &str, o: &crate::run::Opts) -> Option<i32> {
     })
 }
 
-/// `start` of `want` where a machine has that name: a running one changes
-/// nothing; a stopped one boots again from its own disk. `None` for no
-/// machine.
-pub(crate) fn start_if(verb: &str, want: &str) -> Option<Result<String, i32>> {
-    let mut r = find(want)?;
-    if r.running() {
-        return Some(Ok(r.name));
-    }
-    if r.flavor == "linux" {
-        eprintln!(
-            "podvm {verb}: {want} is a guest of the machine tier, whose disk is the image: \
-             `podvm rm {want}` and `podvm run -d` start a new one (TODO/machine.md T-1750)"
-        );
-        return Some(Err(EXIT_RUNTIME_ERROR));
-    }
-    if machines::alive(r.keeper_pid, r.keeper_start) {
-        eprintln!("podvm {verb}: the keeper of {want} still runs; wait for it to end");
-        return Some(Err(EXIT_RUNTIME_ERROR));
-    }
-    let started = (|| {
-        super::plan::provide(verb, r.flavor != "dos")?;
-        let accel = super::plan::accelerator()?;
-        r.ended.clear();
-        r.keeper_pid = 0;
-        r.keeper_start = 0;
-        r.emulator_pid = 0;
-        r.emulator_start = 0;
-        let root = machines::root();
-        machines::write(&root, &r).map_err(|e| {
-            eprintln!("podvm {verb}: {want}: {e}");
-            EXIT_RUNTIME_ERROR
-        })?;
-        start_keeper(&r.name, accel, &machines::dir_in(&root, &r.name)).map_err(|why| {
-            eprintln!("podvm {verb}: {want}: {why}");
-            EXIT_RUNTIME_ERROR
-        })
-    })();
-    Some(started.map(|()| r.name.clone()))
-}
-
-/// `podvm rm [-f] NAME` of a machine.
-pub(crate) fn rm(name: &str, force: bool) -> i32 {
-    let root = machines::root();
-    let Some(r) = machines::read(&root, name) else {
-        return EXIT_RUNTIME_ERROR;
-    };
-    if r.running() {
-        if !force {
-            eprintln!(
-                "podvm rm: the machine {name} runs; `podvm stop {name}` first, or `podvm rm -f {name}`"
-            );
-            return EXIT_RUNTIME_ERROR;
-        }
-        let _ = stop_record(&root, name);
-    }
-    // A keeper that saw its emulator end writes the end and exits.
-    let t0 = Instant::now();
-    while machines::alive(r.keeper_pid, r.keeper_start) && t0.elapsed() < STOP_GRACE {
-        std::thread::sleep(Duration::from_millis(100));
-    }
-    if r.running() || machines::alive(r.keeper_pid, r.keeper_start) {
-        eprintln!("podvm rm: the emulator of {name} did not end; nothing was removed");
-        return EXIT_RUNTIME_ERROR;
-    }
-    match std::fs::remove_dir_all(machines::dir_in(&root, name)) {
-        Ok(()) => {
-            println!("{name}");
-            0
-        }
-        Err(e) => {
-            eprintln!("podvm rm: {name}: {e}");
-            EXIT_RUNTIME_ERROR
-        }
-    }
-}
-
+mod agent; // TODO/machine.md T-1868
+pub(crate) use agent::{cp_if, exec};
+mod life; // TODO/machine.md T-1870
+pub(crate) use life::{rm, start_if};
 // TODO/machine.md T-1869, T-1870: the verbs that read a machine.
 mod view;
 pub(crate) use view::{logs, port, ps_rows, screenshot};

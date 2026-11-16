@@ -27,6 +27,19 @@ Deployed: none yet.
 - `cp` and `exec` of a container that is not running read and write the
   files that a payload of another id left in its tree.
 
+### Added: `exec`, `cp` and a graceful `stop` of a Windows machine, 2026-11-16
+
+Record: T-1868 (podcrates `v0.63.0`, `pod-qga`).
+Deployed: none yet.
+
+- `podvm pull windows:2025` (and `11`, `10`) attaches the virtio-win CD
+  0.1.302 (pinned sha256) and installs the virtio-win drivers and the
+  QEMU Guest Agent at the first logon.
+- A machine of `run -d windows:2025` has the channel of the agent.
+  `podvm exec NAME CMD` runs `cmd.exe /d /c CMD` in it, and the exit code
+  passes through in 0 to 124. `podvm cp` copies one file either way.
+  `podvm stop` sends `guest-shutdown` first. No guest ran this change.
+
 ### Added: `podvm lab run --way-out`, 2026-11-16
 
 Record: T-1924 (podcrates `v0.61.0`).

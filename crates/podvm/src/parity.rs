@@ -121,7 +121,7 @@ pub use filter::*;
 pub const TABLE: &[Row] = &[
     // ------------------------------------------------------------- the verbs
     Row { verb: "run", flag: Option::None, status: Degraded, note: "enters the rung that the ladder selects (namespace, chroot or userland), which system info names as .EnteredRung. With --verbose, the banner names what the selected rung does not provide; a default run is quiet. A SIGINT or SIGTERM to a foreground run is forwarded to the payload and named on stderr with the payload's exit (TODO/supervise.md T-1335)" },
-    Row { verb: "exec", flag: Option::None, status: Degraded, note: "a fresh chroot re-entry sharing only the filesystem, never an entry into a running container's namespaces (T-0505)" },
+    Row { verb: "exec", flag: Option::None, status: Degraded, note: "a fresh chroot re-entry sharing only the filesystem, never an entry into a running container's namespaces (T-0505). A detached full Windows machine (run -d windows:2025) runs cmd.exe /d /c CMD through its QEMU Guest Agent, with the exit code in 0-124 and -e refused (TODO/machine.md T-1868)" },
     Row { verb: "pull", flag: Option::None, status: Native, note: "HTTPS only. A registry offering only http:// is a named refusal, never a downgrade" },
     Row { verb: "images", flag: Option::None, status: Native, note: "one record per platform of a tag" },
     Row { verb: "rmi", flag: Option::None, status: Native, note: "refuses an image any container references or a running container holds, and names it" },
@@ -170,7 +170,7 @@ pub const TABLE: &[Row] = &[
     // there is none. TODO/supervise.md T-0601 to T-0607.
     Row { verb: "create", flag: Option::None, status: Native, note: "writes a created record and starts nothing, as docker's does. note: It is served by run's PARSER, so it takes run's flag set: those rows are listed once, under `run`, rather than copied here where the two could diverge (T-0801)" },
     Row { verb: "start", flag: Option::None, status: Native, note: "returns when the payload has reached its execve, established by a pipe rather than by a sleep (T-0602). A SIGINT or SIGTERM to the launcher is forwarded to the payload; the launcher holds no terminal to name it on, so the payload's signaled exit in the container record is the whole account (TODO/supervise.md T-1335)" },
-    Row { verb: "stop", flag: Option::None, status: Degraded, note: "SIGTERM then SIGKILL to the PAYLOAD. podvm has no PID namespace, so a grandchild that reparented is outside its reach and is not signalled" },
+    Row { verb: "stop", flag: Option::None, status: Degraded, note: "SIGTERM then SIGKILL to the PAYLOAD. podvm has no PID namespace, so a grandchild that reparented is outside its reach and is not signalled. A detached full Windows machine gets guest-shutdown through its QEMU Guest Agent first, then ACPI power-off, QMP quit and SIGKILL, each after a bound (TODO/machine.md T-1868)" },
     Row { verb: "restart", flag: Option::None, status: Native, note: "stop then start in one verb, naming which half failed (TODO/cli.md T-1331)" },
     Row { verb: "restart", flag: Some("-h, --help"), status: Native, note: "prints this verb's usage and exits 0" },
     Row { verb: "kill", flag: Option::None, status: Degraded, note: "signals the payload. A pidfd addresses one process; it does not reach descendants that reparent" },
@@ -178,7 +178,7 @@ pub const TABLE: &[Row] = &[
     Row { verb: "ps", flag: Option::None, status: Degraded, note: "reads the container table, never /proc. A container whose launcher was killed reads `dead` with the time it was noticed, and no exit code (T-0604)" },
     Row { verb: "logs", flag: Option::None, status: Degraded, note: "the payload's stdout and stderr, interleaved into one file opened before the chroot, which `-f` follows with a bounded poll (TODO/supervise.md T-1318)" },
     Row { verb: "wait", flag: Option::None, status: Degraded, note: "blocks on the launcher, bounded. refused: A container podvm did not see end has NO exit code and `wait` refuses rather than printing one" },
-    Row { verb: "cp", flag: Option::None, status: Degraded, note: "one file at a time either way, or a directory tree with -r; a container or an image on either side, gated through the containment check (TODO/cli.md T-1323)" },
+    Row { verb: "cp", flag: Option::None, status: Degraded, note: "one file at a time either way, or a directory tree with -r; a container or an image on either side, gated through the containment check (TODO/cli.md T-1323). A detached full Windows machine copies one file either way through its QEMU Guest Agent, NAME:C:\\path, and refuses -r (TODO/machine.md T-1868)" },
     Row { verb: "cp", flag: Some("-r, --recursive"), status: Native, note: "copy a directory tree with the same checks; symlinks replicate as symlinks, special files are refused (TODO/cli.md T-1323)" },
     Row { verb: "top", flag: Option::None, status: NoneStatus, note: "a chroot shares this machine's process table, so `top` would list the host's processes and call them the container's" },
     Row { verb: "attach", flag: Option::None, status: NoneStatus, note: "not implemented: `logs` is the same bytes and it does not need a signal proxy" },

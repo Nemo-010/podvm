@@ -39,6 +39,7 @@ pub(super) fn run_named(
         }
         Kind::ValidationOs => vos_image(verb, e),
         Kind::Iso => golden_image(verb, e),
+        Kind::Drivers => Err(no_guest(verb, e)),
     };
     let image = match image {
         Ok(p) => p,
@@ -107,4 +108,14 @@ pub(super) fn golden_image(verb: &str, e: &Entry) -> Result<PathBuf, i32> {
         e.name, e.what, e.name
     );
     Err(EXIT_RUNTIME_ERROR)
+}
+
+/// TODO/machine.md T-1868: the CD of drivers boots no guest. The catalog
+/// does not resolve its name, so this is a guard only.
+pub(super) fn no_guest(verb: &str, e: &Entry) -> i32 {
+    eprintln!(
+        "podvm {verb}: windows:{} is a CD of drivers that an install attaches; it boots no guest",
+        e.name
+    );
+    EXIT_CLI_ERROR
 }

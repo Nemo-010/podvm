@@ -210,60 +210,6 @@ pub(super) fn remove_tree(
     Ok(None)
 }
 
-/// `podvm cp <src> <dest>`, where one side is `<name>:<path>` and the
-/// name is a container or, failing that, an image.
-pub(super) const CP_USAGE: &str = "\
-usage: podvm cp [-r|--recursive] <container|image>:<path> <dest>
-       podvm cp [-r|--recursive] <src> <container|image>:<path>
-
-  -r, --recursive  copy a directory tree. A file copies with or without
-                   it; a directory without it is refused naming the flag.
-
-  The name before the colon is a container first (as before), then an
-  image, whose rootfs is extracted if needed. A directory copies its
-  contents into DEST: created where missing, and it must be a directory
-  where present. Symlinks are replicated as symlinks, never followed,
-  and every rootfs-side path passes the same containment gate as a
-  single file; special files are refused by name rather than recreated
-  (TODO/cli.md T-1323).
-";
-
-/// What `cp` was asked for.
-pub(super) struct CpArgs {
-    pub(super) recursive: bool,
-    pub(super) a: String,
-    pub(super) b: String,
-}
-
-pub(super) fn parse_cp(args: &[String]) -> std::result::Result<CpArgs, i32> {
-    let mut recursive = false;
-    let mut positionals: Vec<String> = Vec::new();
-    for a in args {
-        match a.as_str() {
-            "-h" | "--help" => {
-                print!("{CP_USAGE}");
-                return Err(0);
-            }
-            "-r" | "--recursive" => recursive = true,
-            other if other.starts_with('-') => {
-                crate::parity::admit("cp", other, CP_USAGE)?;
-                return Err(crate::parity::no_arm("cp", other));
-            }
-            other => positionals.push(other.to_string()),
-        }
-    }
-    if positionals.len() != 2 {
-        eprintln!("podvm cp: takes exactly two paths, one of them <name>:<path>");
-        return Err(EXIT_CLI_ERROR);
-    }
-    let mut it = positionals.into_iter();
-    Ok(CpArgs {
-        recursive,
-        a: it.next().expect("checked"),
-        b: it.next().expect("checked"),
-    })
-}
-
 /// `podvm cp <src> <dest>`, where one side is `<container>:<path>`.
 pub fn cp(args: &[String]) -> i32 {
     // ⭐ TODO/cli.md T-1330: bundled shorts expand before admission.
@@ -279,6 +225,10 @@ pub fn cp(args: &[String]) -> i32 {
         Ok(o) => o,
         Err(c) => return c,
     };
+    // TODO/machine.md T-1868: a full Windows machine copies through its agent.
+    if let Some(c) = crate::windows::machine::cp_if(&o.a, &o.b, o.recursive) {
+        return c;
+    }
     let s = match store() {
         Ok(s) => s,
         Err(c) => return c,

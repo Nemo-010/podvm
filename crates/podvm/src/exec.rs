@@ -67,6 +67,10 @@ usage: podvm exec [options] <image> <command> [arg...]
                    guest memory in bytes with an optional K/M/G/T suffix
                    (TODO/machine.md T-1305)
 
+  A detached full Windows machine (run -d windows:2025) takes the
+    command through its QEMU Guest Agent as cmd.exe /d /c COMMAND, with
+    the exit code in 0-124; -e is refused (TODO/machine.md T-1868).
+
   refused: This is a FRESH CHROOT re-entry, not an entry into a running container.
     It shares the filesystem tree and nothing else. `podvm inspect --format
     '{{.Exec.Mode}}'` says the same thing to a program.

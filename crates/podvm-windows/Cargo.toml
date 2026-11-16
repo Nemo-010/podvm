@@ -15,6 +15,12 @@ repository.workspace = true
 pod-guest = { git = "https://github.com/PodUtils/podcrates", tag = "v0.63.0" }
 # TODO/machine.md T-1863: the UDF reader of the ISO of Validation OS.
 pod-udf = { git = "https://github.com/PodUtils/podcrates", tag = "v0.63.0" }
+# TODO/machine.md T-1868: the client of the QEMU Guest Agent of a full
+# Windows guest: exec, the file calls and the shutdown (COORD-127, issue 393).
+pod-qga = { git = "https://github.com/PodUtils/podcrates", tag = "v0.63.0" }
 
 [dev-dependencies]
 flate2.workspace = true
+# TODO/machine.md T-1868: the stand-in agent of the tests of `qga`.
+serde_json.workspace = true
+base64 = { version = "0.23", default-features = false, features = ["std"] }

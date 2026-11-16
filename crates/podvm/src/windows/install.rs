@@ -88,11 +88,13 @@ pub(crate) fn preflight(verb: &str, e: &Entry) -> Result<(), i32> {
         EXIT_RUNTIME_ERROR
     })?;
     let dir = podvm_windows::catalog::store_dir();
-    let iso = if dir.join(e.file).is_file() {
-        0
-    } else {
-        e.size
-    };
+    // TODO/machine.md T-1868: the virtio-win CD comes with the ISO.
+    let tools = &podvm_windows::catalog::VIRTIO_WIN;
+    let iso = [e, tools]
+        .iter()
+        .filter(|m| !dir.join(m.file).is_file())
+        .map(|m| m.size)
+        .sum::<u64>();
     let fsize = super::plan::ceiling()?;
     // The store can be absent before the first pull: the disk is read at
     // its nearest parent that exists.
@@ -237,6 +239,10 @@ fn prepare(
     if std::env::var("PODVM_WINDOWS_HYPERV").as_deref() == Ok("0") {
         plan.options.hyperv = false;
     }
+    // TODO/machine.md T-1868: the virtio-win CD of the guest tools, and
+    // the channel of the agent, so that the virtio-serial driver binds.
+    let tools = super::pull::fetched(verb, &podvm_windows::catalog::VIRTIO_WIN)?;
+    plan.options.channels = vec![podvm_windows::qga::channel(&dir.join("qga.sock"))];
     plan.options.media = vec![
         Medium {
             kind: MediumKind::Cdrom,
@@ -244,6 +250,7 @@ fn prepare(
             readonly: true,
             boot: true,
         },
+        podvm_windows::guest_tools::medium(&tools),
         stick,
         logs,
     ];
@@ -298,6 +305,15 @@ fn boot_and_convert(
         );
     }
     drop(guest);
+    // TODO/machine.md T-1868: the report of the virtio-win guest tools.
+    let tools = mailbox_file(plan, podvm_windows::guest_tools::REPORT);
+    let tools = tools.map(|b| String::from_utf8_lossy(&b).into_owned());
+    if let Err(why) = podvm_windows::guest_tools::report(tools.as_deref()) {
+        eprintln!(
+            "podvm {verb}: windows:{name}: {why}, so `podvm exec` and `podvm cp` cannot \
+             reach a machine of this image (TODO/machine.md T-1868)"
+        );
+    }
     if !agent_installed(plan) {
         eprintln!(
             "podvm {verb}: windows:{name}: the first logon did not install the mailbox agent, \
@@ -329,15 +345,23 @@ fn agent_mailbox() -> podvm_windows::Result<podvm_windows::Fat16> {
     m.put(agent::MARKER, &s.marker)?;
     m.put(agent::AGENT_NAME, agent::AGENT_CMD.as_bytes())?;
     m.put(agent::SETUP_NAME, agent::SETUP_CMD.as_bytes())?;
+    // TODO/machine.md T-1868: the script of the virtio-win guest tools.
+    let tools = podvm_windows::guest_tools::SCRIPT_TEXT;
+    m.put(podvm_windows::guest_tools::SCRIPT, tools.as_bytes())?;
     Ok(m)
+}
+
+/// The file `name` of the mailbox of the install, after the power-off.
+fn mailbox_file(plan: &Plan, name: &str) -> Option<Vec<u8>> {
+    std::fs::read(&plan.mailbox)
+        .ok()
+        .and_then(podvm_windows::Fat16::from_image)?
+        .get(name)
 }
 
 /// True when the installer of the agent wrote its report to the mailbox.
 fn agent_installed(plan: &Plan) -> bool {
-    std::fs::read(&plan.mailbox)
-        .ok()
-        .and_then(podvm_windows::Fat16::from_image)
-        .is_some_and(|m| m.get(podvm_windows::agent::SETUP).is_some())
+    mailbox_file(plan, podvm_windows::agent::SETUP).is_some()
 }
 
 /// A screen dump of the guest into `PODVM_WINDOWS_SHOTS` where it names a

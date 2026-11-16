@@ -70,6 +70,7 @@ Separate crate: `crates/podvm-interpose`.
 | `pod-netlab` | `0.63.0` |
 | `pod-oci` | `0.63.0` |
 | `pod-proxy` | `0.63.0` |
+| `pod-qga` | `0.63.0` |
 | `pod-relay` | `0.63.0` |
 | `pod-rootfs` | `0.63.0` |
 | `pod-services` | `0.63.0` |

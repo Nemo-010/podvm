@@ -1780,7 +1780,7 @@ with `..`" although it stays inside.
 
 ## Premise
 
-`crates/podvm/src/lifecycle/wait_rm_cp.rs:485` calls
+`crates/podvm/src/lifecycle/wait_rm_cp.rs:435` calls
 `std::fs::copy(&src, &dst)` with no join for a directory destination, and
 prints the error against the source. `crates/podvm/src/lifecycle/copy_tree.rs:203`
 and `:208` make each directory with `create_dir_all` and set no mode. The

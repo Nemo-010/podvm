@@ -439,6 +439,8 @@ pub use logs_stop::*;
 mod cp_image;
 mod wait_rm_cp;
 pub use wait_rm_cp::*;
+mod cp_args;
+use cp_args::*;
 
 mod copy_tree;
 pub use copy_tree::*;

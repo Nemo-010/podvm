@@ -168,11 +168,14 @@ pub fn base_cache() -> PathBuf {
 /// The DOS flavor: `pod_guest::dos` with podvm's marker and base cache.
 pub mod answer; // TODO/machine.md T-1866
 pub mod catalog; // TODO/machine.md T-1861
+pub mod guest_tools; // TODO/machine.md T-1868
 pub mod install; // TODO/machine.md T-1867
 pub mod machines; // TODO/machine.md T-1870
 pub mod media; // TODO/machine.md T-1866
 pub mod options; // TODO/machine.md T-1865
 pub mod pelogs; // TODO/machine.md T-1867
+#[cfg(unix)]
+pub mod qga; // TODO/machine.md T-1868
 pub mod tools; // TODO/machine.md T-1875
 pub mod udf; // TODO/machine.md T-1863
 

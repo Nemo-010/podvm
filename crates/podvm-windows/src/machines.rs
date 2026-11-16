@@ -118,6 +118,12 @@ pub fn exec_socket(root: &Path, name: &str) -> PathBuf {
     runtime_path(root, name, "exec")
 }
 
+/// TODO/machine.md T-1868: the socket of the virtio-serial channel of the
+/// QEMU Guest Agent of a full Windows machine, beside its QMP socket.
+pub fn qga_socket(root: &Path, name: &str) -> PathBuf {
+    runtime_path(root, name, "qga")
+}
+
 /// A file of the machine `name` in the runtime directory, with the
 /// extension `ext`.
 fn runtime_path(root: &Path, name: &str, ext: &str) -> PathBuf {

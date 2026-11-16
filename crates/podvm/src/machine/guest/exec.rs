@@ -136,8 +136,8 @@ pub fn client(verb: &str, sock: &Path, argv: &[String], env: &[String], workdir:
 }
 
 /// `podvm exec NAME CMD` of a machine: a running Linux guest of `run -d
-/// --podvm-tier=machine` takes the command on its exec port; a Windows or
-/// DOS machine has no exec yet (T-1868).
+/// --podvm-tier=machine` takes the command on its exec port; a full Windows
+/// machine takes it through its QEMU Guest Agent (T-1868).
 pub fn exec_machine(
     r: &podvm_windows::machines::Record,
     argv: &[String],
@@ -145,11 +145,7 @@ pub fn exec_machine(
     workdir: Option<&str>,
 ) -> i32 {
     if r.flavor != "linux" {
-        eprintln!(
-            "podvm exec: {} is a {} machine, which has no exec yet (TODO/machine.md T-1868)",
-            r.name, r.flavor
-        );
-        return podvm_image::error::EXIT_RUNTIME_ERROR;
+        return crate::windows::machine::exec(r, argv, env, workdir);
     }
     if !r.running() {
         eprintln!(

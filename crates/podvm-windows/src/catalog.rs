@@ -19,6 +19,9 @@ pub enum Kind {
     ValidationOs,
     /// A zip that holds a raw disk image of DOS.
     DosZip,
+    /// TODO/machine.md T-1868: a CD of drivers and guest tools that an
+    /// install attaches ([`VIRTIO_WIN`]). It is no name of `podvm run`.
+    Drivers,
 }
 
 /// One name of the catalog.
@@ -129,6 +132,26 @@ pub const CATALOG: &[Entry] = &[
     },
 ];
 
+/// TODO/machine.md T-1868: the virtio-win CD of the Fedora project,
+/// release 0.1.302-1 (the `stable-virtio` link on 2026-11-16). It holds
+/// the drivers (`virtio-win-gt-x64.msi`, with the virtio-serial driver)
+/// and the QEMU Guest Agent (`guest-agent\qemu-ga-x86_64.msi`). The
+/// install of a setup ISO attaches it as one more CD-ROM
+/// ([`crate::guest_tools`]). The size is the `Content-Length` of its URL;
+/// podvm measured the sha256 over the bytes of its URL on 2026-11-16 (the
+/// directory publishes MD5 sums of its RPMs only). It is not in
+/// [`CATALOG`]: no run boots it.
+pub const VIRTIO_WIN: Entry = Entry {
+    name: "virtio-win",
+    aliases: &[],
+    what: "virtio-win 0.1.302: the virtio drivers and the QEMU Guest Agent for Windows",
+    kind: Kind::Drivers,
+    url: "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso",
+    size: 877_373_440,
+    sha256: "303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d",
+    file: "virtio-win-0.1.302.iso",
+};
+
 /// The sha256 of the ISO of Validation OS 26100.9818, measured by podvm on
 /// 2026-11-14 over the bytes of its URL.
 const VALIDATIONOS_SHA256: &str =
@@ -172,7 +195,7 @@ mod tests {
 
     #[test]
     fn catalog_pins_parse_and_each_name_resolves() {
-        for e in CATALOG {
+        for e in CATALOG.iter().chain([&VIRTIO_WIN]) {
             assert!(e.url.starts_with("https://"), "{}", e.name);
             assert!(e.size > 0 && e.ceiling() > e.size, "{}", e.name);
             assert!(
@@ -181,6 +204,11 @@ mod tests {
                 e.name,
                 e.sha256
             );
+            if e.kind == Kind::Drivers {
+                // TODO/machine.md T-1868: no run boots the CD of drivers.
+                assert!(resolve(e.name).is_err(), "{}", e.name);
+                continue;
+            }
             assert_eq!(resolve(e.name).unwrap().name, e.name);
             for a in e.aliases {
                 assert_eq!(resolve(a).unwrap().name, e.name);

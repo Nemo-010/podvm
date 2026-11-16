@@ -3825,7 +3825,7 @@ the mailbox (T-1861). Experiment 452 checks it (clause 5).
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -3867,6 +3867,10 @@ a `cp` round trip keeps the sha256, and `stop` is graceful. The proof runs on `k
 client of the QEMU Guest Agent (`guest-ping`, `guest-exec`, the file calls,
 `guest-shutdown`) and the plan option of its channel. The machines of
 T-1870 are the running guests that it serves.
+
+## Done
+
+**Partial (2026-11-16).** podcrates `v0.63.0` carries `pod-qga` (COORD-127), and podvm uses it. The catalog pins the virtio-win CD 0.1.302 (`podvm_windows::catalog::VIRTIO_WIN`: the URL of the Fedora project, 877 373 440 bytes, the sha256 that podvm measured over its bytes on 2026-11-16). `podvm pull windows:NAME` fetches it and attaches it as one more CD-ROM, with the channel of the agent. The first logon runs `VT.CMD` from the mailbox before the `READY` marker (`podvm_windows::guest_tools`): it installs `virtio-win-gt-x64.msi` and `guest-agent\qemu-ga-x86_64.msi` with `msiexec /qn` and writes the exit codes to `TOOLS.TXT`, which the driver reads back (the golden files changed). A machine of `run -d windows:NAME` (flavor `desktop`) has the virtio-serial channel `org.qemu.guest_agent.0` on a socket beside its QMP socket (`machines::qga_socket`). `podvm exec NAME CMD` waits for `guest-ping` (at most 300 s, estimate), runs `cmd.exe /d /c CMD` and gives its exit code in 0 to 124; `-w` adds `cd /d DIR &&`, and `-e` and an argument with a double quote are refused by name. `podvm cp` copies one file either way in chunks of 1 MiB (`NAME:C:\path`; a guest path that ends with `\` is a directory). `podvm stop` sends `guest-shutdown` and waits at most 120 s (estimate) before the ACPI power-off, QMP `quit` and SIGKILL. A DOS or ValidationOS machine keeps the mailbox, and these verbs refuse it by name (`crates/podvm/src/windows/machine/agent.rs`, `crates/podvm-windows/src/qga.rs`). `cargo test -p podvm-windows qga` exits 0 with nine tests against a stand-in agent on a Unix socket (the channel line, the probe and its bound, the exit code, the refusals, a round trip of more than 2 MiB, the names of `cp`, the shutdown). On the cloud host, the debug binary against a stand-in agent, with a sleep process as the emulator: `exec ver` 0, `exec exit 7` 7, `-e` 125, a `cp` round trip of 3 MB kept its sha256, and `stop` ended as `guest-shutdown`. No guest ran this change. Remaining: the run on `kvm.yml`: `podvm pull windows:2025` with the new chain and `TOOLS.TXT` with `drivers=0 agent=0`, then `run -d --name w windows:2025`, `podvm exec w ver` (exit 0), `podvm exec w exit 7` (exit 7), a `cp` round trip with the same sha256, and `podvm stop w` that ends as `guest-shutdown`.
 
 
 # T-1869: A Windows guest has no `-p`, no RDP check, no VNC, no screenshot and no `creds`

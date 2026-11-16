@@ -108,6 +108,7 @@ pub(crate) fn pull_named(verb: &str, name: &str, quiet: bool) -> i32 {
         Kind::Iso => super::install::preflight(verb, e)
             .and_then(|()| fetched(verb, e))
             .and_then(|iso| super::install::install(verb, e, &iso, quiet)),
+        Kind::Drivers => fetched(verb, e),
     };
     match path {
         Ok(p) => {
@@ -208,6 +209,7 @@ pub(crate) fn files_of(e: &Entry) -> Vec<PathBuf> {
             v.push(super::install::password_path(e));
             v.push(super::install::meta_path(e));
         }
+        Kind::Drivers => {}
     }
     v.retain(|p| p.is_file());
     v
