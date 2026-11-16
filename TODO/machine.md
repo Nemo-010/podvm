@@ -5120,7 +5120,7 @@ test's own PID and a file that is no run directory stay.
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5145,6 +5145,8 @@ Measure before a fix: the issue gives no line that tells the causes apart.
 Experiment 463 passes in the job `nonroot` of `kvm.yml`; `cargo test -p podvm --bin podvm the_end_of_the_emulator_is_named`.
 
 ## Done
+
+**Done (2026-11-16).** The cause of PodUtils/podrunner#195, #198 and #199 is the memory of the guest for a large initrd, not the user with no root, the cache or the size alone. The machine tier sizes the memory of a guest for its initrd (`machine/guest/mem.rs`, three times the initrd and 512 MiB, an estimate), warns on a smaller `--podvm-mem`, names the estimate after a guest resets with no line, and names how the emulator ended, the time and the initrd. Measured: experiment 463 passes in the job `nonroot` of `kvm.yml` (run 43878005842): a root of 1400 MiB fails at `--podvm-mem 4G` with "an initrd of 1416 MiB likely needs about 4864 MiB of memory: give --podvm-mem 4864M", boots at 5G, and boots with no `--podvm-mem`; the user of the runner and a user with no root through `sudo -u` boot Alpine and a root of 300 MiB.
 
 **Partial (2026-11-16).** Clauses 1 and 2 of the Approach are on `main`: the message names the end of the emulator and the console lines, and experiment 463 is in `kvm.yml`. Remaining: the run of 463, and clause 3.
 

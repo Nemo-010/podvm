@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.28 (2026-11-16)
+
 ### Changed: the machine tier sizes the memory for a large image, 2026-11-16
 
 Record: T-1922 (PodUtils/podrunner#199).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.28.
 
 - With no `--podvm-mem`, a guest whose initrd is over 100 MiB gets about
   three times the initrd and 512 MiB of memory, in place of 512 MiB. A
@@ -23,7 +25,7 @@ Deployed: none yet.
 ### Changed: a foreground `run` runs as the user of the image with no root, 2026-11-16
 
 Record: T-1927 (podcrates `v0.63.0`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.28.
 
 - On the namespace rung of a user with no root, a foreground `podvm run`
   runs the payload as the image's `USER`, or as `--user`, as `run -d`
@@ -32,7 +34,7 @@ Deployed: none yet.
 ### Added: `podvm man --llms`, 2026-11-16
 
 Record: T-1917.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.28.
 
 - `podvm man --llms` prints the whole manual as one `llms.txt`. The date
   of `podvm man --roff` comes from `SOURCE_DATE_EPOCH` where it is set.

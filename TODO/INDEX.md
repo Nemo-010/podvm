@@ -584,7 +584,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1919](cli.md) | P2 | M | none | cli | done | The state of an issue is written by hand |
 | [T-1920](enter.md) | P1 | M | none | enter | done | A volume moves a run off the namespace rung, and a raw syscall there sees host paths |
 | [T-1921](probe.md) | P1 | S | none | probe | done | `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM |
-| [T-1922](machine.md) | P1 | M | none | machine | partial | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
+| [T-1922](machine.md) | P1 | M | none | machine | done | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
 | [T-1923](probe.md) | P1 | S | none | probe | done | The namespace rung is taken through a user namespace where `chroot` is refused there |
 | [T-1924](net.md) | P2 | S | none | net | open | `podvm lab run --way-out` for a live lane in a network class |
 | [T-1925](cli.md) | P2 | M | none | cli | open | The installer takes the core of podcrates `v0.61.0`: `core-net.sh` and the signature of `SHA256SUMS` |
@@ -594,7 +594,7 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 
 ## Counts
 
-525 entries: 8 open, 16 partial, 2 blocked, 499 done.
+525 entries: 8 open, 15 partial, 2 blocked, 500 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -604,10 +604,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
-| P1 | 0 | 5 | 0 | 212 | 217 |
+| P1 | 0 | 4 | 0 | 213 | 217 |
 | P2 | 6 | 7 | 2 | 170 | 185 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 8 | 16 | 2 | 499 | 525 |
+| **All** | 8 | 15 | 2 | 500 | 525 |
 
 ## Work order
 
