@@ -22,8 +22,6 @@ use podvm_windows::install::{self as inst, Phase};
 use podvm_windows::plan::{Medium, MediumKind};
 use podvm_windows::Plan;
 
-use super::args::Args;
-
 /// The golden image of a catalog name: beside its ISO in the store.
 pub(crate) fn golden_path(e: &Entry) -> PathBuf {
     podvm_windows::catalog::store_dir().join(format!("windows-{}.golden.qcow2", e.name))
@@ -131,7 +129,7 @@ pub(crate) fn install(verb: &str, e: &Entry, iso: &Path, quiet: bool) -> Result<
         return Ok(golden);
     }
     let target = target_of(verb, e)?;
-    let mut plan = super::plan::build(&Args::default())?;
+    let mut plan = super::plan::build(&super::root_bus::install_args())?;
     let password = match prepare(verb, e.name, target, iso, &mut plan) {
         Ok(p) => p,
         Err(code) => {

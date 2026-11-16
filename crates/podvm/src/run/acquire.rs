@@ -180,6 +180,13 @@ pub(super) fn hostname_env(
     env.retain(|e| !e.starts_with("PODVM_HOSTNAME="));
     crate::userns::bind_devices(rootfs); // TODO/probe.md T-1909
     crate::userns::owners::apply(rootfs); // TODO/probe.md T-1911
+    if userland.is_none() {
+        // TODO/enter.md T-1920: the volumes as binds on the namespace rung.
+        if let Err(e) = crate::userns::bind_volumes(rootfs, &o.volumes, &o.ro_volumes) {
+            eprintln!("podvm {verb}: {e}");
+            return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
+        }
+    }
     let Some(name) = o.hostname.clone() else {
         return Ok(());
     };

@@ -4227,7 +4227,7 @@ podvm keeps the number 17 (the environment of each payload names it, `PODVM_MEMO
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -4248,3 +4248,8 @@ In the user namespace of a foreground run, bind each volume onto the tree (read-
 ## Prove
 
 As uid 1000 on a host where `unshare -Urm true` exits 0: `run --rm -v DIR:/work IMAGE` with a dynamic program that calls `renameat2` as a raw `syscall` instruction in `/root/.cache` prints "ok", `inspect` of the run names the namespace rung, a file written to `/work` lands in DIR, and after the run DIR keeps each of its files.
+
+## Done
+
+**Partial (2026-11-16).** A foreground run in the user namespace of T-1909 binds each volume onto the tree in the mount namespace of pid 2 (`userns::bind_volumes`, from `run/acquire.rs`), and keeps the namespace rung: `run/prepare.rs` asks for the loader family for a volume only outside that namespace. A `:ro` volume is remounted read-only, with the flags that the kernel locks kept; a guest path with a symbolic link of the image in it is refused by name. `podvm_extract::live::unmount_under` detaches each mount under a tree, the deepest first, and `remove_plain` refuses to remove a tree while a mount stays under it. Measured as uid 1000 on the cloud host (mirror.gcr.io/library/python:3.13-slim): with `-v DIR:/work -v VOL:/data`, a glibc program that calls `rename` and `renameat2(RENAME_NOREPLACE)` as raw `syscall` instructions prints "ok" in `/root/.cache/uv` and in `/data`, `inspect` gives `"Rung":"namespace"`, a file written to `/data` lands in VOL; `:ro` reads and refuses a write with "Read-only file system"; after `rm` of a kept run, three `--rm` runs and one with `PODVM_SPARE_TREE=0`, VOL keeps each of its files; `-v VOL:/bin/data` refuses ("bin of the image is a symbolic link"). The 25 integration test binaries pass as uid 1000. Remaining: `run -d` and `create`, whose entry is pod-enter's (T-1912), need a bind of a volume in pod-enter's plan (a COORD issue to podcrates).
+

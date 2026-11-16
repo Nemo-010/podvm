@@ -3812,6 +3812,8 @@ the mailbox (T-1861). Experiment 452 checks it (clause 5).
 
 **Partial (2026-11-15, the ISO bus).** Run 43754060132 (request 433): the leg with the setup ISO on a USB CD (`PODVM_WINDOWS_ISO_BUS=usb`, `usb-bot` and `scsi-cd`) stopped as the leg on `ide-cd`: 1.53 GiB on the disk from minute 5 to the bound, Panther at "Image apply. Progress: 5". So neither the bus of the root (run 43740331439) nor the bus of the ISO is the cause. The job `install` now runs one leg, and samples the emulator each 5 min: its CPU ticks, its I/O bytes (`/proc/PID/io`) and the size of the root disk. A busy emulator with no I/O is the guest (a spin, or the compact apply of `install.wim`); an idle one waits on a request. Remaining: that run.
 
+**Partial (2026-11-16, the sampler).** Run 43767666467 (request 434): the sampler of the emulator shows the stall. Until minute 20 the emulator takes one core and reads the ISO; from then its CPU falls to about 7% (some 2 000 ticks for each 5 min), its reads stop at 2.14 GB, and its writes grow only by its own logs. So the guest waits, and no bus is the cause (the root on SATA and the ISO on USB stopped alike). The guest of an install had the defaults: 4096 MiB and 2 CPUs. `PODVM_WINDOWS_INSTALL_MEM` (as `--podvm-mem`) and `PODVM_WINDOWS_INSTALL_CPUS` now set them for an install, and the job `install` has a second leg with 8 GiB and 4 CPUs. Remaining: that run.
+
 # T-1868: A full Windows guest has no `exec`, `cp`, graceful `stop` or readiness probe
 
 **Source:** the Windows guest review of 2026-11-14, section 5, item W10

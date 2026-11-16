@@ -80,6 +80,7 @@ pub const BOUND_DEVICES: [&str; 4] = ["dev/null", "dev/zero", "dev/random", "dev
 pub fn unbind_devices(dir: &Path) {
     const MNT_DETACH: i32 = 2;
     const UMOUNT_NOFOLLOW: i32 = 8;
+    unmount_under(dir);
     for d in BOUND_DEVICES {
         let path = dir.join("rootfs").join(d);
         let Ok(c) = std::ffi::CString::new(path.as_os_str().as_encoded_bytes()) else {
@@ -109,8 +110,68 @@ pub fn remove_any(dir: &std::path::Path) -> std::io::Result<bool> {
     }
 }
 
+/// The mount points of this process at `dir` or under it, from
+/// `/proc/self/mountinfo` (field 5, with its octal escapes undone).
+pub fn mounts_under(dir: &Path) -> Vec<std::path::PathBuf> {
+    let Ok(d) = std::fs::canonicalize(dir) else {
+        return Vec::new();
+    };
+    let info = std::fs::read_to_string("/proc/self/mountinfo").unwrap_or_default();
+    info.lines()
+        .filter_map(|l| l.split(' ').nth(4).map(unescape))
+        .map(std::path::PathBuf::from)
+        .filter(|m| m.starts_with(&d))
+        .collect()
+}
+
+/// A path of mountinfo: `\040` is a space, and each `\NNN` an octal byte.
+fn unescape(s: &str) -> String {
+    let b = s.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'\\'
+            && i + 3 < b.len()
+            && b[i + 1..i + 4].iter().all(|c| (b'0'..=b'7').contains(c))
+        {
+            out.push((b[i + 1] - b'0') * 64 + (b[i + 2] - b'0') * 8 + (b[i + 3] - b'0'));
+            i += 4;
+        } else {
+            out.push(b[i]);
+            i += 1;
+        }
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// TODO/enter.md T-1920: detach each mount at `dir` or under it, the
+/// deepest first. True where none stays. A volume of a run is a bind of a
+/// host directory into the tree: a removal that walked into it would remove
+/// the files of the host.
+pub fn unmount_under(dir: &Path) -> bool {
+    const MNT_DETACH: i32 = 2;
+    const UMOUNT_NOFOLLOW: i32 = 8;
+    let mut m = mounts_under(dir);
+    m.sort_by_key(|p| std::cmp::Reverse(p.as_os_str().len()));
+    for p in m {
+        let Ok(c) = std::ffi::CString::new(p.as_os_str().as_encoded_bytes()) else {
+            continue;
+        };
+        // SAFETY: a NUL-ended path.
+        unsafe { umount2(c.as_ptr(), MNT_DETACH | UMOUNT_NOFOLLOW) };
+    }
+    mounts_under(dir).is_empty()
+}
+
 /// Remove the tree `dir`, the owner's bits added to each directory first.
+/// ⛔ Not while a mount stays under it (T-1920).
 pub fn remove_plain(dir: &std::path::Path) -> std::io::Result<bool> {
+    if !unmount_under(dir) {
+        return Err(std::io::Error::other(format!(
+            "{}: a mount stays under the tree, which is not removed (TODO/enter.md T-1920)",
+            dir.display()
+        )));
+    }
     crate::tree::open_dirs(dir).and_then(|()| {
         pod_extract::remove_tree(dir).map_err(|e| std::io::Error::other(e.to_string()))
     })
@@ -118,6 +179,26 @@ pub fn remove_plain(dir: &std::path::Path) -> std::io::Result<bool> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_path_of_mountinfo_is_unescaped() {
+        assert_eq!(super::unescape("/a\\040b/c"), "/a b/c");
+        assert_eq!(super::unescape("/plain"), "/plain");
+        assert_eq!(super::unescape("/end\\04"), "/end\\04");
+    }
+
+    #[test]
+    fn nothing_is_mounted_under_a_fresh_directory() {
+        let mut r = [0u8; 8];
+        std::io::Read::read_exact(&mut std::fs::File::open("/dev/urandom").unwrap(), &mut r)
+            .unwrap();
+        let tag: String = r.iter().map(|b| format!("{b:02x}")).collect();
+        let d = std::env::temp_dir().join(format!("podvm-mnt-{tag}"));
+        std::fs::create_dir(&d).unwrap();
+        assert!(super::mounts_under(&d).is_empty());
+        assert!(super::unmount_under(&d));
+        std::fs::remove_dir(&d).unwrap();
+    }
+
     use super::*;
 
     #[test]

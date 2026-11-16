@@ -73,7 +73,7 @@ mod join;
 pub mod owners;
 mod range;
 mod sweep;
-pub use host::{bind_devices, host_pid};
+pub use host::{bind_devices, bind_volumes, host_pid};
 pub use join::{joined_pidfd, rejoin};
 pub use sweep::sweep;
 
@@ -84,6 +84,11 @@ static UTS: AtomicBool = AtomicBool::new(false);
 /// [`enter_if`], or a `run --hostname` of uid 0.
 pub fn owns_uts() -> bool {
     UTS.load(Ordering::Relaxed)
+}
+
+/// True where this process joined the namespaces of a run (T-1910).
+pub fn joined() -> bool {
+    join::JOINED.load(Ordering::Relaxed)
 }
 
 /// True in pid 2, where this process owns the UTS namespace.

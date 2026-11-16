@@ -263,9 +263,9 @@ pub(crate) fn prepare(
             a,
         )?)
     } else {
-        // TODO/cli.md T-1761: a volume or a read-only root takes the loader family.
+        // T-1761, T-1920: a volume takes the loader family, but a bind in a run's userns.
         crate::lifecycle::decide_entry_prefer(
-            !o.volumes.is_empty() || o.read_only,
+            (!o.volumes.is_empty() && !crate::userns::active()) || o.read_only,
             verb,
             &maps,
             &argv,

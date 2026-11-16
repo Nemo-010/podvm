@@ -116,6 +116,9 @@ pub fn refuse_unserved(
     }
     let why = match (forced, userland.map(|u| u.family)) {
         (None, Some(Family::Loader)) => return Ok(()),
+        // TODO/enter.md T-1920: a bind of pid 2 serves it, or the mount
+        // namespace that `exec` joined holds it.
+        (None, None) if crate::userns::active() || crate::userns::joined() => return Ok(()),
         (Some(mode), _) => format!(
             "PODVM_MODE={} forces a rung with no path table, and only the userland \
              loader family serves a volume",
@@ -298,6 +301,11 @@ pub fn read_only_env(
     // native-static rung holds a `:ro` volume; `--read-only` of the rootfs
     // stays the interposer's.
     let native = native_static(userland) && !read_only;
+    // TODO/enter.md T-1920: in the user namespace of a run, a `:ro` volume
+    // is a bind remounted read-only; `--read-only` stays the interposer's.
+    if userland.is_none() && !read_only && crate::userns::active() {
+        return Ok(());
+    }
     if !native && !matches!(userland.map(|u| u.family), Some(Family::Loader)) {
         eprintln!(
             "podvm {verb}: --read-only and :ro need the read-only layer of the \

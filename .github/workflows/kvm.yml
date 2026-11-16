@@ -399,6 +399,14 @@ jobs:
             apt_qemu: "1"
             hyperv: "1"
             root_bus: nvme
+          # Run 43767666467: the emulator went idle at 2.14 GB read of the
+          # ISO (CPU near 7% from minute 20), with 4096 MiB and 2 CPUs.
+          - leg: ubuntu-qemu-8g
+            apt_qemu: "1"
+            hyperv: "1"
+            root_bus: nvme
+            install_mem: 8G
+            install_cpus: "4"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -460,6 +468,8 @@ jobs:
           PODVM_WINDOWS_KEEP_FAILED: /mnt/w/failed
           PODVM_WINDOWS_ROOT_BUS: ${{ matrix.root_bus }}
           PODVM_WINDOWS_ISO_BUS: ${{ matrix.iso_bus }}
+          PODVM_WINDOWS_INSTALL_MEM: ${{ matrix.install_mem }}
+          PODVM_WINDOWS_INSTALL_CPUS: ${{ matrix.install_cpus }}
         run: |
           mkdir -p "$HOME" "$RUNNER_TEMP/install-shots"
           # Run 43754060132: the ISO on a USB CD stopped as on IDE, and the

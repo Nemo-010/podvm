@@ -78,3 +78,130 @@ pub fn bind_devices(rootfs: &std::path::Path) {
         };
     }
 }
+
+/// TODO/enter.md T-1920: bind each volume onto the tree, in the mount
+/// namespace of pid 2, so that the run keeps the namespace rung. The mounts
+/// of pid 2 reach pod-enter's mount namespace, which copies them. A `:ro`
+/// volume is remounted read-only, with the flags that the kernel locks in a
+/// user namespace kept.
+///
+/// ⛔ No component of the guest path in the tree may be a symbolic link: the
+/// tree came from a hostile archive, and a bind through a link would land
+/// outside it. The removal of a tree unmounts each mount under it first
+/// (`podvm_extract::live::unmount_under`).
+pub fn bind_volumes(
+    rootfs: &std::path::Path,
+    volumes: &[podvm_enter::userland::Volume],
+    ro: &[String],
+) -> Result<(), String> {
+    if !active() {
+        return Ok(());
+    }
+    for v in volumes {
+        let host = std::path::Path::new(&v.host);
+        let meta = std::fs::metadata(host).map_err(|e| format!("-v {}: {e}", v.host))?;
+        let rel = v.guest.trim_start_matches('/');
+        let mut target = rootfs.to_path_buf();
+        let parts: Vec<&str> = rel.split('/').filter(|p| !p.is_empty()).collect();
+        for (i, part) in parts.iter().enumerate() {
+            if matches!(*part, "." | "..") {
+                return Err(format!("-v {}: the guest path names {part}", v.guest));
+            }
+            target.push(part);
+            let last = i + 1 == parts.len();
+            match std::fs::symlink_metadata(&target) {
+                Ok(m) if m.file_type().is_symlink() => {
+                    return Err(format!(
+                        "-v {}: {} of the image is a symbolic link; podvm binds no volume through one",
+                        v.guest,
+                        target.strip_prefix(rootfs).unwrap_or(&target).display()
+                    ));
+                }
+                Ok(_) => {}
+                Err(_) if last && !meta.is_dir() => {
+                    std::fs::File::create(&target).map_err(|e| format!("-v {}: {e}", v.guest))?;
+                }
+                Err(_) => {
+                    std::fs::create_dir(&target).map_err(|e| format!("-v {}: {e}", v.guest))?
+                }
+            }
+        }
+        let (Ok(src), Ok(dst)) = (
+            std::ffi::CString::new(host.as_os_str().as_encoded_bytes()),
+            std::ffi::CString::new(target.as_os_str().as_encoded_bytes()),
+        ) else {
+            return Err(format!("-v {}: a NUL byte in a path", v.guest));
+        };
+        const MS_RDONLY: u64 = 1;
+        const MS_REMOUNT: u64 = 32;
+        const MS_BIND: u64 = 0x1000;
+        const MS_REC: u64 = 0x4000;
+        // SAFETY: NUL-ended paths; a bind takes no type and no data.
+        let r = unsafe {
+            mount(
+                src.as_ptr(),
+                dst.as_ptr(),
+                core::ptr::null(),
+                MS_BIND | MS_REC,
+                core::ptr::null(),
+            )
+        };
+        if r != 0 {
+            return Err(format!(
+                "-v {}: bind: {}",
+                v.guest,
+                std::io::Error::last_os_error()
+            ));
+        }
+        if ro.iter().any(|g| g == &v.guest) {
+            let locked = locked_flags(&target);
+            // SAFETY: as above.
+            let r = unsafe {
+                mount(
+                    core::ptr::null(),
+                    dst.as_ptr(),
+                    core::ptr::null(),
+                    MS_REMOUNT | MS_BIND | MS_RDONLY | locked,
+                    core::ptr::null(),
+                )
+            };
+            if r != 0 {
+                return Err(format!(
+                    "-v {}:ro: {}",
+                    v.guest,
+                    std::io::Error::last_os_error()
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The flags of the mount at `p` that a remount in a user namespace must
+/// keep (`nosuid`, `nodev`, `noexec` and the atime flags), as mount flags.
+fn locked_flags(p: &std::path::Path) -> u64 {
+    let info = std::fs::read_to_string("/proc/self/mountinfo").unwrap_or_default();
+    let Ok(d) = std::fs::canonicalize(p) else {
+        return 0;
+    };
+    let opts = info
+        .lines()
+        .rev()
+        .find(|l| l.split(' ').nth(4).map(std::path::Path::new) == Some(d.as_path()))
+        .and_then(|l| l.split(' ').nth(5).map(str::to_string))
+        .unwrap_or_default();
+    let mut f = 0;
+    for (word, bit) in [
+        ("nosuid", 2u64),
+        ("nodev", 4),
+        ("noexec", 8),
+        ("noatime", 1024),
+        ("nodiratime", 2048),
+        ("relatime", 1 << 21),
+    ] {
+        if opts.split(',').any(|o| o == word) {
+            f |= bit;
+        }
+    }
+    f
+}

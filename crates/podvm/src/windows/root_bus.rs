@@ -1,4 +1,5 @@
-//! The bus of the root disk of a Windows install (TODO/machine.md T-1867).
+//! The bus of the root disk, and the size, of a Windows install
+//! (TODO/machine.md T-1867).
 
 /// TODO/machine.md T-1867: `PODVM_WINDOWS_ROOT_BUS=sata` puts the root disk
 /// of the install on the SATA (AHCI) bus of q35, not on NVMe, to tell a
@@ -55,6 +56,25 @@ fn on_sata(argv: Vec<String>) -> Vec<String> {
             None => a,
         })
         .collect()
+}
+
+/// TODO/machine.md T-1867: the memory and the CPUs of an install from
+/// `PODVM_WINDOWS_INSTALL_MEM` (as `--podvm-mem`) and
+/// `PODVM_WINDOWS_INSTALL_CPUS`; else the defaults (4096 MiB). Run
+/// 43767666467: the emulator went idle at 2.14 GB read of the ISO, with the
+/// guest's CPU near 7%, so the size of the guest is the next suspect.
+pub(super) fn install_args() -> super::args::Args {
+    let mem = std::env::var("PODVM_WINDOWS_INSTALL_MEM")
+        .ok()
+        .and_then(|v| crate::tier::parse_mem(&v));
+    let cpus = std::env::var("PODVM_WINDOWS_INSTALL_CPUS")
+        .ok()
+        .and_then(|v| v.parse().ok());
+    super::args::Args {
+        mem,
+        cpus,
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]
