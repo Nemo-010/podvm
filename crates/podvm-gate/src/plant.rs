@@ -101,7 +101,7 @@ const FILES: &[&str] = &[
     "crates/podvm/src/images/tests.rs",
     "crates/podvm/src/system/tests.rs",
     "crates/podvm/src/parity/tests.rs",
-    "crates/podvm-interpose/src/memo.rs",
+    "crates/podvm-interpose/src/memo/tests.rs",
     "crates/podvm-interpose/src/identity.rs",
     "crates/podvm-probe/src/exit.rs",
     "crates/podvm/tests/curated_refusals.rs",

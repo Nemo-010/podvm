@@ -94,12 +94,12 @@ pub(super) fn run_pins(plant: &mut Plant, root: &Path, scratch: &str) {
     let test = "a_decimal_fd_parses_and_anything_else_does_not";
     plant.case_rust_test(
         "32e memo",
-        "crates/podvm-interpose/src/memo.rs",
+        "crates/podvm-interpose/src/memo/tests.rs",
         test,
         &cargo_interpose(test),
         &interpose_env(),
         scratch,
-        &|| pin_test(root, "crates/podvm-interpose/src/memo.rs", test),
+        &|| pin_test(root, "crates/podvm-interpose/src/memo/tests.rs", test),
     );
 
     let test = "uid_alone_means_its_own_group";
