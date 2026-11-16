@@ -9,29 +9,26 @@ start.
 
 520 entries: 6 open, 17 partial, 2 blocked, 495 done.
 
-The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
+The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.19` (2026-11-15, release run
-  43668566087 on `f5a757c6`; the gate 43666264498, `arm.yml` 43667556798
-  and the nightly trial 43667929703 passed first, through issue 381):
-  podcrates `v0.49.0`, `container prune`, the detached driver of the
-  native-static rung (PodUtils/podrunner#100), `save` of an index digest
-  (PodUtils/podrunner#104), `--flag=value` for each flag, the end of a
-  detached report, and piped input to `-t` on the machine tier.
-  Requests 378 and 379 stopped at the gate on tests that needed chroot
-  or root; both causes are fixed. `release.yml`
+* The newest release is `v0.2.0-beta.25` (2026-11-16, release run
+  43825580962 on `71099545`; the gate 43821923369, `arm.yml` 43821939528
+  and the nightly trial 43821944079 passed first): T-1912, T-1916, T-1918
+  (the installer), T-1920 (a volume keeps the namespace rung), T-1921,
+  T-1923 and the message of the machine tier (T-1922). `release.yml`
   needs a successful gate run on its commit; dispatch `nightly.yml` with
-  `trial=true` on `main` first. A request asks for one dispatch of the
-  gate: two runs of it cancel each other (issue 301).
-* GitHub Actions is disabled for the account that a cloud session pushes
-  and dispatches with (2026-11-13): a push starts no run, and
-  `actions_run_trigger` answers "Actions has been disabled for this user".
-  Each run of a cloud session is an issue `[gh action] requested`
+  `trial=true` and `arm.yml` on `main` first, and push nothing to `main`
+  until the release run ends (call C22).
+* GitHub Actions works again for a cloud session (2026-11-16): a push
+  starts the gate, `secrets` and `issue-sync`, and `actions_run_trigger`
+  dispatches each workflow. A newer push cancels the gate of an older
+  commit. The issue `[gh action] requested` is the fallback only
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.49.0` (`212d45d`,
-  PodUtils/podcrates#163): the emulator guard and `Sign::After` of
-  `pod-guest` (podcrates@T-622, podcrates@T-633), the warm start and the
-  USB mailbox, which podvm does not use yet.
+* podvm takes the crates of PodUtils/podcrates at `v0.59.0` (`aa281ba7`):
+  `Plan::volumes` of pod-enter, and the row `chroot(/tmp) in
+  unshare(NEWUSER+maps)` of pod-hostprobe, whose `chroot_usable` podvm
+  shadows until COORD-150 (#443) is answered (T-1921). `v0.60.0` is out
+  (PodUtils/podcrates#206) and not taken yet.
   A change of moved code goes to podcrates as a COORD issue.
 * KVM is free (the owner, 2026-11-09). The cloud host has no `/dev/kvm`;
   `kvm.yml` (T-1682) gives a hosted runner with it, and `arm.yml` a
