@@ -9,7 +9,7 @@ The record gate rejects a changed snapshot.
 
 ## Workspace
 
-Declared version: `0.2.0-beta.24`.
+Declared version: `0.2.0-beta.25`.
 
 | Member | Manifest |
 | --- | --- |

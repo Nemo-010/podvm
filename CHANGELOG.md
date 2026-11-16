@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.25 (2026-11-16)
+
 ### Fixed: `exec` of a stopped run with no root, 2026-11-16
 
 Record: T-1921 (podcrates `v0.59.0`, COORD-150).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - On a host that refuses `chroot` to a user with no root but opens a user
   namespace, `podvm exec` of a run that ended no longer exits 125 with
@@ -21,7 +23,7 @@ Deployed: none yet.
 ### Changed: the machine tier says how the emulator ended, 2026-11-16
 
 Record: T-1922 (PodUtils/podrunner#193, #195).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - Where the guest ends before the exit code of the payload, the message
   names the exit code or the signal of the emulator, whether the guest
@@ -31,7 +33,7 @@ Deployed: none yet.
 ### Added: `podvm-install.sh`, 2026-11-16
 
 Record: T-1918 (the owner's ruling "Installer", podcrates `v0.58.0`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - Each release carries `podvm-install.sh` and the offline bundle
   `podvm-VERSION.tar.gz`. The installer needs no root, checks each file
@@ -40,7 +42,7 @@ Deployed: none yet.
 ### Fixed: a volume keeps the namespace rung, 2026-11-16
 
 Record: T-1920 (PodUtils/podrunner#189).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - A foreground `run -v` of a user with no root binds the volume and stays
   on the namespace rung, so a raw `rename` of `uv` or `ruff` works.
@@ -49,7 +51,7 @@ Deployed: none yet.
 ### Changed: `podvm lab` runs the profiles of `pod-lab`, 2026-11-15
 
 Record: T-1916 (PodUtils/podcrates#188).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - `podvm lab profiles`, `run` and `check` take the 16 profiles of podcrates
   `pod-lab`. The lab checks the profile from inside before CMD runs.
@@ -59,7 +61,7 @@ Deployed: none yet.
 ### Changed: `run -d` and `create` enter the namespace rung with no root, 2026-11-15
 
 Record: T-1912.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.25.
 
 - Where an unprivileged user can open a user namespace, `run -d` and
   `create` enter the namespace rung through pod-enter (podcrates
