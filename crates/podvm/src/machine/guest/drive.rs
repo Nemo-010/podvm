@@ -160,8 +160,10 @@ pub(super) fn drive(
         None => {
             let tail = std::fs::read_to_string(dir.join("qemu.err")).unwrap_or_default();
             let tail = tail.lines().last().unwrap_or("");
-            // TODO/machine.md T-1823: the last line of the emulator is
-            // most often its chardev notice, so it comes with --verbose.
+            // TODO/machine.md T-1823 kept the last line of the emulator for
+            // --verbose (it is most often a chardev notice); PodUtils/
+            // podrunner#193: a unit runs with no --verbose, and the line was
+            // the one fact of the cause. On this failure it is always said.
             eprintln!(
                 "podvm {}: machine tier: the guest ended before it gave the exit code of \
                  the payload{}{}",
@@ -171,7 +173,7 @@ pub(super) fn drive(
                 } else {
                     ""
                 },
-                if tail.is_empty() || !r.loud {
+                if tail.is_empty() {
                     String::new()
                 } else {
                     format!("; qemu: {tail}")
