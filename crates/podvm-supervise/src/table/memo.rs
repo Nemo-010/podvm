@@ -167,3 +167,43 @@ pub fn emulated_counts(memo: &std::path::Path) -> EmulatedCounts {
     }
     out
 }
+
+/// The variable that names the memo's file to the interposer: `DEV:INO` of
+/// the host file, in decimal (TODO/interpose.md T-1928,
+/// PodUtils/podrunner#197). The interposer uses descriptor
+/// [`super::MEMO_CHILD_FD`] only while it is this file: a payload that
+/// closes 17 and opens a file of its own there keeps that file intact.
+///
+/// One fact in two homes with `podvm-interpose`'s `MEMO_ID_VAR`, as
+/// [`super::MEMO_FD_VAR`].
+pub const MEMO_ID_VAR: &str = "PODVM_MEMO_ID";
+
+/// Make the memo at `path` where it is missing, and hand it in `env`:
+/// `PODVM_MEMO_FD` and `PODVM_MEMO_ID`, each in place of an older value.
+pub fn hand_memo(env: &mut Vec<String>, path: &std::path::Path) -> Result<(), String> {
+    ensure_memo_file(path)?;
+    let meta = std::fs::metadata(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    hand_memo_meta(env, &meta);
+    Ok(())
+}
+
+/// [`hand_memo`] for a memo that is open: the identity of the file that the
+/// payload gets on its descriptor.
+pub fn hand_memo_file(env: &mut Vec<String>, memo: &std::fs::File) -> Result<(), String> {
+    let meta = memo
+        .metadata()
+        .map_err(|e| format!("the ownership memo: {e}"))?;
+    hand_memo_meta(env, &meta);
+    Ok(())
+}
+
+fn hand_memo_meta(env: &mut Vec<String>, meta: &std::fs::Metadata) {
+    use std::os::unix::fs::MetadataExt;
+    let (fd, id) = (
+        format!("{}=", super::MEMO_FD_VAR),
+        format!("{MEMO_ID_VAR}="),
+    );
+    env.retain(|e| !e.starts_with(&fd) && !e.starts_with(&id));
+    env.push(super::memo_fd_env());
+    env.push(format!("{id}{}:{}", meta.dev(), meta.ino()));
+}

@@ -400,7 +400,7 @@ fn a_reachable_payload_without_a_memo_is_refused_not_declined() {
     // `experiments/105-interpose-ownership.sh` check G's harness, which
     // hands fd 17 where the tier loads.
     assert!(memo_fd_of(&[]).is_none());
-    assert_eq!(memo_fd_env(), "PODVM_MEMO_FD=17");
+    assert_eq!(podvm_supervise::table::memo_fd_env(), "PODVM_MEMO_FD=17");
     assert_eq!(MEMO_CHILD_FD, 17);
 }
 

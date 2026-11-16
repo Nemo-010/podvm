@@ -77,18 +77,16 @@ pub(super) fn enter(
     // a second process answers `stat` with the real uid and contradicts the
     // first, so an entry that cannot be handed one refuses.
     let memo_path = podvm_supervise::table::memo_path(store, &container.id);
-    if let Err(e) = podvm_supervise::table::ensure_memo_file(&memo_path) {
+    if let Err(e) = podvm_supervise::table::hand_memo(&mut env, &memo_path) {
         eprintln!("podvm exec: the ownership memo could not be created: {e}");
         return podvm_image::error::EXIT_RUNTIME_ERROR;
-    }
-    env.retain(|e| e.split('=').next().unwrap_or("") != podvm_supervise::table::MEMO_FD_VAR);
-    env.push(podvm_supervise::table::memo_fd_env());
-    // ⭐ TODO/enter.md T-0501. The container's device spec is
-    // configuration, not environment: the spec rides `PODVM_*`, which the
-    // re-entry does not inherit, but the devices are the container's
-    // (docker's `exec` sees them), so the spec is read from the record
-    // and opened fresh here rather than inherited. A spec gone bad
-    // since `create` refuses the exec naming it.
+    } // T-1928: the descriptor and the identity of the memo.
+      // ⭐ TODO/enter.md T-0501. The container's device spec is
+      // configuration, not environment: the spec rides `PODVM_*`, which the
+      // re-entry does not inherit, but the devices are the container's
+      // (docker's `exec` sees them), so the spec is read from the record
+      // and opened fresh here rather than inherited. A spec gone bad
+      // since `create` refuses the exec naming it.
     let exec_devices = match podvm_enter::device::specs_of(&container.env) {
         Ok(s) => s,
         Err(e) => {

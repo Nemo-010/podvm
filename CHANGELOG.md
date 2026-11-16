@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a file on descriptor 17 reads empty, 2026-11-16
+
+Record: T-1928 (PodUtils/podrunner#197).
+Deployed: none yet.
+
+- A program that closes descriptor 17 and opens a file there (Node under
+  npm 6) no longer reads that file as empty, and podvm no longer writes
+  into it: the interposer uses 17 for its ownership memo only while 17 is
+  still the memo.
+
 ### Fixed: `run -d --hostname` with no root, 2026-11-16
 
 Record: T-1926 (PodUtils/podrunner#196).

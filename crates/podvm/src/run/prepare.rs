@@ -223,12 +223,10 @@ pub(crate) fn prepare(
     // number is constant, so the environment set here is final for every later
     // entry into the same container.
     let memo_host_path = crate::interpose::ephemeral_memo_path(store);
-    if let Err(e) = crate::interpose::ensure_memo_file(&memo_host_path) {
+    if let Err(e) = crate::interpose::hand_memo(&mut env, &memo_host_path) {
         eprintln!("podvm {verb}: the ownership memo could not be created: {e}");
         return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
-    }
-    env.retain(|e| e.split('=').next().unwrap_or("") != crate::interpose::MEMO_FD_VAR);
-    env.push(crate::interpose::memo_fd_env());
+    } // T-1928: the descriptor and the identity of the memo.
     let broker = crate::broker::for_run(verb, o.broker, syscall, &o.allow, &o.ports)?; // T-1665
     crate::lifecycle::syscall::tier_env(&mut env, syscall, tmp_cap, broker.as_ref());
     if let Some(b) = broker.as_ref().filter(|_| syscall) {

@@ -160,12 +160,11 @@ pub fn exec(args: &[String]) -> i32 {
     // the file by path; it is handed the descriptor at spawn and deleted on
     // exit.
     let memo_host_path = crate::interpose::ephemeral_memo_path(&store);
-    if let Err(e) = podvm_supervise::table::ensure_memo_file(&memo_host_path) {
+    // T-1928: the descriptor and the identity of the memo.
+    if let Err(e) = podvm_supervise::table::hand_memo(&mut env, &memo_host_path) {
         eprintln!("podvm exec: the ownership memo could not be created: {e}");
         return podvm_image::error::EXIT_RUNTIME_ERROR;
     }
-    env.retain(|e| e.split('=').next().unwrap_or("") != podvm_supervise::table::MEMO_FD_VAR);
-    env.push(podvm_supervise::table::memo_fd_env());
     // TODO/cli.md T-1850: the cached probe of `run` (T-1746); a full probe
     // on each `exec` took about 50 ms of its 77 ms.
     let findings = crate::run::probe_cache::findings("exec", &store);

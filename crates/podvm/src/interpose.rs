@@ -314,9 +314,7 @@ pub const IDENTITY_VAR: &str = "PODVM_IDENTITY";
 /// grammar. This re-exports it so `run` and `exec` read one name; the
 /// interposer's own spelling lives in `podvm-interpose` and is asserted by
 /// `experiments/105-interpose-ownership.sh`.
-pub use podvm_supervise::table::{
-    ensure_memo_file, memo_fd_env, memo_fd_of, open_memo, MEMO_CHILD_FD, MEMO_FD_VAR,
-};
+pub use podvm_supervise::table::{hand_memo, memo_fd_of, open_memo, MEMO_CHILD_FD, MEMO_FD_VAR};
 
 /// An ephemeral host memo for a run with no container record.
 ///

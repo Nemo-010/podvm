@@ -95,9 +95,9 @@ fn enter_in_launcher(
     // The stored environment already carries the constant descriptor number
     // from `create`; containers made before T-0710 do not, so ensure it here
     // rather than refusing a record that predates the rule.
-    if table::memo_fd_of(&env).is_none() {
-        env.push(table::memo_fd_env());
-    }
+    // TODO/interpose.md T-1928: and the identity of the file opened here,
+    // which is the container's memo, not the one that `create` named.
+    table::hand_memo_file(&mut env, &memo)?;
     // TODO/enter.md T-1920: the volumes that pod-enter binds on the
     // namespace rung ride in `PODVM_BINDS`; the payload does not see it.
     let binds = binds_of(&env);

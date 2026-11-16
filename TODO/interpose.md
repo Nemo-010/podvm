@@ -4302,3 +4302,36 @@ Map the path of both calls with `map::prepare_follow`, with the follow of their 
 
 **Done (2026-11-15).** `crates/podvm-interpose/src/link_calls.rs` (`path_at_int_flags!`). Reproduced first as uid 1000 on the loader family (`PODVM_USERNS=0`, a `-v` volume, debian:bookworm-slim): link first and dangling exited 2 with the two lines of the report, target first exited 0. After the change, experiment 461: PASS, each of the four orders exits 0 and each link stays a link.
 
+
+# T-1928: A payload that closes descriptor 17 and opens a file there gets the ownership memo read and written on that file
+
+**Source:** PodUtils/podrunner#197 (COORD-071 of podrunner, podrunner@T-309)
+**Category:** interpose
+**Milestone:** none
+**Priority:** P0
+**Effort:** S
+**Status:** done
+
+## Problem
+
+The interposer uses the descriptor of `PODVM_MEMO_FD` (17) for the ownership memo whenever the variable is set. npm 6 closes each inherited descriptor above 2 before it starts a script, and the next file that Node opens gets 17. Then each `stat` of that file made the interposer rewind 17 and read it to its end (a lookup of the memo), so a read from the current offset gave 0 bytes: `readFileSync('package.json')` gave 0 bytes, and ava, xo and tsd ended with no output and exit 0. A `chown` appended a 32-byte record to the file. Measured on `0.2.0-beta.25` as uid 1000: a dynamic program that puts `/etc/passwd` on 17 and calls `fstat` reads 0 bytes, with the offset at 71 (the end), on `run -d` and on a foreground `run`.
+
+## Premise
+
+The host knows the memo's file: it makes it, and it opens it for the descriptor. The device and inode of that file name it.
+
+## Approach
+
+The host hands `PODVM_MEMO_ID=DEV:INO` beside `PODVM_MEMO_FD` (`podvm_supervise::table::hand_memo`, `hand_memo_file`): `run` and `create` from the memo they make, `exec` from the memo of the container or its own, and the detached launcher from the file that it opens. The interposer's `memo_fd` checks with the real `fstat` that the descriptor is still that file, and saves `errno` around the check; a descriptor that is not, or a missing identity, is no memo.
+
+## Decision
+
+The check on each use, not a descriptor out of reach: a program that closes each descriptor closes any number.
+
+## Prove
+
+`cargo test --manifest-path crates/podvm-interpose/Cargo.toml --target x86_64-unknown-linux-gnu -- --test-threads=1 a_descriptor_that_is_no_longer_the_memo_is_left_alone`; as uid 1000, a dynamic program that closes 17, puts a file there and calls `fstat` reads the whole file in `run -d` and in a foreground `run`; a `chown 0:42` that the kernel refuses still reads back as `0:42` through the memo.
+
+## Done
+
+**Done (2026-11-16).** The host hands the identity of the memo, and the interposer uses descriptor 17 only while it is that file. Measured as uid 1000 on the cloud host: the reproducer of PodUtils/podrunner#197 reads 20 bytes with the offset at 20 in `run -d` and in a foreground `run` (0 bytes and the offset at 71 before); `chown 0:42` then `stat` gives `0:42` in both; a payload that closed 17 gets the refusal "podvm could not write the ownership memo" for its `chown`, in place of a write into its own file. The unit test holds a reused descriptor, a descriptor with no identity, and the memo itself.

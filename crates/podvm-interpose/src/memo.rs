@@ -42,6 +42,17 @@ use crate::say;
 /// is loaded.
 pub const MEMO_FD_VAR: &[u8] = b"PODVM_MEMO_FD";
 
+/// The variable naming the memo's file: `DEV:INO` of the host file, in
+/// decimal (TODO/interpose.md T-1928, PodUtils/podrunner#197).
+///
+/// ⛔ A payload can close the memo's descriptor and get the number again
+/// for a file of its own: npm 6 closes each inherited descriptor above 2,
+/// and Node's next `open` got 17. A lookup then moved that file's offset to
+/// its end, and a record wrote 32 bytes into it. So each use checks that
+/// the descriptor is still this file, and a descriptor that is not is no
+/// memo at all.
+pub const MEMO_ID_VAR: &[u8] = b"PODVM_MEMO_ID";
+
 /// One record. ⛔ Fixed width and little-endian, so a reader can scan without
 /// parsing and without allocating.
 ///
@@ -117,7 +128,60 @@ fn u32_le(b: &[u8]) -> u32 {
 /// anything else is a process that was not started through it.
 ///
 /// `pub(crate)` for the emulation tally, which rides the same descriptor.
+///
+/// ⛔ T-1928: only where the descriptor is still the file of
+/// [`MEMO_ID_VAR`]. A missing or bad identity is no memo, never a guess.
 pub(crate) fn memo_fd() -> Option<c_int> {
+    let fd = handed_fd()?;
+    let id = handed_id()?;
+    // The check must not change what the payload sees: a failed `fstat`
+    // sets `errno`, and this runs inside calls that succeeded.
+    let saved = crate::errno();
+    let same = unsafe { file_id(fd) } == Some(id);
+    crate::set_errno(saved);
+    same.then_some(fd)
+}
+
+/// The device and inode of the file on `fd`, through the real `fstat`.
+///
+/// # Safety
+/// A plain system call on a descriptor number; any number is safe to ask.
+unsafe fn file_id(fd: c_int) -> Option<(u64, u64)> {
+    let fstat = crate::next_fstat()?;
+    let mut st = [0u8; crate::procfs::STAT_LEN];
+    if unsafe { fstat(fd, st.as_mut_ptr() as *mut c_void) } != 0 {
+        return None;
+    }
+    Some(unsafe { crate::dev_ino(st.as_ptr() as *const c_void) })
+}
+
+/// `DEV:INO` of [`MEMO_ID_VAR`], decimal, or `None`.
+fn handed_id() -> Option<(u64, u64)> {
+    let (p, n) = unsafe { crate::map::lookup_env(MEMO_ID_VAR) }?;
+    if n == 0 || n > 41 {
+        return None;
+    }
+    let bytes = unsafe { core::slice::from_raw_parts(p, n) };
+    let colon = bytes.iter().position(|&c| c == b':')?;
+    Some((decimal(&bytes[..colon])?, decimal(&bytes[colon + 1..])?))
+}
+
+fn decimal(b: &[u8]) -> Option<u64> {
+    if b.is_empty() || b.len() > 20 {
+        return None;
+    }
+    let mut v: u64 = 0;
+    for c in b {
+        if !c.is_ascii_digit() {
+            return None;
+        }
+        v = v.checked_mul(10)?.checked_add(u64::from(c - b'0'))?;
+    }
+    Some(v)
+}
+
+/// The number of [`MEMO_FD_VAR`], before the check of [`memo_fd`].
+fn handed_fd() -> Option<c_int> {
     let (p, n) = unsafe { crate::map::lookup_env(MEMO_FD_VAR) }?;
     if n == 0 || n > 10 {
         return None;
@@ -274,95 +338,4 @@ pub fn parse_fd(spec: &[u8]) -> Option<c_int> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_decimal_fd_parses_and_anything_else_does_not() {
-        assert_eq!(parse_fd(b"17"), Some(17));
-        assert_eq!(parse_fd(b"0"), Some(0));
-        assert_eq!(parse_fd(b""), None);
-        assert_eq!(parse_fd(b"nobody"), None);
-        assert_eq!(parse_fd(b"17a"), None);
-        assert_eq!(parse_fd(b"-1"), None);
-        assert_eq!(parse_fd(b"4294967296"), None);
-    }
-
-    #[test]
-    fn the_record_is_32_bytes_with_dev_ino_uid_gid_set() {
-        assert_eq!(RECORD, 32);
-        assert_eq!(SET_UID, 1);
-        assert_eq!(SET_GID, 2);
-    }
-
-    /// T-1524 (`105` check G). Past the scan ceiling a stale prefix record
-    /// must refuse, never answer: the file below holds an old owner for
-    /// (7, 9) before the ceiling, and the lookup must return
-    /// `BeyondCeiling` rather than that stale hit. The control runs in the
-    /// SAME test, because the descriptor travels in the process environ and
-    /// two tests sharing it race: inside the ceiling the last match in the
-    /// prefix wins, so a re-chown is what a stat reports.
-    #[test]
-    fn a_stale_record_before_the_ceiling_is_a_refusal_not_an_answer() {
-        use std::io::Write;
-        use std::os::unix::io::AsRawFd;
-        fn record(dev: u64, ino: u64, uid: u32, gid: u32) -> [u8; RECORD] {
-            let mut r = [0u8; RECORD];
-            r[0..8].copy_from_slice(&dev.to_le_bytes());
-            r[8..16].copy_from_slice(&ino.to_le_bytes());
-            r[16..20].copy_from_slice(&uid.to_le_bytes());
-            r[20..24].copy_from_slice(&gid.to_le_bytes());
-            r[24..28].copy_from_slice(&SET_UID.to_le_bytes());
-            r
-        }
-        let path = std::env::temp_dir().join(format!("podvm-memo-g-{}", std::process::id()));
-        // ⛔ Read-write, like the handed descriptor production reads: a
-        // `File::create` handle is write-only and every lookup read fails
-        // `EBADF`, which reads as an empty memo rather than as an error.
-        let mut f = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&path)
-            .unwrap();
-        f.write_all(&record(7, 9, 0, 42)).unwrap();
-        f.set_len((131208 * RECORD) as u64).unwrap();
-        let fd = f.as_raw_fd();
-        // SAFETY: only a test changes this variable; edition 2024 marks the change unsafe because another thread can read the environment at the same time.
-        unsafe { std::env::set_var("PODVM_MEMO_FD", fd.to_string()) };
-        let got = lookup(7, 9);
-        // SAFETY: only a test changes this variable; edition 2024 marks the change unsafe because another thread can read the environment at the same time.
-        unsafe { std::env::remove_var("PODVM_MEMO_FD") };
-        drop(f);
-        assert_eq!(got, Lookup::BeyondCeiling);
-        let _ = std::fs::remove_file(&path);
-
-        let small = std::env::temp_dir().join(format!("podvm-memo-hit-{}", std::process::id()));
-        let mut g = std::fs::OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&small)
-            .unwrap();
-        g.write_all(&record(7, 9, 0, 42)).unwrap();
-        g.write_all(&record(7, 9, 0, 43)).unwrap();
-        let fd = g.as_raw_fd();
-        // SAFETY: only a test changes this variable; edition 2024 marks the change unsafe because another thread can read the environment at the same time.
-        unsafe { std::env::set_var("PODVM_MEMO_FD", fd.to_string()) };
-        let got = lookup(7, 9);
-        // SAFETY: only a test changes this variable; edition 2024 marks the change unsafe because another thread can read the environment at the same time.
-        unsafe { std::env::remove_var("PODVM_MEMO_FD") };
-        drop(g);
-        assert_eq!(
-            got,
-            Lookup::Hit(Owner {
-                uid: 0,
-                gid: 43,
-                set: SET_UID
-            })
-        );
-        let _ = std::fs::remove_file(&small);
-    }
-}
+mod tests;

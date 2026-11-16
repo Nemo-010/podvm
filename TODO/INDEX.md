@@ -590,10 +590,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1925](cli.md) | P2 | M | none | cli | open | The installer takes the core of podcrates `v0.61.0`: `core-net.sh` and the signature of `SHA256SUMS` |
 | [T-1926](enter.md) | P1 | S | none | enter | done | `run -d --hostname` refuses on the namespace rung that pod-enter enters |
 | [T-1927](enter.md) | P1 | M | none | enter | open | On the namespace rung of a user with no root, the payload is uid 0 of a one-uid namespace, not the user of the image |
+| [T-1928](interpose.md) | P0 | S | none | interpose | done | A payload that closes descriptor 17 and opens a file there gets the ownership memo read and written on that file |
 
 ## Counts
 
-524 entries: 9 open, 17 partial, 2 blocked, 496 done.
+525 entries: 9 open, 17 partial, 2 blocked, 497 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -602,11 +603,11 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
-| P0 | 0 | 0 | 0 | 74 | 74 |
+| P0 | 0 | 0 | 0 | 75 | 75 |
 | P1 | 1 | 5 | 0 | 211 | 217 |
 | P2 | 6 | 8 | 2 | 169 | 185 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 9 | 17 | 2 | 496 | 524 |
+| **All** | 9 | 17 | 2 | 497 | 525 |
 
 ## Work order
 
