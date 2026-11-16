@@ -127,6 +127,10 @@ fn enter_in_launcher(
                     .map(str::to_string)
             })
             .flatten(),
+        // TODO/enter.md T-1920: the volumes of a detached run on the
+        // namespace rung (pod-enter `v0.59.0`) follow; until then a volume
+        // takes the loader family (T-1761).
+        volumes: Vec::new(),
     };
 
     // ⭐ TODO/image.md T-0204 and T-0211. The image lock is taken here and

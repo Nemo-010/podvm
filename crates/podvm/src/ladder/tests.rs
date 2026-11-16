@@ -154,6 +154,7 @@ fn a_forced_rundir_over_a_missing_payload_names_it() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let usable = findings_with(vec![("chroot(/tmp)", Outcome::ok())]);
@@ -220,6 +221,7 @@ fn a_forced_tmpfs_over_a_missing_payload_names_it() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let usable = findings_with(vec![
@@ -270,6 +272,7 @@ fn a_forced_fuse_over_a_missing_payload_names_it() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let usable = findings_with(vec![
@@ -321,6 +324,7 @@ fn a_forced_fuse_rung_without_chroot_names_the_denial() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let denied = findings_with(vec![(
@@ -371,6 +375,7 @@ fn a_forced_memfd_over_a_missing_payload_names_it() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let store = store_dir("m");
@@ -418,6 +423,7 @@ fn a_forced_memfd_over_a_script_refuses_naming_both() {
         die_with_parent: false,
         confine: None,
         hostname: None,
+        volumes: Vec::new(),
     };
     let mut sink = Vec::new();
     let store = store_dir("s");

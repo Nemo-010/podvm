@@ -466,6 +466,7 @@ fn one_step(
         die_with_parent: false,
         confine: None,
         hostname: None, // T-1908: an entry joins or checks; it names no UTS namespace
+        volumes: Vec::new(),
     };
     let mut sink = std::io::sink();
     let spawned = podvm_enter::spawn(root, &plan, &mut sink);

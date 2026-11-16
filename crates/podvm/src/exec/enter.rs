@@ -396,7 +396,8 @@ pub(super) fn enter(
         no_new_privs: false,
         die_with_parent: false,
         confine,
-        hostname: None, // T-1908: `exec` joins the UTS namespace of the run
+        hostname: None,      // T-1908: `exec` joins the UTS namespace of the run
+        volumes: Vec::new(), // T-1920: `exec` joins the mounts of the run
     };
     if let Err(c) = serve_devices(&mut plan, &mut err) {
         return c;

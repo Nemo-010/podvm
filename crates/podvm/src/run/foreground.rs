@@ -231,6 +231,9 @@ fn run_inner(args: &[String], r: &mut super::report::Report) -> i32 {
                 .map(str::to_string)
         })
         .flatten(),
+        // TODO/enter.md T-1920: in the user namespace of a run, podvm
+        // binds the volumes itself (`userns::bind_volumes`).
+        volumes: Vec::new(),
     };
     // ⭐ T-0204 and T-0211. The lock is handed to the payload immediately
     // before the fork that leads to its exec, and to nothing else.
