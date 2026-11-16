@@ -1,6 +1,6 @@
 # Handoff
 
-The state on 2026-11-16, 15:15 (UTC), at the end of a session. `main` is at the commit that adds
+The state on 2026-11-16, 16:15 (UTC), at the end of a session. `main` is at the commit that adds
 this file. `0.2.0-beta.28` is the last release (release run 43882348294
 on `3f26f5a1`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
@@ -25,9 +25,9 @@ file when each step below is done.
 * podcrates is taken up to `v0.63.0` (PodUtils/podcrates#211). Since
   `v0.62.0` (PodUtils/podcrates#210): its
   `chroot_usable` is fixed (COORD-150) and `Plan::userns_ids` serves
-  T-1927 (COORD-154). The way out of a network lab (T-1924), the served
-  ports of a lab (no entry yet) and the installer core of `v0.61.0`
-  (T-1925) are not taken.
+  T-1927 (COORD-154). The way out of a network lab (T-1924), the
+  installer core (T-1925) and `pod-qga` (T-1868) are taken; the served
+  ports of a lab (no entry yet) are not.
 * The record is in the format of `pod-todo`. `podvm-count` writes the
   rows and the counts of `TODO/INDEX.md`; edit the count line of
   `TODO/PROGRESS.md` by hand to the numbers that it prints.
@@ -42,62 +42,60 @@ file when each step below is done.
 * `public.ecr.aws` answered 429 to the cloud host on 2026-11-16, so
   experiment 356 runs only in `arm.yml`.
 
-## Done in this session
+## Done in this session (2026-11-16, the second session)
 
-* Released `0.2.0-beta.25` (T-1920, T-1921, T-1923), `0.2.0-beta.26`
-  (T-1928, T-1926, the message of T-1922), `0.2.0-beta.27` (T-1927 for
-  `run -d`) and `0.2.0-beta.28` (T-1922, T-1927 for a foreground `run`,
-  `podvm man --llms`).
-* T-1922 done: the cause of podrunner's machine-tier failure is the
-  memory of the guest for a large initrd; podvm sizes it (an estimate:
-  three times the initrd and 512 MiB). COORD-161 (#454) names beta.28.
-* T-1917 partial: `podvm man --llms`, and the date of the page from
-  `SOURCE_DATE_EPOCH`; the assets of `release.yml` remain.
-* T-1928 (P0): a program that reused descriptor 17 got the ownership memo
-  read and written on its own file (Node under npm 6 read empty files).
-  The host hands `PODVM_MEMO_ID`, and the interposer checks it.
-* T-1926: `run -d --hostname` keeps the name on the namespace rung.
-* T-1927 done: `run -d` and `create` (beta.27) and a foreground `run`
-  (podcrates `v0.63.0`, on `main`) run as the image's `USER` or
-  `--user` inside the user namespace.
-* T-1922 partial: experiment 463 shows that neither a user with no root
-  nor a root of 300 MiB stops the machine tier; beta.26 names why podvm
-  stopped waiting, the time and the initrd. COORD-158 (#451) asks
-  podrunner for its run with beta.26.
-* The size ceiling moved to 8 500 000 bytes (call C23, T-0910).
-* Run 43783602911 read into T-1867 and T-1350; #441 closed.
-* T-1919 done: `podvm-gate` names a row whose state differs from GitHub,
-  and `issue-sync.yml` closes an issue whose entries are done.
+* T-1917 partial: `nightly.yml` writes `podvm.1` and `podvm-llms.txt`
+  from the release binary, lints the page with `mandoc -Tlint -Wwarning`,
+  and signs and attaches both; `release.yml` checks them. The nightly
+  trial 43896360464 on `8ade508` passed. Remaining: a release that carries
+  them, and the writer, the facts and the checks of `pod-manual`.
+* T-1924 done: `podvm lab run --way-out`. The stand-in proxy of a lab died
+  of SIGPIPE in podvm (a fix in `lab/host.rs`). COORD-162 (#455) asks
+  podcrates for the roots of the host in the certificate file of a lab
+  with a way out, and for a stand-in that protects itself from SIGPIPE.
+  The Prove parser of the gate stops at a bare `--`.
+* T-1925 partial: the installer is on the core of podcrates `v0.63.0`;
+  the publish job signs `SHA256SUMS` (`SHA256SUMS.sigstore.json`) on the
+  tag ref only. Remaining: the first release run proves it.
+* T-1867 partial: a writable log stick keeps the logs of WinPE
+  (`PELOGS\` on `pelogs.img`). `kvm.yml` run 43898543916 (`only=install`,
+  on `c31b708`) runs it; read `install-shots/winpe/PELOGS/` in its
+  artifact.
+* T-1868 partial: `exec`, `cp`, a graceful `stop` and the readiness probe
+  of a running Windows machine on `pod-qga`, and virtio-win 0.1.302 in the
+  install chain. COORD-163 (#456) asks podcrates to list
+  `fedorapeople.org`. The install now has two more devices (a CD and the
+  agent channel); if the next T-1867 run differs, suspect them.
+* T-1911 partial: `-u` drops for real again with the range (T-1927 had
+  nested a one-line namespace); `cp` and `exec` of a stopped tree of a
+  subordinate id run again in a namespace with the range. Remaining:
+  `start` (see the entry), then the default.
+* T-1786 done (issue 330 closed): a run that `PODVM_MODE` forces holds its
+  record through `spawn_ladder`; COORD-122 (#384) closed. T-1929 (new,
+  P3): the forced `rundir` and `tmpfs` rungs refuse the device nodes of
+  the fixups.
+* The host of a cloud session lacks `uidmap`: install it before a T-1911
+  measurement (`apt-get install -y uidmap`).
 
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
-2. A new ask of a peer first. podrunner closed its asks #193 and #195 to
-   #199 after beta.28, and podvm closed its answers (#442, #444, #448,
-   #450, #451, #454). Still open: #439 (the answer to
-   PodUtils/podrunner#189; close it when podrunner closes #189).
-3. A root on a virtio disk in place of an initrd removes the copy of a
-   large image in the guest's memory: an entry when a caller needs it.
-4. Close COORD-152, COORD-153, COORD-156 and COORD-160 (#445, #446,
-   #449, #453, the takes of `v0.60.0` to `v0.63.0`) when podcrates reads
-   them.
-5. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
-   `X:\$Windows.~BT`) before the power-off of a failed install, to read
-   the real error of Setup.
-6. T-1917: `podvm.1` (`podvm man --roff`, with `SOURCE_DATE_EPOCH` of the
-   release) and `llms.txt` (`podvm man --llms`) as assets of
-   `release.yml`, with `mandoc -Tlint`; then the rest of T-1917.
-7. Then the work order of `TODO/PROGRESS.md` (T-1911, T-1868, T-1924,
-   T-1925).
+2. A new ask of a peer first. Open and waiting: #439 (podrunner), #445,
+   #446, #449, #453, #455, #456 (podcrates).
+3. Read `kvm.yml` run 43898543916: the WinPE logs of T-1867 give the
+   error of Setup. Then fix the cause, and run the install again (it now
+   carries the guest tools of T-1868).
+4. Cut `0.2.0-beta.29` when the gate is green: it proves T-1917 and
+   T-1925 (the release assets and the signature of `SHA256SUMS`). Run
+   `arm.yml` and the nightly trial on the commit of the bump first.
+5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
+   T-1872, the Windows entries).
 
 ## The state at the end of the session
 
-* `main` is green: the gate, `secrets` and `issue-sync` passed on the
-  last commits; the tree is clean, and nothing is unpushed. The branch
-  `claude/wizardly-wright-4ewh6u` mirrors `main`.
-* No release run, no `kvm.yml` run and no request issue is open.
+* `main` is pushed; read the last gate run before work.
 * The open issues of podvm that wait for a peer: #439 (podrunner), #445,
-  #446, #449, #453 (podcrates).
+  #446, #449, #453, #455, #456 (podcrates).
 
 ## Rules learned
 
