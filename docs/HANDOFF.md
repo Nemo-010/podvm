@@ -59,7 +59,7 @@ file when each step below is done.
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
 2. A new ask of a peer first: watch #444 (podrunner's stderr with
    beta.25), #439 and #442 (podrunner confirms the binds).
-3. Close COORD-152 (#445) and COORD-153 (the takes of `v0.60.0` and
+3. Close COORD-152 (#445) and COORD-153 (#446, the takes of `v0.60.0` and
    `v0.61.0`) when podcrates reads them.
 4. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
