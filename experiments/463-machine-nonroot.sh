@@ -62,11 +62,17 @@ say "clause 1  rc $rc (the user of the runner)"
 id "$LAB" >/dev/null 2>&1 || sudo useradd -m -s /bin/sh "$LAB"
 LH=$(getent passwd "$LAB" | cut -d: -f6)
 sudo -u "$LAB" mkdir -p "$LH/gate/home" "$LH/store"
+# The sudo of a GitHub runner keeps XDG_CONFIG_HOME of the runner's user
+# (run 43816612095: "/home/runner/.config/podvm/registries.conf: Permission
+# denied"); podrunner's lab user gets no XDG_* of another user.
 lab() {
 	sudo -u "$LAB" --preserve-env=PATH,TMPDIR \
-		env HOME="$LH/gate/home" PODVM_STORE="$LH/store" "$@"
+		env -u XDG_CONFIG_HOME -u XDG_CACHE_HOME -u XDG_DATA_HOME \
+		-u XDG_STATE_HOME -u XDG_RUNTIME_DIR \
+		HOME="$LH/gate/home" PODVM_STORE="$LH/store" "$@"
 }
 say "lab       $(lab id)"
+say "lab env   $(lab env | cut -d= -f1 | sort | tr '\n' ' ')"
 lab sh -c 'ulimit -a' 2>&1 | sed 's/^/    limit: /' >>"$OUT"
 lab timeout 300 "$P" pull -q "$IMG" >/dev/null 2>&1
 

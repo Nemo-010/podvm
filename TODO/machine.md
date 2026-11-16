@@ -5147,3 +5147,5 @@ Experiment 463 passes in the job `nonroot` of `kvm.yml`; `cargo test -p podvm --
 ## Done
 
 **Partial (2026-11-16).** Clauses 1 and 2 of the Approach are on `main`: the message names the end of the emulator and the console lines, and experiment 463 is in `kvm.yml`. Remaining: the run of 463, and clause 3.
+
+**Partial (2026-11-16, the first run of 463).** Run 43816612095: clause 1 (the user of the runner) passed. Clauses 2 and 3 stopped before any guest, with "/home/runner/.config/podvm/registries.conf: Permission denied": the sudo of the runner kept `XDG_CONFIG_HOME` of the runner's user. podrunner's lab user does not get it (its run reached QEMU), so 463 now removes each `XDG_*` variable for the lab user and logs the names of the variables that reach it. Remaining: the next run of 463, and clause 3.
