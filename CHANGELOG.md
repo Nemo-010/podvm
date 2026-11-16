@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.29 (2026-11-16)
+
 ### Fixed: a run that `PODVM_MODE` forces is `Up` while it runs, 2026-11-16
 
 Record: T-1786 (issue 330).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - A foreground run on a rung that `PODVM_MODE` forces is recorded
   running while its payload runs: `ps`, `system df`, `kill`, `wait` and
@@ -20,7 +22,7 @@ Deployed: none yet.
 ### Fixed: `-u` with the subordinate range, and `cp` and `exec` of its trees, 2026-11-16
 
 Record: T-1911.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - With `PODVM_USERNS_RANGE=1`, a foreground `run -u UID` drops to UID
   for real again; since beta.28 it ran as the owner of the files of root.
@@ -30,7 +32,7 @@ Deployed: none yet.
 ### Added: `exec`, `cp` and a graceful `stop` of a Windows machine, 2026-11-16
 
 Record: T-1868 (podcrates `v0.63.0`, `pod-qga`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - `podvm pull windows:2025` (and `11`, `10`) attaches the virtio-win CD
   0.1.302 (pinned sha256) and installs the virtio-win drivers and the
@@ -43,7 +45,7 @@ Deployed: none yet.
 ### Added: `podvm lab run --way-out`, 2026-11-16
 
 Record: T-1924 (podcrates `v0.61.0`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - `podvm lab run --way-out PROFILE -- CMD` lets the stand-in proxy of a
   network lab send a `CONNECT` that its class passes to the real network,
@@ -53,7 +55,7 @@ Deployed: none yet.
 ### Fixed: `podvm lab run proxy-only` did not hold, 2026-11-16
 
 Record: T-1924.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - The stand-in proxy of a network lab died when a client closed its
   socket before the answer, and each later `CONNECT` got "Connection
@@ -63,7 +65,7 @@ Deployed: none yet.
 ### Changed: the installer checks the signature of `SHA256SUMS`, 2026-11-16
 
 Record: T-1925 (podcrates `v0.63.0`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - `podvm-install.sh` is on the installer core of podcrates `v0.63.0`.
   Where `cosign` is on `PATH` and the run is not offline, it checks the
@@ -78,7 +80,7 @@ Deployed: none yet.
 ### Added: the manual page and `llms.txt` with each release, 2026-11-16
 
 Record: T-1917.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.29.
 
 - Each release carries `podvm.1` (`podvm man --roff`) and
   `podvm-llms.txt` (`podvm man --llms`), each with its SHA-256 and its
