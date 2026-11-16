@@ -4219,3 +4219,32 @@ podvm keeps the number 17 (the environment of each payload names it, `PODVM_MEMO
 
 **Done (2026-11-15).** `names::start` holds 17 (`hold_memo_number`). Measured with a parent shell that holds descriptors 3 to N (N in 2..16) and `run -d alpine:3.20 true` then `run --rm`: podvm `0.2.0-beta.22` (the release binary) fails exactly at N = 15, where the root opens on 17; this build passes at each N. Experiment 460: PASS (`experiments/results/memo-descriptor.txt`).
 
+
+# T-1920: A volume moves a run off the namespace rung, and a raw syscall there sees host paths
+
+**Source:** PodUtils/podrunner#189 (COORD-066 of podrunner), COORD-147 (PodUtils/podvm#439)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** open
+
+## Problem
+
+On a host where a caller with no root can open user namespaces, `run -v HOST:GUEST` takes the loader family of the userland rung (T-1761), also where the namespace rung works. There the `LD_PRELOAD` interposer maps the paths of libc calls only. `uv` and `ruff` persist a temporary file with a raw `syscall` instruction (`tempfile` through `rustix`), so `rename` and `renameat2` reach the kernel with a host path and give EACCES. Measured as uid 1000 on the cloud host, with podvm `0.2.0-beta.24` and `main`: a glibc program with an inline `syscall` gives "Permission denied" for `rename` and `renameat2(RENAME_NOREPLACE)` in `/root/.cache/uv`; the same calls through libc work.
+
+## Premise
+
+A foreground run of such a caller has a mount namespace of its own (T-1909, pid 2), where it binds the host's device nodes onto the tree (`userns::bind_devices`). The mounts of pid 2 reach pod-enter's mount namespace, which copies them.
+
+## Approach
+
+In the user namespace of a foreground run, bind each volume onto the tree (read-only for `:ro`) before pod-enter starts, and keep the run on the namespace rung. Before any removal of a tree, unmount each mount under it, deepest first, so that no removal walks into a host directory. `run -d` (pod-enter's own user namespace, T-1912) needs a bind of a volume in pod-enter's plan: a COORD issue to podcrates.
+
+## Decision
+
+⛔ A tree with a bind of a host directory in it is never removed while the bind holds.
+
+## Prove
+
+As uid 1000 on a host where `unshare -Urm true` exits 0: `run --rm -v DIR:/work IMAGE` with a dynamic program that calls `renameat2` as a raw `syscall` instruction in `/root/.cache` prints "ok", `inspect` of the run names the namespace rung, a file written to `/work` lands in DIR, and after the run DIR keeps each of its files.

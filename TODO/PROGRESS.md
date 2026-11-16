@@ -7,7 +7,7 @@ start.
 
 ## State
 
-516 entries: 6 open, 15 partial, 3 blocked, 492 done.
+517 entries: 7 open, 15 partial, 3 blocked, 492 done.
 
 The state on 2026-11-15 (`docs/HANDOFF.md` has the detail):
 
@@ -60,6 +60,8 @@ status with `podvm-count` in the same commit as the work.
    carry the overlay root of the namespace rung (podcrates@T-486,
    `v0.42.0`) and the completion of two layers (podcrates@T-567,
    `v0.43.0`); podvm wires them next.
+1a. podrunner's user-path gate (PodUtils/podrunner#189): [T-1920](enter.md)
+   (a volume keeps the namespace rung, as a bind mount).
 1b. The live run of 2026-11-15 (issues 396 to 402, PodUtils/podrunner#115):
    [T-1911](probe.md) (`-u UID` in the user namespace; the range is
    opt-in until each verb keeps the store rule).
