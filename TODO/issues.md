@@ -338,6 +338,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #442 | COORD-149: the answer to PodUtils/podrunner#193: Node 26 on the loader family; the microVM of a user with no root (to podrunner) | open | T-1920 |
 | #443 | COORD-150: pod-hostprobe: chroot_usable takes the row chroot(/tmp) in unshare(NEWUSER+maps) as the caller's chroot (podvm T-1921) (to podcrates) | open | T-1921 |
 | #444 | COORD-151: the answer to PodUtils/podrunner#195: a user with no root passes the machine tier; run your probe with v0.2.0-beta.25 for the cause (to podrunner) | open | T-1922 |
+| #445 | COORD-152: podvm took podcrates v0.60.0 in 959af827 (the answer to PodUtils/podcrates#206) (to podcrates) | open | T-1921 |
 
 ## Messages whose title does not start with COORD-NNN
 
