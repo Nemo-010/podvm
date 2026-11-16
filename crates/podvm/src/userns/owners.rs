@@ -20,6 +20,13 @@ use podvm_probe::sys as k;
 /// is the one line of the caller.
 pub static TOP: AtomicU64 = AtomicU64::new(0);
 
+/// True where the map of this namespace holds the subordinate range up to
+/// `uid` and `gid`.
+pub fn holds(uid: u32, gid: u32) -> bool {
+    let top = TOP.load(Ordering::Relaxed);
+    top > 0 && u64::from(uid.max(gid)) <= top
+}
+
 unsafe extern "C" {
     fn fchownat(dirfd: i32, path: *const std::ffi::c_char, uid: u32, gid: u32, flags: i32) -> i32;
 }

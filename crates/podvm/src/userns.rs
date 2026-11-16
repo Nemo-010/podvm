@@ -75,6 +75,7 @@ mod range;
 mod sweep;
 pub use host::{bind_devices, bind_volumes, host_pid};
 pub use join::{joined_pidfd, rejoin};
+pub use range::{again_in_range, cp_in_range};
 pub use sweep::sweep;
 
 static CHILD: AtomicI32 = AtomicI32::new(0);

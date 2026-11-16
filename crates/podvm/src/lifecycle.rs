@@ -436,6 +436,7 @@ pub fn ps(args: &[String]) -> i32 {
 mod logs_stop;
 pub use logs_stop::*;
 
+mod cp_image;
 mod wait_rm_cp;
 pub use wait_rm_cp::*;
 

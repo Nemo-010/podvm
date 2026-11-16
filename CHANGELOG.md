@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: `-u` with the subordinate range, and `cp` and `exec` of its trees, 2026-11-16
+
+Record: T-1911.
+Deployed: none yet.
+
+- With `PODVM_USERNS_RANGE=1`, a foreground `run -u UID` drops to UID
+  for real again; since beta.28 it ran as the owner of the files of root.
+- `cp` and `exec` of a container that is not running read and write the
+  files that a payload of another id left in its tree.
+
 ### Added: `podvm lab run --way-out`, 2026-11-16
 
 Record: T-1924 (podcrates `v0.61.0`).

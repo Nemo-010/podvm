@@ -148,6 +148,9 @@ pub fn remover(dir: &Path) -> bool {
 /// range, where the caller (0) holds each subordinate id, then the
 /// removal. Only a tree of a store (`.../trees/ID` or a trash entry).
 pub fn serve_rm(argv: &[String]) {
+    if argv.get(1).map(String::as_str) == Some(AGAIN_ARG) {
+        serve_again(argv);
+    }
     if argv.get(1).map(String::as_str) != Some(RM_ARG) {
         return;
     }
@@ -164,6 +167,66 @@ pub fn serve_rm(argv: &[String]) {
         })
         && podvm_extract::live::remove_plain(dir).is_ok();
     std::process::exit(if ok { 0 } else { 1 });
+}
+
+/// The internal verb: `podvm VERB ARGS` (`cp` or `exec`) in a user
+/// namespace with the range.
+pub const AGAIN_ARG: &str = "--podvm-range-again";
+
+/// `podvm cp` or `podvm exec` of a container that is not running, where
+/// the range is asked for: the payload of a run could leave files of a
+/// subordinate id with no right of the caller, so the verb runs again in a
+/// user namespace with the range, where the caller (0) holds each of those
+/// ids. A file that it writes on the host belongs to the caller. A running
+/// container keeps its own path (`cp` and `exec` join it, T-1775, T-1910).
+/// None: go on here.
+pub fn again_in_range(verb: &str, running: bool, args: &[String]) -> Option<i32> {
+    if running || super::owners::TOP.load(std::sync::atomic::Ordering::Relaxed) > 0 {
+        return None;
+    }
+    plan(std::env::var(VAR).ok().as_deref())?;
+    let me = std::env::current_exe().ok()?;
+    let st = Command::new(me)
+        .arg(AGAIN_ARG)
+        .arg(verb)
+        .args(args)
+        .status()
+        .ok()?;
+    Some(st.code().unwrap_or(125))
+}
+
+/// The `cp` form of [`again_in_range`]: the container of either side.
+pub fn cp_in_range(s: &podvm_image::Store, a: &str, b: &str, args: &[String]) -> Option<i32> {
+    let name = [a, b]
+        .into_iter()
+        .find_map(|x| crate::lifecycle::split(x).map(|(n, _)| n))?;
+    let c = podvm_supervise::get(s, &name).ok()?;
+    again_in_range(
+        "cp",
+        c.state == podvm_supervise::table::State::Running,
+        args,
+    )
+}
+
+/// [`AGAIN_ARG`], first in `main` with one thread: the namespace with the
+/// range, then the verb. With no range, podvm refuses (125).
+fn serve_again(argv: &[String]) {
+    // SAFETY: getuid and getgid cannot fail.
+    let (uid, gid) = unsafe { (super::getuid(), super::getgid()) };
+    let entered = host_plan()
+        .is_some_and(|p| super::with_range(&p, uid, gid, super::CLONE_NEWUSER))
+        && super::owners::TOP.load(std::sync::atomic::Ordering::Relaxed) > 0;
+    let verb = argv.get(2).map(String::as_str).unwrap_or("");
+    if !entered {
+        eprintln!("podvm {verb}: the user namespace with the subordinate range did not open");
+        std::process::exit(125);
+    }
+    let rest = &argv[3..];
+    std::process::exit(match verb {
+        "cp" => crate::lifecycle::cp(rest),
+        "exec" => crate::exec::exec(rest),
+        _ => 125,
+    });
 }
 
 #[cfg(test)]

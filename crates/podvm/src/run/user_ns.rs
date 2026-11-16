@@ -35,6 +35,13 @@ pub(super) fn push(
         return Ok(());
     };
     let (uid, gid) = crate::lifecycle::resolve_user(verb, rootfs, spec)?;
+    // TODO/probe.md T-1911: a foreground run in podvm's own namespace with
+    // the subordinate range holds the ids, so the payload drops to them for
+    // real; a nested namespace would map them to the root of this one, and
+    // the payload would own each file of root.
+    if crate::userns::active() && crate::userns::owners::holds(uid, gid) {
+        return Ok(());
+    }
     if uid != 0 {
         env.push(format!("{USERNS_IDS_VAR}={uid}:{gid}"));
     }

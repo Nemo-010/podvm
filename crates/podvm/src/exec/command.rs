@@ -87,6 +87,11 @@ pub fn exec(args: &[String]) -> i32 {
     // the same either way: a container's rootfs is a directory in the store and
     // so is an image's.
     if let Some((rootfs, state)) = crate::lifecycle::rootfs_of(&store, &image) {
+        // TODO/probe.md T-1911: a tree of a subordinate id, not running.
+        let running = state == podvm_supervise::table::State::Running;
+        if let Some(c) = crate::userns::again_in_range("exec", running, args) {
+            return c;
+        }
         return enter(&image, &rootfs, state, &o, &store);
     }
 

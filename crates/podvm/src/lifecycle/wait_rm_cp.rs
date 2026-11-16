@@ -283,6 +283,10 @@ pub fn cp(args: &[String]) -> i32 {
         Ok(s) => s,
         Err(c) => return c,
     };
+    // TODO/probe.md T-1911: a stopped tree of a subordinate id.
+    if let Some(c) = crate::userns::cp_in_range(&s, &o.a, &o.b, args) {
+        return c;
+    }
     let (a, b) = (o.a.as_str(), o.b.as_str());
     let (from_named, to_named) = (named(a), named(b));
     match (from_named, to_named) {
@@ -302,7 +306,7 @@ pub fn cp(args: &[String]) -> i32 {
 /// A side addresses a named filesystem: a container (`split`, no slashes)
 /// or an image reference (slashes, tags and all).
 fn named(arg: &str) -> bool {
-    split(arg).is_some() || split_image(arg).is_some()
+    split(arg).is_some() || super::cp_image::split_image(arg).is_some()
 }
 
 /// Copy through a name that is a container first and an image second.
@@ -370,23 +374,12 @@ fn copy_named(
 }
 
 /// `name:/path` where the name is not a Windows drive letter or a bare path.
-pub(super) fn split(arg: &str) -> Option<(String, String)> {
+pub(crate) fn split(arg: &str) -> Option<(String, String)> {
     let (name, path) = arg.split_once(':')?;
     if name.is_empty() || path.is_empty() || name.contains('/') {
         return None;
     }
     Some((name.to_string(), path.to_string()))
-}
-
-/// `reference:path` where the reference may carry a registry, a tag, or
-/// both. Slashes allowed, unlike a container name: this is the image half
-/// of addressing, and `copy_named` tries the container half first.
-fn split_image(arg: &str) -> Option<(String, String)> {
-    let (image, path) = arg.rsplit_once(':')?;
-    if image.is_empty() || path.is_empty() {
-        return None;
-    }
-    Some((image.to_string(), path.to_string()))
 }
 
 pub(super) fn copy_one(
