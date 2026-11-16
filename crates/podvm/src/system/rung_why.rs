@@ -47,7 +47,12 @@ pub fn why_not(f: &Findings, entered: Rung) -> Vec<String> {
         v.push(l);
     }
     if !crate::ladder::ns_reachable(f) {
-        let row = f.rows.iter().find(|(n, _)| n.starts_with("chroot("));
+        // TODO/probe.md T-1921: the caller's own row, not the leg in a user
+        // namespace.
+        let row = f
+            .rows
+            .iter()
+            .find(|(n, _)| *n == podvm_probe::probes::HOST_CHROOT);
         v.push(format!(
             "the chroot rung needs chroot(2), and it gives {}",
             word(row.map(|(_, o)| o))
@@ -72,7 +77,10 @@ mod tests {
         let f = findings(vec![
             ("unshare(CLONE_NEWNS)", eperm()),
             ("unshare(CLONE_NEWUSER)", Outcome::ok()),
-            ("chroot(.)", eperm()),
+            // TODO/probe.md T-1921: the leg in a user namespace comes first in
+            // the table, and its verdict is not the caller's.
+            (podvm_probe::probes::USERNS_CHROOT, Outcome::ok()),
+            (podvm_probe::probes::HOST_CHROOT, eperm()),
         ]);
         let v = why_not(&f, Rung::Userland);
         assert_eq!(v.len(), 2, "{v:?}");

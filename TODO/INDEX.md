@@ -583,10 +583,12 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1918](cli.md) | P2 | S | none | cli | partial | podvm has no installer: the user downloads and checks the binary by hand |
 | [T-1919](cli.md) | P2 | M | none | cli | partial | The state of an issue is written by hand |
 | [T-1920](enter.md) | P1 | M | none | enter | done | A volume moves a run off the namespace rung, and a raw syscall there sees host paths |
+| [T-1921](probe.md) | P1 | S | none | probe | done | `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM |
+| [T-1922](machine.md) | P1 | M | none | machine | partial | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
 
 ## Counts
 
-517 entries: 6 open, 16 partial, 2 blocked, 493 done.
+519 entries: 6 open, 17 partial, 2 blocked, 494 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -596,10 +598,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 0 | 4 | 0 | 208 | 212 |
+| P1 | 0 | 5 | 0 | 209 | 214 |
 | P2 | 4 | 8 | 2 | 169 | 183 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 6 | 16 | 2 | 493 | 517 |
+| **All** | 6 | 17 | 2 | 494 | 519 |
 
 ## Work order
 

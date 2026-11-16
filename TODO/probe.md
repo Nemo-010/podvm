@@ -2004,3 +2004,36 @@ As uid 1000 on a host where `unshare -Urm true` exits 0: `podvm run -d public.ec
 
 **Blocked (2026-11-15), cleared by `v0.53.0`.** The device nodes on the rung: COORD-135 (PodUtils/podvm#414) asks pod-enter for the binds. Clears when a tag of podcrates carries them.
 
+
+# T-1921: `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM
+
+**Source:** integration test tmpfs_exec (`docs/HANDOFF.md`, 2026-11-16), podcrates `v0.59.0` (podcrates@T-744); COORD-150 (#443)
+**Category:** probe
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+As uid 1000 on a host that refuses `chroot` to the caller and opens a user namespace, `echo run | podvm run -i --name tx --tmpfs /tmp IMAGE tee /tmp/x` then `podvm exec tx cat /tmp/keep` exits 125 with "chroot into the rootfs failed with EPERM". The probe of `exec` gives `chroot=EPERM`, but the entry decision takes the chroot sequence. podcrates `v0.59.0` adds the row `chroot(/tmp) in unshare(NEWUSER+maps)` (podcrates@T-744), and `pod-hostprobe`'s `chroot_usable` takes each row whose name starts with `chroot(`. The leg passes, so `chroot_usable` is true. `rung_why.rs` finds the first such row and names the wrong verdict too.
+
+## Premise
+
+Each caller of `podvm_probe::probes::chroot_usable` asks about the caller's own `chroot(2)`, outside a namespace. The way to the namespace rung through a user namespace is `crate::ladder::ns_reachable` (T-1912), which reads the leg on its own.
+
+## Approach
+
+`podvm-probe` re-exports the module `probes` of `pod-hostprobe` with its own `chroot_usable`, which reads the row `chroot(/tmp)` only (`HOST_CHROOT`); each caller of podvm takes it with no change. `rung_why.rs` finds that row by name. COORD-150 asks podcrates for the same fix in `pod-hostprobe`; podvm removes its shadow when it takes that tag.
+
+## Decision
+
+A shadow in `podvm-probe` and not a change of each caller: the callers keep the one path `podvm_probe::probes::chroot_usable`, and the fix leaves in one place when podcrates fixes the crate.
+
+## Prove
+
+`cargo test -p podvm-probe --lib chroot_usable_reads_the_callers_own_row_only`, and the integration test `crates/podvm/tests/tmpfs_exec.rs` as uid 1000 on the cloud host, with the interposer objects built (`scripts/build-interpose.sh`).
+
+## Done
+
+**Done (2026-11-16).** `podvm-probe` shadows `chroot_usable` with a check of the row `chroot(/tmp)` only, and `rung_why.rs` reads that row by name. Measured as uid 1000 on the cloud host: `tmpfs_exec` failed with EPERM in the chroot sequence before the change, and passes after it; `exec` of the stopped run takes the loader family. The unit test holds the leg `Ok` with the caller's row `Denied` to false.

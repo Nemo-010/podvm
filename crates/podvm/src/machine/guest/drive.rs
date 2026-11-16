@@ -82,6 +82,10 @@ pub(super) fn drive(
         }
     });
     let mut console = init::Console::new(nonce);
+    // PodUtils/podrunner#195: the last lines of the console before the
+    // ready marker, for the message of a guest that gave no exit code.
+    let mut boot = std::collections::VecDeque::with_capacity(BOOT_LINES);
+    let mut ready = false;
     let mut blanks = 0usize;
     let mut code: Option<i32> = None;
     let stdout = std::io::stdout();
@@ -89,7 +93,16 @@ pub(super) fn drive(
         let left = deadline.saturating_duration_since(Instant::now());
         match rx.recv_timeout(left.max(Duration::from_millis(1))) {
             Ok(line) => match console.line(&line) {
-                init::Line::Before | init::Line::Ready => {}
+                init::Line::Before => {
+                    let l = line.trim_end_matches('\r').trim();
+                    if !l.is_empty() {
+                        if boot.len() == BOOT_LINES {
+                            boot.pop_front();
+                        }
+                        boot.push_back(l.to_string());
+                    }
+                }
+                init::Line::Ready => ready = true,
                 init::Line::Out("") => blanks += 1,
                 init::Line::Out(s) => {
                     let mut o = stdout.lock();
@@ -131,13 +144,16 @@ pub(super) fn drive(
         Duration::ZERO
     };
     let timed_out = code.is_none() && Instant::now() >= deadline;
-    let ended = wait_bounded(&mut child, grace);
-    if !ended {
-        // SAFETY: a plain system call on the process group that `spawn`
-        // made for the emulator.
-        unsafe { kill(-pid, 9) };
-        let _ = child.wait();
-    }
+    let status = match wait_bounded(&mut child, grace) {
+        Some(s) => Some(s),
+        None => {
+            // SAFETY: a plain system call on the process group that `spawn`
+            // made for the emulator.
+            unsafe { kill(-pid, 9) };
+            let _ = child.wait();
+            None
+        }
+    };
     // The port closed with the emulator: the pump has each byte now.
     gone.store(true, std::sync::atomic::Ordering::Release);
     let _ = errs.join();
@@ -166,19 +182,27 @@ pub(super) fn drive(
             // the one fact of the cause. On this failure it is always said.
             eprintln!(
                 "podvm {}: machine tier: the guest ended before it gave the exit code of \
-                 the payload{}{}",
+                 the payload{}; {}{}",
                 r.verb,
                 if Instant::now() >= deadline {
                     ", at the bound of the run"
                 } else {
                     ""
                 },
+                ended_how(status, ready),
                 if tail.is_empty() {
                     String::new()
                 } else {
                     format!("; qemu: {tail}")
                 }
             );
+            // PodUtils/podrunner#195: what the guest printed last, where it
+            // did not reach the command.
+            if !ready {
+                for l in &boot {
+                    eprintln!("podvm {}: machine tier: console: {l}", r.verb);
+                }
+            }
             EXIT_RUNTIME_ERROR
         }
     }
@@ -188,15 +212,44 @@ unsafe extern "C" {
     fn kill(pid: i32, sig: i32) -> i32;
 }
 
-fn wait_bounded(child: &mut std::process::Child, d: Duration) -> bool {
+/// The lines of the console that the message of a failed start keeps.
+const BOOT_LINES: usize = 8;
+
+/// The status of the emulator, or `None` where it did not end within `d`.
+/// A zero bound still reads an emulator that has ended.
+fn wait_bounded(child: &mut std::process::Child, d: Duration) -> Option<std::process::ExitStatus> {
     let end = Instant::now() + d;
-    while Instant::now() < end {
-        if let Ok(Some(_)) = child.try_wait() {
-            return true;
+    loop {
+        if let Ok(Some(s)) = child.try_wait() {
+            return Some(s);
+        }
+        if Instant::now() >= end {
+            return None;
         }
         std::thread::sleep(Duration::from_millis(50));
     }
-    false
+}
+
+/// How the emulator ended, and whether the guest reached the command
+/// (PodUtils/podrunner#195): an exit code, a signal (`SIGKILL` from podvm
+/// at the bound, or from another process such as the OOM killer), or still
+/// running when podvm killed it.
+fn ended_how(status: Option<std::process::ExitStatus>, ready: bool) -> String {
+    use std::os::unix::process::ExitStatusExt;
+    let how = match status {
+        None => "the emulator was still running, and podvm killed it".to_string(),
+        Some(s) => match (s.code(), s.signal()) {
+            (Some(c), _) => format!("the emulator exited with code {c}"),
+            (None, Some(sig)) => format!("the emulator ended on signal {sig}"),
+            _ => format!("the emulator ended: {s}"),
+        },
+    };
+    let stage = if ready {
+        "after the guest started the command"
+    } else {
+        "before the guest reached the command"
+    };
+    format!("{how}, {stage}")
 }
 
 /// TODO/machine.md T-1906: remove each `run-PID-*` directory under `dir`
@@ -244,5 +297,28 @@ mod sweep_tests {
         assert!(live.exists(), "the directory of a live PID went");
         assert!(other.exists(), "a file that is no run directory went");
         let _ = std::fs::remove_dir_all(&d);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ended_how;
+    use std::os::unix::process::ExitStatusExt;
+    use std::process::ExitStatus;
+
+    /// PodUtils/podrunner#195: the message names the end of the emulator.
+    #[test]
+    fn the_end_of_the_emulator_is_named() {
+        let code = ExitStatus::from_raw(1 << 8);
+        let killed = ExitStatus::from_raw(9);
+        assert_eq!(
+            ended_how(Some(code), false),
+            "the emulator exited with code 1, before the guest reached the command"
+        );
+        assert_eq!(
+            ended_how(Some(killed), true),
+            "the emulator ended on signal 9, after the guest started the command"
+        );
+        assert!(ended_how(None, false).starts_with("the emulator was still running"));
     }
 }

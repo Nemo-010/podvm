@@ -26,9 +26,35 @@ pub mod report;
 pub mod select;
 
 pub use pod_hostprobe::{
-    binfmt, cgroup, child, identity, interp, machine, mounts, probes, supervise, sys, verdict,
-    writable, Findings, Settings,
+    binfmt, cgroup, child, identity, interp, machine, mounts, supervise, sys, verdict, writable,
+    Findings, Settings,
 };
+
+/// The probes of `pod-hostprobe`, with one answer of podvm's own.
+///
+/// TODO/probe.md T-1921: since podcrates `v0.59.0` (podcrates@T-744) the
+/// table holds the row [`USERNS_CHROOT`](pod_hostprobe::probes::USERNS_CHROOT),
+/// `chroot(/tmp)` inside a user namespace of the probe. The crate's
+/// `chroot_usable` takes each row whose name starts with `chroot(`, so on a
+/// host that refuses `chroot` to the caller but opens a user namespace it
+/// said yes, and `exec` ran the chroot sequence into `EPERM`. The function
+/// here shadows the crate's and reads the caller's own row only, until
+/// podcrates fixes it (COORD-150).
+pub mod probes {
+    pub use pod_hostprobe::probes::*;
+
+    /// The row of `chroot(2)` for the caller itself, outside any namespace.
+    pub const HOST_CHROOT: &str = "chroot(/tmp)";
+
+    /// Whether the caller itself can `chroot`: the row [`HOST_CHROOT`] with
+    /// an `Ok` verdict, and no other row.
+    pub fn chroot_usable(findings: &crate::Findings) -> bool {
+        findings
+            .rows
+            .iter()
+            .any(|(n, out)| *n == HOST_CHROOT && matches!(out.verdict, crate::verdict::Verdict::Ok))
+    }
+}
 
 /// The private argument a probe child is re-executed with.
 ///
@@ -99,6 +125,36 @@ mod tests {
     #[test]
     fn a_probe_name_that_does_not_exist_exits_two() {
         assert_eq!(run_child("no such probe"), 2);
+    }
+
+    /// TODO/probe.md T-1921: the leg in a user namespace is not the
+    /// caller's `chroot`.
+    #[test]
+    fn chroot_usable_reads_the_callers_own_row_only() {
+        use verdict::Outcome;
+        let f = |rows: Vec<(&'static str, Outcome)>| Findings {
+            rows,
+            identity: identity::Identity::default(),
+            writable: Vec::new(),
+            self_exe: String::new(),
+        };
+        let leg = probes::USERNS_CHROOT;
+        let host = probes::HOST_CHROOT;
+        assert!(
+            probes::find(host).is_some(),
+            "the crate has the row {host:?}"
+        );
+        let denied = || Outcome::denied(sys::Errno(1));
+        assert!(!probes::chroot_usable(&f(vec![
+            (leg, Outcome::ok()),
+            (host, denied())
+        ])));
+        assert!(!probes::chroot_usable(&f(vec![(leg, Outcome::ok())])));
+        assert!(probes::chroot_usable(&f(vec![
+            (leg, denied()),
+            (host, Outcome::ok())
+        ])));
+        assert!(!probes::chroot_usable(&f(vec![])));
     }
 
     #[test]

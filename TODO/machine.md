@@ -5110,3 +5110,38 @@ podvm that was killed before it. `cargo test -p podvm --bin podvm
 machine_run_dirs` exits 0: a directory of a dead PID goes, the one of the
 test's own PID and a file that is no run directory stay.
 
+
+# T-1922: The machine tier ends before the exit code for a user with no root that `sudo -u` makes
+
+**Source:** PodUtils/podrunner#195 (COORD-069 of podrunner, podrunner@T-291)
+**Category:** machine
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** partial
+
+## Problem
+
+On a GitHub-hosted runner with KVM, as podrunner's lab user (made with `sudo -u USER --preserve-env=PATH,TMPDIR`, a fresh HOME, no root, `/dev/kvm` mode 0666), `podvm run --verbose --rm --podvm-tier=machine --podvm-mem 4G IMAGE true` of `v0.2.0-beta.24` exits 125 with "the guest ended before it gave the exit code of the payload", and the only line of QEMU is its chardev notice ("QEMU waiting for connection on ... .err"). The user of the runner passes the same command. The message does not say how the emulator ended or how far the guest came.
+
+## Premise
+
+QEMU's standard output closed with no exit marker and no error line, so QEMU ended on a signal or exited with no message, or the guest reset before its ready marker. Each of these differs in the exit status of the emulator and in the last lines of the console.
+
+## Approach
+
+1. The message of this failure names the exit status of the emulator (a code or a signal), whether the guest reached the command, and the last eight lines of the console before the ready marker (`machine/guest/drive.rs`).
+2. Experiment 463 (job `nonroot` of `kvm.yml`) runs the command as the user of the runner and as a new user through `sudo -u`, with 4 GiB and with 1 GiB, and keeps the limits of the user and the end of the kernel log.
+3. Fix the cause that 463 shows, then tell podrunner the release.
+
+## Decision
+
+Measure before a fix: the issue gives no line that tells the causes apart.
+
+## Prove
+
+Experiment 463 passes in the job `nonroot` of `kvm.yml`; `cargo test -p podvm --bin podvm the_end_of_the_emulator_is_named`.
+
+## Done
+
+**Partial (2026-11-16).** Clauses 1 and 2 of the Approach are on `main`: the message names the end of the emulator and the console lines, and experiment 463 is in `kvm.yml`. Remaining: the run of 463, and clause 3.
