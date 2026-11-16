@@ -25,7 +25,11 @@
 #   5. an image with a root of about 300 MiB (PodUtils/podrunner#198: the
 #      runner image of podrunner, 293 MiB, ends before the command for the
 #      lab user) boots with --podvm-mem 4G, as the user of the runner and
-#      as the new user. Skipped with no docker, which builds its tar.
+#      as the new user. Skipped with no docker, which builds its tar;
+#   6. an image with a root of about 1400 MiB (PodUtils/podrunner#199: the
+#      runner image's initrd of 1348 MiB closes the console after 2.6 s)
+#      boots with --podvm-mem 4G and 8G, as the user of the runner; each
+#      run keeps its stderr and the end of the kernel log.
 # Each failed clause keeps its stderr, the limits of the user, and the end
 # of the kernel log in the transcript.
 
@@ -118,6 +122,34 @@ if command -v docker >/dev/null 2>&1 && docker pull -q alpine:3.20 >/dev/null 2>
 	rm -rf "$BIG"
 else
 	say "clause 5  skipped: no docker to build the large image"
+fi
+
+# Clause 6: a root of 1400 MiB, as podrunner's runner image.
+if command -v docker >/dev/null 2>&1 && docker pull -q alpine:3.20 >/dev/null 2>&1; then
+	HUGE=$(mktemp -d /tmp/podvm-463-huge.XXXXXX)
+	cid=$(docker create alpine:3.20 true)
+	docker export "$cid" >"$HUGE/huge.tar"
+	docker rm "$cid" >/dev/null
+	mkdir -p "$HUGE/add"
+	for i in 1 2 3 4 5 6 7; do head -c 209715200 /dev/urandom >"$HUGE/add/blob$i"; done
+	tar -rf "$HUGE/huge.tar" -C "$HUGE/add" . && rm -rf "$HUGE/add"
+	say "huge      $(du -m "$HUGE/huge.tar" | cut -f1) MiB tar, $(df -m /tmp | awk 'NR==2{print $4}') MiB free"
+	timeout 600 "$P" import "$HUGE/huge.tar" huge:463 >/dev/null 2>&1
+	rm -f "$HUGE/huge.tar"
+	for mem in 4G 8G; do
+		start=$(date +%s)
+		timeout 900 "$P" run --verbose --rm --podvm-tier=machine --podvm-mem "$mem" huge:463 true \
+			>/dev/null 2>"$OUT.7.err"
+		rc=$?
+		say "clause 6  rc $rc in $(($(date +%s) - start)) s (a root of 1400 MiB, --podvm-mem $mem)"
+		keep "$OUT.7.err"
+		sudo dmesg 2>/dev/null | grep -iE "oom|killed process|qemu" | tail -5 | sed 's/^/    dmesg: /' | tee -a "$OUT"
+		[ "$rc" -eq 0 ] || bad "clause 6, --podvm-mem $mem"
+	done
+	timeout 120 "$P" rmi -f huge:463 >/dev/null 2>&1
+	rm -rf "$HUGE"
+else
+	say "clause 6  skipped: no docker to build the large image"
 fi
 
 # Clause 4: nothing of a guest stays.

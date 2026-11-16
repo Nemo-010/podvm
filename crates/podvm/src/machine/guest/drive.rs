@@ -144,8 +144,13 @@ pub(super) fn drive(
     // TODO/machine.md T-1809: with no marker (the deadline, or an emulator
     // that ended) nothing is left to wait for, so the kill comes at once;
     // the bounded wait of 10 s made `--timeout 2` end at 12 s.
+    // PodUtils/podrunner#199: a console that closed comes before the end of
+    // the emulator; two seconds give its status (a code or a signal, such
+    // as the OOM killer's) in place of "still running".
     let grace = if code.is_some() {
         Duration::from_secs(10)
+    } else if console_closed {
+        Duration::from_secs(2)
     } else {
         Duration::ZERO
     };
