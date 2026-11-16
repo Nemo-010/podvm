@@ -8,6 +8,26 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: `exec` of a stopped run with no root, 2026-11-16
+
+Record: T-1921 (podcrates `v0.59.0`, COORD-150).
+Deployed: none yet.
+
+- On a host that refuses `chroot` to a user with no root but opens a user
+  namespace, `podvm exec` of a run that ended no longer exits 125 with
+  "chroot into the rootfs failed with EPERM": it takes the loader family.
+  The ladder, `doctor`, `system df` and `system info` read the same row.
+
+### Changed: the machine tier says how the emulator ended, 2026-11-16
+
+Record: T-1922 (PodUtils/podrunner#193, #195).
+Deployed: none yet.
+
+- Where the guest ends before the exit code of the payload, the message
+  names the exit code or the signal of the emulator, whether the guest
+  reached the command, its last console lines, and the last line of QEMU,
+  also with no `--verbose`.
+
 ### Added: `podvm-install.sh`, 2026-11-16
 
 Record: T-1918 (the owner's ruling "Installer", podcrates `v0.58.0`).
