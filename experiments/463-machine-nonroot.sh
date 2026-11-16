@@ -28,7 +28,7 @@
 #      as the new user. Skipped with no docker, which builds its tar;
 #   6. an image with a root of about 1400 MiB (PodUtils/podrunner#199: the
 #      runner image's initrd of 1348 MiB closes the console after 2.6 s)
-#      boots with --podvm-mem 4G and 8G, as the user of the runner; each
+#      boots with --podvm-mem 4G, 5G, 6G and 8G, as the user of the runner; each
 #      run keeps its stderr and the end of the kernel log.
 # Each failed clause keeps its stderr, the limits of the user, and the end
 # of the kernel log in the transcript.
@@ -136,7 +136,7 @@ if command -v docker >/dev/null 2>&1 && docker pull -q alpine:3.20 >/dev/null 2>
 	say "huge      $(du -m "$HUGE/huge.tar" | cut -f1) MiB tar, $(df -m /tmp | awk 'NR==2{print $4}') MiB free"
 	timeout 600 "$P" import "$HUGE/huge.tar" huge:463 >/dev/null 2>&1
 	rm -f "$HUGE/huge.tar"
-	for mem in 4G 8G; do
+	for mem in 4G 5G 6G 8G; do
 		start=$(date +%s)
 		timeout 900 "$P" run --verbose --rm --podvm-tier=machine --podvm-mem "$mem" huge:463 true \
 			>/dev/null 2>"$OUT.7.err"
