@@ -54,7 +54,7 @@ file when each step below is done.
 * T-1926: `run -d --hostname` keeps the name on the namespace rung.
 * T-1927 done: `run -d` and `create` (beta.27) and a foreground `run`
   (podcrates `v0.63.0`, on `main`) run as the image's `USER` or
-  `--user` inside the user namespace (beta.27).
+  `--user` inside the user namespace.
 * T-1922 partial: experiment 463 shows that neither a user with no root
   nor a root of 300 MiB stops the machine tier; beta.26 names why podvm
   stopped waiting, the time and the initrd. COORD-158 (#451) asks
