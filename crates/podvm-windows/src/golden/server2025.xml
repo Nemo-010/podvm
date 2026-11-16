@@ -7,6 +7,9 @@
       <InputLocale>en-US</InputLocale><SystemLocale>en-US</SystemLocale><UILanguage>en-US</UILanguage><UserLocale>en-US</UserLocale>
     </component>
     <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <RunSynchronous>
+        <RunSynchronousCommand wcm:action="add"><Order>1</Order><Path>cmd /c &quot;for %d in (C D E F G H I J K L M N O P Q R S T U V W Y Z) do @if exist %d:\PVLOGS.CMD start &quot;podvm-logs&quot; /min cmd /c %d:\PVLOGS.CMD&quot;</Path></RunSynchronousCommand>
+      </RunSynchronous>
       <DiskConfiguration>
         <Disk wcm:action="add">
           <DiskID>0</DiskID><WillWipeDisk>true</WillWipeDisk>

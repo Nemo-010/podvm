@@ -561,11 +561,29 @@ jobs:
 
       # The logs of Setup on the kept root disk of a failed install
       # (setupact.log and setuperr.log of each Panther directory).
+      # Run 43783602911: the error is not on the root disk. WinPE copies
+      # its logs (X:\Windows\Panther, X:\$Windows.~BT) each 30 s to the
+      # log stick (podvm_windows::pelogs); the job keeps the image file
+      # and its files (FAT16, partition at 1 MiB) in winpe/.
       - name: the logs of Setup
         if: failure()
         run: |
           set -u
-          mkdir -p "$RUNNER_TEMP/install-shots/panther"
+          mkdir -p "$RUNNER_TEMP/install-shots/panther" "$RUNNER_TEMP/install-shots/winpe"
+          if [ -f /mnt/w/failed/pelogs.img ]; then
+            cp /mnt/w/failed/pelogs.img "$RUNNER_TEMP/install-shots/winpe/pelogs.img"
+            sudo mkdir -p /mnt/pelogs
+            if sudo mount -t vfat -o loop,ro,offset=1048576 /mnt/w/failed/pelogs.img /mnt/pelogs; then
+              sudo cp -r /mnt/pelogs/. "$RUNNER_TEMP/install-shots/winpe/" || true
+              sudo umount /mnt/pelogs
+            else
+              echo "the log stick does not mount"
+            fi
+            sudo chmod -R a+rX "$RUNNER_TEMP/install-shots/winpe"
+            ls -laR "$RUNNER_TEMP/install-shots/winpe"
+          else
+            echo "no kept log stick"
+          fi
           [ -f /mnt/w/failed/root.qcow2 ] || { echo "no kept disk"; exit 0; }
           sudo modprobe nbd max_part=8 || true
           sudo qemu-nbd --read-only --connect=/dev/nbd0 /mnt/w/failed/root.qcow2

@@ -5,7 +5,9 @@
 //! its index, sets the locale, makes one local administrator `podvm` with
 //! one automatic logon, skips the out-of-box screens, turns on Remote
 //! Desktop and its firewall group, turns off sleep, and ends its first logon
-//! with a `READY` marker on the first serial port and a shutdown. Windows 11
+//! with a `READY` marker on the first serial port and a shutdown. The
+//! windowsPE pass starts the copy of the logs of WinPE to the log stick
+//! (`crate::pelogs`, T-1867). Windows 11
 //! gets the LabConfig keys that let Setup run with no TPM, no Secure Boot
 //! and a small memory (the keys of dockur/windows `assets/win11x64.xml`;
 //! T-1867 proves them in a guest).
@@ -107,27 +109,31 @@ pub fn xml(a: &Answer) -> String {
         esc(&a.computer),
     );
     let index = a.target.image_index();
-    let labconfig = if a.target == Target::Win11 {
-        ["BypassTPMCheck", "BypassSecureBootCheck", "BypassRAMCheck"]
-            .iter()
-            .enumerate()
-            .map(|(i, k)| {
-                format!(
-                    "        <RunSynchronousCommand wcm:action=\"add\"><Order>{}</Order><Path>reg add HKLM\\SYSTEM\\Setup\\LabConfig /v {k} /t REG_DWORD /d 1 /f</Path></RunSynchronousCommand>\n",
-                    i + 1
-                )
-            })
-            .collect::<String>()
-    } else {
-        String::new()
-    };
-    // TODO/machine.md T-1867: Setup reads no empty `RunSynchronous`, so
-    // the element is written only with a command in it.
-    let labconfig = if labconfig.is_empty() {
-        labconfig
-    } else {
-        format!("      <RunSynchronous>\n{labconfig}      </RunSynchronous>\n")
-    };
+    // TODO/machine.md T-1867: the first command of WinPE starts the copy
+    // of its logs to the log stick (`crate::pelogs`); Windows 11 then gets
+    // the LabConfig keys.
+    let mut pe: Vec<String> = vec![crate::pelogs::START.to_string()];
+    if a.target == Target::Win11 {
+        for k in ["BypassTPMCheck", "BypassSecureBootCheck", "BypassRAMCheck"] {
+            pe.push(format!(
+                r"reg add HKLM\SYSTEM\Setup\LabConfig /v {k} /t REG_DWORD /d 1 /f"
+            ));
+        }
+    }
+    let pe = pe
+        .iter()
+        .enumerate()
+        .map(|(i, c)| {
+            format!(
+                "        <RunSynchronousCommand wcm:action=\"add\"><Order>{}</Order><Path>{}</Path></RunSynchronousCommand>\n",
+                i + 1,
+                esc(c)
+            )
+        })
+        .collect::<String>();
+    // TODO/machine.md T-1867: Setup reads no empty `RunSynchronous`; the
+    // windowsPE pass always has the command of the log stick.
+    let pe_run = format!("      <RunSynchronous>\n{pe}      </RunSynchronous>\n");
     let logon = format!("cmd /c echo {LOGON}> COM1");
     let first = [
         logon.as_str(),
@@ -167,7 +173,7 @@ pub fn xml(a: &Answer) -> String {
       <InputLocale>{loc}</InputLocale><SystemLocale>{loc}</SystemLocale><UILanguage>{loc}</UILanguage><UserLocale>{loc}</UserLocale>
     </component>
     <component name="Microsoft-Windows-Setup" {ARCH}>
-{labconfig}      <DiskConfiguration>
+{pe_run}      <DiskConfiguration>
         <Disk wcm:action="add">
           <DiskID>0</DiskID><WillWipeDisk>true</WillWipeDisk>
           <CreatePartitions>
@@ -282,6 +288,8 @@ mod tests {
             assert!(x.contains("<Key>/IMAGE/INDEX</Key>"), "{t:?}");
             assert!(x.contains(READY) && x.contains("shutdown /s"), "{t:?}");
             assert!(x.contains("fDenyTSConnections"), "{t:?}");
+            // TODO/machine.md T-1867: WinPE starts the copy of its logs.
+            assert!(x.contains(crate::pelogs::SCRIPT), "{t:?}");
             assert_eq!(x.contains("BypassTPMCheck"), t == Target::Win11, "{t:?}");
             // The password is escaped, and appears only in its two places.
             assert!(x.contains("Pv-canary-&lt;&amp;&gt;&quot;"), "{t:?}");

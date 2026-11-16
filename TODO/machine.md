@@ -3774,6 +3774,8 @@ runner (the room of one runner is for one install).
 
 ## Done
 
+**Partial (2026-11-16, the WinPE logs).** The error of Setup is not on the root disk (run 43783602911), so the install now keeps the logs of WinPE. `podvm pull windows:NAME` attaches a second USB stick, writable, `pelogs.img` beside the root disk, with one script, `PVLOGS.CMD` (`crates/podvm-windows/src/pelogs.rs`). The answer stick stays read-only, as it holds the password. The first `RunSynchronous` command of the windowsPE pass finds the stick by the script and starts it with `start`, so Setup does not wait for it (the golden files changed). The script copies `X:\Windows\Panther`, `X:\$Windows.~BT\Sources\Panther`, `X:\Sources\Panther`, `X:\Windows\INF\setupapi*.log` and `X:\Windows\Logs` to `PELOGS` on the stick each 30 s, with a list of the `.log` files of X: and a time stamp. `PODVM_WINDOWS_KEEP_FAILED=DIR` also keeps the stick as `DIR/pelogs.img`. After a failure, the job `install` of `kvm.yml` keeps the image and its files (a read-only loop mount at 1 MiB) in `install-shots/winpe/` of its artifact, for example `install-shots/winpe/PELOGS/XPANTHER/setuperr.log`. `cargo test -p podvm-windows` exits 0 with 33 tests, two of them new. No guest ran this change. Remaining: a run of the job `install`, then the cause in those logs.
+
 **Partial 2026-11-15.** `podvm pull windows:2025` (and `11`, `10`)
 checks the answer file, the accelerator and the room before the download
 (`crates/podvm/src/windows/install.rs`, `preflight`), then fetches the

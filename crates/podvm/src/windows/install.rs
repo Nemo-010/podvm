@@ -158,11 +158,22 @@ pub(crate) fn install(verb: &str, e: &Entry, iso: &Path, quiet: bool) -> Result<
 
 /// TODO/machine.md T-1867: `PODVM_WINDOWS_KEEP_FAILED=DIR` keeps the root
 /// disk of a failed install as `DIR/root.qcow2`, for the logs of Setup
-/// (`$WINDOWS.~BT/Sources/Panther`). The emulator stopped before this.
+/// (`$WINDOWS.~BT/Sources/Panther`), and the log stick as
+/// `DIR/pelogs.img`, for the logs of WinPE (`podvm_windows::pelogs`).
+/// The emulator stopped before this.
 fn keep_failed(plan: &Plan) {
     let Some(dir) = std::env::var_os("PODVM_WINDOWS_KEEP_FAILED").map(PathBuf::from) else {
         return;
     };
+    let logs = podvm_windows::pelogs::path_beside(&plan.root);
+    let to = dir.join(podvm_windows::pelogs::IMAGE);
+    match std::fs::create_dir_all(&dir).and_then(|()| std::fs::copy(&logs, &to)) {
+        Ok(_) => eprintln!(
+            "podvm: the log stick of the failed install is {}",
+            to.display()
+        ),
+        Err(e) => eprintln!("podvm: PODVM_WINDOWS_KEEP_FAILED: {}: {e}", to.display()),
+    }
     let to = dir.join("root.qcow2");
     let kept = std::fs::create_dir_all(&dir).and_then(|()| {
         std::fs::rename(&plan.root, &to).or_else(|_| std::fs::copy(&plan.root, &to).map(|_| ()))
@@ -217,6 +228,9 @@ fn prepare(
         &dir.join("answer.img"),
     )
     .map_err(|why| fail(verb, name, why))?;
+    // TODO/machine.md T-1867: WinPE copies its logs to this stick.
+    let logs = podvm_windows::pelogs::write(&podvm_windows::pelogs::path_beside(&plan.root))
+        .map_err(|why| fail(verb, name, why))?;
     plan.options = podvm_windows::options::desktop(plan.accel, Vec::new());
     // TODO/machine.md T-1867: `PODVM_WINDOWS_HYPERV=0` drops the Hyper-V
     // flags, to tell a stall of nested KVM from one of the emulated disk.
@@ -231,6 +245,7 @@ fn prepare(
             boot: true,
         },
         stick,
+        logs,
     ];
     plan.options.check().map_err(|why| fail(verb, name, why))?;
     Ok(password)

@@ -172,6 +172,7 @@ pub mod install; // TODO/machine.md T-1867
 pub mod machines; // TODO/machine.md T-1870
 pub mod media; // TODO/machine.md T-1866
 pub mod options; // TODO/machine.md T-1865
+pub mod pelogs; // TODO/machine.md T-1867
 pub mod tools; // TODO/machine.md T-1875
 pub mod udf; // TODO/machine.md T-1863
 
