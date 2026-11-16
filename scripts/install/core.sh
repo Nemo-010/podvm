@@ -1,17 +1,23 @@
 #!/bin/sh
 # SPDX-License-Identifier: 0BSD
 # The core of each installer of PodUtils (docs/install.md). POSIX sh: it
-# runs under dash, busybox sh and bash --posix. A project installer sets
-# INST_NAME, INST_ENV and INST_REPO, holds the block of pins, includes this
-# file (scripts/install/pins.py puts it inline for a release), can replace
-# the hooks inst_files, inst_selfcheck and inst_setup, and calls
-# inst_main "$@".
+# runs under dash, busybox sh, bash --posix, the sh of macOS and Git Bash.
+# A project installer sets INST_NAME, INST_ENV and INST_REPO, holds the
+# block of pins, includes this file and core-net.sh (scripts/install/pins.py
+# puts them inline for a release), can replace the hooks inst_files,
+# inst_selfcheck and inst_setup, and calls inst_main "$@".
 #
 # The rules: no root; no file outside the prefix; no file of the host read
 # that the install does not need; a file goes to a temporary name in the
-# prefix, its SHA-256 must agree with its pin, it must run, and only then
-# does an atomic move put it in place. A second run checks each file
-# against its pin and downloads nothing that agrees.
+# prefix, its SHA-256 must agree with its pin, it must run, and then an
+# atomic move puts it in place. A second run downloads no file that agrees.
+
+# A stamped installer holds its version in the block of pins, which comes
+# before the core. A copy that takes its pins at run time (a copy of the
+# tree of a project, from the signed SHA256SUMS) holds none, and is no
+# asset of a release.
+# shellcheck disable=SC2034 # core-net.sh reads it.
+inst_stamped=${INST_VERSION:+1}
 
 inst_tag() { printf '%s-install' "$INST_NAME"; }
 inst_say() { printf '%s: %s\n' "$(inst_tag)" "$*"; }
@@ -26,10 +32,10 @@ inst_key() { printf '%s' "$1" | tr -c 'A-Za-z0-9\n' '_'; }
 inst_pin() { eval "printf '%s' \"\${INST_SUM_$(inst_key "$1"):-}\""; }
 inst_size() { eval "printf '%s' \"\${INST_SIZE_$(inst_key "$1"):-0}\""; }
 
-# The hooks. inst_files TARGET EXE prints one line "NAME ASSET" for each
-# file: NAME in the prefix, ASSET of the release.
+# The hooks. inst_files TARGET EXE: one line "NAME ASSET" for each file.
 inst_files() { printf '%s %s\n' "$INST_NAME$2" "$INST_NAME-$1$2"; }
 # The first line of FILE --version must be "INST_NAME VERSION".
+# shellcheck disable=SC2317 # a project redefines each hook; the core calls it by name.
 inst_version_ok() { case $1 in "$INST_NAME $INST_VERSION" | "$INST_NAME $INST_VERSION "*) return 0 ;; *) return 1 ;; esac; }
 # The last step: a check of the installed program, with no network.
 # shellcheck disable=SC2317 # a project redefines each hook; the core calls it by name.
@@ -58,6 +64,7 @@ Variables:
   ${INST_ENV}_MIRROR=URL       download each file from URL/ASSET
   ${INST_ENV}_DOWNLOADER=TOOL  use TOOL: curl, wget, python3 or busybox
   ${INST_ENV}_TARGET=TRIPLE    use the file of this target
+  ${INST_ENV}_COSIGN=CMD       check the signature with CMD (default: cosign), or none
   https_proxy, HTTPS_PROXY, no_proxy, NO_PROXY: the proxy
 EOF
 }
@@ -133,59 +140,6 @@ inst_detect_target() {
         inst_die "no file for this host (uname -s: $inst_os, uname -m: $inst_machine); this release has: $INST_TARGETS"
 }
 
-# The proxy comes from the environment. curl, wget, python3 and busybox
-# wget read it there: it never goes into argv or a file.
-inst_proxy() {
-    [ -n "${https_proxy:-}" ] || [ -z "${HTTPS_PROXY:-}" ] || export https_proxy="$HTTPS_PROXY"
-    [ -n "${no_proxy:-}" ] || [ -z "${NO_PROXY:-}" ] || export no_proxy="$NO_PROXY"
-    for inst_v in "${https_proxy:-}" "${http_proxy:-}"; do
-        [ -n "$inst_v" ] || continue
-        # The credential of the proxy is not shown.
-        inst_say "proxy: $(printf '%s' "$inst_v" | sed 's#^\([A-Za-z0-9+.-]*://\)[^@/]*@#\1#')"
-    done
-}
-
-# The first downloader that a probe finds. busybox wget is the last one:
-# some builds do not check TLS certificates.
-inst_detect_downloader() {
-    inst_dl='' inst_bbwget=''
-    inst_v=$(inst_knob DOWNLOADER)
-    for inst_t in ${inst_v:-curl wget python3 busybox}; do
-        case $inst_t in
-            curl) inst_have curl || continue ;;
-            wget)
-                inst_have wget || continue
-                if wget --help 2>&1 | grep -q BusyBox; then
-                    [ -n "$inst_v" ] || continue
-                    inst_t=busybox inst_bbwget=wget
-                else
-                    inst_wget_opts=''
-                    ! wget --help 2>&1 | grep -q -e '--no-config' || inst_wget_opts=--no-config
-                fi
-                ;;
-            python3) python3 -I -c 'import urllib.request' > /dev/null 2>&1 || continue ;;
-            busybox)
-                if busybox wget --help > /dev/null 2>&1; then
-                    inst_bbwget='busybox wget'
-                elif inst_have wget && wget --help 2>&1 | grep -q BusyBox; then
-                    inst_bbwget=wget
-                else
-                    continue
-                fi
-                ;;
-            *) inst_usage_die "${INST_ENV}_DOWNLOADER=$inst_t: give curl, wget, python3 or busybox" ;;
-        esac
-        inst_dl=$inst_t
-        break
-    done
-    if [ -z "$inst_dl" ]; then
-        [ -z "$inst_v" ] || inst_die "${INST_ENV}_DOWNLOADER=$inst_v: the tool is not usable on this host"
-        inst_die "no downloader: install curl, wget or python3, or give --offline FILE"
-    fi
-    [ "$inst_dl" != busybox ] ||
-        inst_warn "busybox wget can download with no check of the TLS certificate; the SHA-256 pins of this installer still check each file"
-}
-
 # The first SHA-256 tool that a probe finds.
 inst_detect_sha() {
     inst_sha=''
@@ -209,7 +163,7 @@ inst_sha256() {
 h = hashlib.sha256()
 for b in iter(lambda: sys.stdin.buffer.read(1 << 20), b""):
     h.update(b)
-print(h.hexdigest())' < "$1"
+sys.stdout.buffer.write(h.hexdigest().encode() + b"\n")' < "$1"
             ;;
     esac | cut -d ' ' -f 1
 }
@@ -225,31 +179,6 @@ inst_wait() {
     return "$inst_rc"
 }
 
-# Download URL to FILE.
-# shellcheck disable=SC2086 # inst_wget_opts and inst_bbwget are lists of words.
-inst_fetch() {
-    case $1 in
-        file://*) inst_wait cp "${1#file://}" "$2"; return ;;
-        https://*) inst_p='=https' ;;
-        *) inst_p='=http,https' ;;
-    esac
-    case $inst_dl in
-        curl) inst_wait curl -q -fsSL --proto "$inst_p" --proto-redir "$inst_p" --retry 3 --connect-timeout 30 -o "$2" "$1" ;;
-        wget) inst_wait wget $inst_wget_opts -q -t 3 -T 60 -O "$2" "$1" ;;
-        busybox) inst_wait $inst_bbwget -q -O "$2" "$1" ;;
-        python3)
-            inst_wait python3 -I -c 'import shutil, sys, urllib.request
-with urllib.request.urlopen(sys.argv[1], timeout=60) as r, open(sys.argv[2], "wb") as f:
-    shutil.copyfileobj(r, f)' "$1" "$2" 2> /dev/null
-            ;;
-    esac
-}
-
-inst_url() {
-    inst_v=$(inst_knob MIRROR)
-    printf '%s/%s' "${inst_v:-https://github.com/$INST_REPO/releases/download/v$INST_VERSION}" "$1" | sed 's#//*\([^/]*\)$#/\1#'
-}
-
 # The prefix: --prefix, else $XDG_BIN_HOME, else ~/.local/bin.
 inst_resolve_prefix() {
     if [ -n "$inst_opt_prefix" ]; then
@@ -261,6 +190,8 @@ inst_resolve_prefix() {
     else
         inst_die "HOME is not set: give --prefix DIR"
     fi
+    # A path of Windows (C:\...) under Git Bash, MSYS2 or Cygwin.
+    case $inst_prefix in [A-Za-z]:*) ! inst_have cygpath || inst_prefix=$(cygpath -u "$inst_prefix") ;; esac
     case $inst_prefix in /*) ;; *) inst_prefix=$(pwd)/$inst_prefix ;; esac
     case $inst_prefix in
         *'"'* | *'$'* | *'`'* | *\\* | *'
@@ -339,6 +270,7 @@ inst_bundle() {
 }
 
 # Get ASSET to FILE (a temporary name in the prefix), and check its pin.
+# shellcheck disable=SC2154 # core-net.sh sets inst_dl.
 inst_get() {
     if [ -n "$inst_offline" ]; then
         inst_bundle
@@ -386,9 +318,9 @@ EOF
 }
 
 # The first line of FILE --version, in printable ASCII, in at most 30 s
-# where timeout is there.
+# where timeout runs a command (timeout.exe of Windows does not).
 inst_run_version() {
-    if inst_have timeout; then
+    if inst_have timeout && timeout 5 sh -c : 2> /dev/null; then
         timeout 30 "$1" --version < /dev/null 2> /dev/null
     else
         "$1" --version < /dev/null 2> /dev/null
@@ -429,6 +361,7 @@ inst_main() {
         inst_say "downloader: $inst_dl"
     fi
     if [ "$inst_dry" = 1 ]; then
+        [ "$inst_todo" = 0 ] || inst_signature dry
         while read -r inst_n inst_a inst_s; do
             [ -n "$inst_n" ] || continue
             if [ "$inst_s" = ok ]; then
@@ -446,11 +379,14 @@ EOF
     fi
     if [ "$inst_todo" = 1 ]; then
         inst_check_space $((inst_need + 1024))
+        inst_signature
         # Each file to a temporary name, checked, then run once.
         while read -r inst_n inst_a inst_s; do
             [ "$inst_s" = get ] || continue
             inst_get "$inst_a" "$inst_tmp.$inst_n"
             chmod 0755 "$inst_tmp.$inst_n"
+            # On macOS, curl, wget and python3 set no quarantine attribute; a
+            # browser does, on a file of an --offline bundle.
             [ "$inst_os" != Darwin ] || xattr -d com.apple.quarantine "$inst_tmp.$inst_n" 2> /dev/null || true
             inst_v=$(inst_run_version "$inst_tmp.$inst_n")
             inst_version_ok "$inst_v" ||

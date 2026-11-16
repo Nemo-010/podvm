@@ -28,6 +28,21 @@ Deployed: none yet.
   refused". The lab process now keeps the stand-in alive, and CMD still
   gets the default SIGPIPE.
 
+### Changed: the installer checks the signature of `SHA256SUMS`, 2026-11-16
+
+Record: T-1925 (podcrates `v0.63.0`).
+Deployed: none yet.
+
+- `podvm-install.sh` is on the installer core of podcrates `v0.63.0`.
+  Where `cosign` is on `PATH` and the run is not offline, it checks the
+  keyless signature of `SHA256SUMS` for `nightly.yml` of PodUtils/podvm
+  at the tag, and compares each pin and the installer with
+  `SHA256SUMS` before a download. A failed check is a refusal, and no
+  file changes. `PODVM_COSIGN=none` turns the check off.
+- Each release carries `SHA256SUMS` (the binaries, the installer and the
+  bundle) and its signature bundle `SHA256SUMS.sigstore.json`, in place
+  of `podvm-SHA256SUMS`.
+
 ### Added: the manual page and `llms.txt` with each release, 2026-11-16
 
 Record: T-1917.

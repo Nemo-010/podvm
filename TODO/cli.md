@@ -5925,11 +5925,11 @@ A dry run prints each change before the workflow first closes or reopens an issu
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
-`scripts/install/core.sh` is the core of podcrates `v0.58.0`. In `v0.61.0` the core is two files (`core.sh` and `core-net.sh`), `pins.py` puts both inline, and the core checks the keyless cosign signature of `SHA256SUMS` where `cosign` is on the host and the run is not offline; a failed check is a refusal. podvm's `release.yml` does not sign `SHA256SUMS`, so a host with `cosign` would refuse podvm's installer of the new core until it does. The core also runs on macOS and Windows (Git Bash) now.
+`scripts/install/core.sh` is the core of podcrates `v0.58.0`. In `v0.61.0` the core is two files (`core.sh` and `core-net.sh`), `pins.py` puts both inline, and the core checks the keyless cosign signature of `SHA256SUMS` where `cosign` is on the host and the run is not offline; a failed check is a refusal. podvm's release (the publish job of `nightly.yml`) does not sign `SHA256SUMS`, so a host with `cosign` would refuse podvm's installer of the new core until it does. The core also runs on macOS and Windows (Git Bash) now.
 
 ## Premise
 
@@ -5938,7 +5938,7 @@ podcrates' `release.yml` signs `SHA256SUMS` on the tag (`SHA256SUMS.sigstore.jso
 ## Approach
 
 1. Copy `core.sh`, `core-net.sh` and `pins.py` of the tag, and the changes of `podvm.sh` that the new core needs.
-2. `release.yml` signs `SHA256SUMS` as podcrates does, before the installer is published.
+2. The publish job of `nightly.yml` (the signer of each podvm release) signs `SHA256SUMS` as podcrates does, before the installer is published.
 3. Run the installer in the labs and with `cosign` on a hosted runner.
 
 ## Decision
@@ -5948,3 +5948,9 @@ A separate entry: the take of the crates of `v0.61.0` changes no release asset, 
 ## Prove
 
 On a hosted runner with `cosign`, `podvm-install.sh` of a release installs and checks the signature; a changed `SHA256SUMS` is refused; a second run changes nothing.
+
+## Done
+
+**Partial (2026-11-16).** podvm takes podcrates `v0.63.0` (the tag of the crates of `Cargo.toml`); its core differs from `v0.61.0` in one case: a copy with no pins says that it is not compared with `SHA256SUMS`. `scripts/install/core.sh`, `core-net.sh` and `pins.py` are those of `v0.63.0`. `scripts/install/podvm.sh` includes both files of the core and sets `INST_WORKFLOW=nightly.yml`. The core then fetches the release assets `SHA256SUMS` and `SHA256SUMS.sigstore.json`, and runs `cosign verify-blob --bundle` with the identity `https://github.com/PodUtils/podvm/.github/workflows/nightly.yml@refs/tags/vVERSION` (as `crates/podvm-release/src/identity.rs`) and the issuer `https://token.actions.githubusercontent.com`. The publish job of `nightly.yml` checks the SHA-256 of the three core files, stamps the installer from the sums of the binaries, and writes `SHA256SUMS` of the binaries, the installer and the bundle (in place of `podvm-SHA256SUMS`). It installs from the bundle twice, refuses a run whose ref is not `refs/tags/vVERSION`, and signs `SHA256SUMS` with `cosign sign-blob --bundle SHA256SUMS.sigstore.json`. The check of the signature must pass, and must fail on a changed copy and on the identity of `main`. Then the published installer installs from `dist` (`PODVM_MIRROR=file://`) with `cosign`, and a second run changes nothing. The release attaches both files, and `release.yml` checks them with the installer, the bundle and their `.sigstore`.
+
+Measured on the cloud host as uid 1000, with an installer stamped from the build of the workspace (0.2.0-beta.28): `--offline` installs under `dash`, `bash --posix` and `busybox sh` 1.36.1, and a second run says "already installed". Through `PODVM_MIRROR=file://` with no `cosign`, one line says that the signature is not checked. With a stand-in `cosign`, the installer gives the identity and the issuer above. It refuses a missing `SHA256SUMS.sigstore.json`, a failed `cosign`, a `SHA256SUMS` whose pin of `podvm-x86_64` differs, and a changed installer; each refusal leaves the prefix empty. `shellcheck --shell=sh` 0.11.0 gives no note for the tree copy. For the stamped file it gives three notes SC2329 (info) of the core: the hooks that a project redefines (the core disables SC2317 only). Remaining: the hosted run of Prove, a release whose publish job signs `SHA256SUMS`, then its installer with `cosign`. A real `cosign` cannot run on this host.

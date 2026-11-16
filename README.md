@@ -45,6 +45,20 @@ curl -fsSLO https://github.com/PodUtils/podvm/releases/download/TAG/podvm-instal
 sh podvm-install.sh
 ```
 
+Each release after `0.2.0-beta.28` carries `SHA256SUMS` and its keyless
+signature `SHA256SUMS.sigstore.json`. Where `cosign` is on `PATH`, the
+installer of such a release checks them before a download. To check the
+installer itself by hand before the first run:
+
+```sh
+curl -fsSLO https://github.com/PodUtils/podvm/releases/download/TAG/SHA256SUMS
+curl -fsSLO https://github.com/PodUtils/podvm/releases/download/TAG/SHA256SUMS.sigstore.json
+cosign verify-blob --bundle SHA256SUMS.sigstore.json \
+  --certificate-identity https://github.com/PodUtils/podvm/.github/workflows/nightly.yml@refs/tags/TAG \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
+sha256sum -c --ignore-missing SHA256SUMS
+```
+
 By hand: download the binary of your architecture from
 [the releases](https://github.com/PodUtils/podvm/releases), check it
 against its `.sha256`, and put it on `PATH`:

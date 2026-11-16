@@ -1,15 +1,22 @@
 #!/bin/sh
 # SPDX-License-Identifier: 0BSD
 # The installer of podvm (TODO/cli.md T-1918, the owner's ruling
-# "Installer"), on the installer core of podcrates (scripts/install/core.sh,
-# podcrates `v0.58.0`). A release publishes it as podvm-install.sh, with the
-# core inline and the pins of the release (scripts/install/pins.py stamp).
-# This copy of the tree has no pins: it refuses to install.
+# "Installer"), on the installer core of podcrates `v0.63.0`
+# (scripts/install/core.sh and core-net.sh; T-1925). A release publishes it
+# as podvm-install.sh, with the core inline and the pins of the release
+# (scripts/install/pins.py stamp). This copy of the tree has no pins: it
+# refuses to install.
+#
+# Where cosign is on PATH, the core checks the keyless signature of the
+# release asset SHA256SUMS (SHA256SUMS.sigstore.json) before a download.
+# podvm signs its releases in the publish job of nightly.yml at the tag
+# (crates/podvm-release/src/identity.rs), so INST_WORKFLOW names it.
 #
 #   sh podvm-install.sh [--prefix DIR] [--dry-run] [--offline FILE] [--add-path FILE]
 INST_NAME=podvm
 INST_ENV=PODVM
 INST_REPO=PodUtils/podvm
+INST_WORKFLOW=nightly.yml
 
 # BEGIN PINS (scripts/install/pins.py writes this block; do not edit it)
 INST_VERSION=""
@@ -19,6 +26,8 @@ INST_TARGETS=""
 # BEGIN CORE (scripts/install/pins.py puts scripts/install/core.sh here)
 # shellcheck source=scripts/install/core.sh
 . "$(dirname "$0")/core.sh"
+# shellcheck source=scripts/install/core-net.sh
+. "$(dirname "$0")/core-net.sh"
 # END CORE
 
 # The assets of a release name the machine, not the triple: podvm-x86_64.

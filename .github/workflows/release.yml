@@ -165,5 +165,11 @@ jobs:
           for name in podvm.1 podvm.1.sha256 podvm.1.sigstore podvm-llms.txt podvm-llms.txt.sha256 podvm-llms.txt.sigstore; do
             printf '%s\n' "$assets" | grep -qx "$name" || { echo "release: $tag has no $name" >&2; missing=1; }
           done
+          # TODO/cli.md T-1918, T-1925: the installer, its offline bundle, and
+          # SHA256SUMS with its keyless signature, by the names that the
+          # installer core reads.
+          for name in podvm-install.sh podvm-install.sh.sigstore "podvm-$VERSION.tar.gz" "podvm-$VERSION.tar.gz.sigstore" SHA256SUMS SHA256SUMS.sigstore.json; do
+            printf '%s\n' "$assets" | grep -qx "$name" || { echo "release: $tag has no $name" >&2; missing=1; }
+          done
           [ "$missing" = 0 ]
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body

@@ -7,7 +7,7 @@ start.
 
 ## State
 
-525 entries: 7 open, 15 partial, 2 blocked, 501 done.
+525 entries: 6 open, 16 partial, 2 blocked, 501 done.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
@@ -30,8 +30,10 @@ The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
   T-1927; before it `v0.62.0`, PodUtils/podcrates#210, and `v0.61.0`): `Plan::volumes` of pod-enter, the row
   `chroot(/tmp) in unshare(NEWUSER+maps)` of pod-hostprobe, and its
   `chroot_usable` fixed for COORD-150 (#443, T-1921). The way out of a
-  network lab (T-1924) and the installer core of `v0.61.0` (T-1925) are
-  open.
+  network lab is taken (T-1924, done; COORD-162, #455, asks podcrates for
+  the roots of the host in the certificate file of the lab). The
+  installer core is taken at `v0.63.0` (T-1925, partial: a release must
+  sign `SHA256SUMS`).
   A change of moved code goes to podcrates as a COORD issue.
 * KVM is free (the owner, 2026-11-09). The cloud host has no `/dev/kvm`;
   `kvm.yml` (T-1682) gives a hosted runner with it, and `arm.yml` a

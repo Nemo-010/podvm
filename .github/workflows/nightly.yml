@@ -226,27 +226,50 @@ jobs:
           for d in podvm-nightly-*/; do mv "$d"* . && rmdir "$d"; done
           ls -l podvm-* podvm.1*
 
-      # TODO/cli.md T-1918 (the owner's ruling "Installer"): podvm-install.sh
-      # on the installer core of podcrates, with the pins of this release,
-      # and the offline bundle podvm-VERSION.tar.gz. scripts/install/core.sh
-      # and pins.py are podcrates `v0.58.0`; their SHA-256 is checked here.
+      # TODO/cli.md T-1918 (the owner's ruling "Installer"), T-1925:
+      # podvm-install.sh on the installer core of podcrates, with the pins of
+      # this release, and the offline bundle podvm-VERSION.tar.gz.
+      # scripts/install/core.sh, core-net.sh and pins.py are podcrates
+      # `v0.63.0`; their SHA-256 is checked here. The installer is stamped
+      # from the sums of the binaries; then SHA256SUMS gets each install
+      # file: the binaries, the installer and the bundle. The core reads
+      # SHA256SUMS and SHA256SUMS.sigstore.json of the release by these
+      # names, and compares each pin and the installer with it.
       - name: the installer and the offline bundle
         run: |
           set -eu
-          echo "64b5397b4beabce75f41fe4f19c1f813ae4b8647235d5245f5041931bc0077c7  scripts/install/core.sh" | sha256sum -c -
-          echo "fad06e6cb9843053f722f98bfffa7c2d304bc7e8ea24ce6fe3650264a675f472  scripts/install/pins.py" | sha256sum -c -
+          echo "1ab8578a5e2e44982d8d8f4b37fd910261958afc8666e8b0415fc8a1071beaaa  scripts/install/core.sh" | sha256sum -c -
+          echo "63d365203c9bb1a1f8d322f2b83187e21f400f4023e6084a49e54a8d99f0def8  scripts/install/core-net.sh" | sha256sum -c -
+          echo "7a3632c60494b4aace45db37e88b277a1353e8713d60c288430b452e16ea0205  scripts/install/pins.py" | sha256sum -c -
+          python3 -I scripts/install/pins.py check scripts/install/podvm.sh
           version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
           bins=$(cd dist && ls podvm-x86_64 podvm-aarch64 podvm-armv7 podvm-i686 podvm-riscv64gc podvm-powerpc64le podvm-loongarch64 2>/dev/null)
+          # shellcheck disable=SC2086 # each file is one word
           python3 -I scripts/install/pins.py sums dist $bins
           python3 -I scripts/install/pins.py stamp scripts/install/podvm.sh --version "$version" --assets dist --out dist/podvm-install.sh
           files=""
           for b in $bins; do files="$files dist/$b"; done
           # shellcheck disable=SC2086 # each file is one word
           SOURCE_DATE_EPOCH=$(git log -1 --format=%ct) python3 -I scripts/install/pins.py bundle "dist/podvm-$version.tar.gz" "podvm-$version" dist/podvm-install.sh $files
-          (cd dist && mv SHA256SUMS podvm-SHA256SUMS &&
+          # shellcheck disable=SC2086 # each file is one word
+          (cd dist && sha256sum $bins podvm-install.sh "podvm-$version.tar.gz" > SHA256SUMS.new &&
+            mv SHA256SUMS.new SHA256SUMS &&
             sha256sum podvm-install.sh > podvm-install.sh.sha256 &&
             sha256sum "podvm-$version.tar.gz" > "podvm-$version.tar.gz.sha256")
+          cat dist/SHA256SUMS
           ls -l dist/podvm-install.sh "dist/podvm-$version.tar.gz"
+
+      # The published installer from the bundle, then a second run that
+      # changes nothing (the form of podcrates' release.yml).
+      - name: the published installer installs offline
+        run: |
+          set -eu
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
+          p=$RUNNER_TEMP/podvm-offline
+          sh dist/podvm-install.sh --offline "dist/podvm-$version.tar.gz" --prefix "$p"
+          sh dist/podvm-install.sh --offline "dist/podvm-$version.tar.gz" --prefix "$p" > "$RUNNER_TEMP/second.txt"
+          cat "$RUNNER_TEMP/second.txt"
+          grep -q 'is already installed' "$RUNNER_TEMP/second.txt"
 
       # Keyless signing at publish, TODO/packaging.md T-1328. No
       # long-lived key to guard and rotate: the publish job's own OIDC
@@ -266,13 +289,57 @@ jobs:
           done
           ls -l podvm-* podvm.1*
 
+      # TODO/cli.md T-1925. The installer core checks SHA256SUMS with the
+      # keyless bundle SHA256SUMS.sigstore.json, for the identity
+      # nightly.yml@refs/tags/vVERSION of this repository (INST_WORKFLOW of
+      # scripts/install/podvm.sh, as crates/podvm-release/src/identity.rs)
+      # and the issuer of GitHub Actions. A run on another ref would sign
+      # with an identity that the installer refuses, so it stops here. The
+      # check must pass, and fail on a changed copy and on a branch.
+      - name: the signature of SHA256SUMS
+        run: |
+          set -eu
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
+          [ "$GITHUB_REF" = "refs/tags/v$version" ] || {
+            echo "nightly: the run is on $GITHUB_REF, not refs/tags/v$version: the installer would refuse its signature" >&2
+            exit 1
+          }
+          cd dist
+          cosign sign-blob --yes --bundle SHA256SUMS.sigstore.json SHA256SUMS
+          issuer=https://token.actions.githubusercontent.com
+          workflow="https://github.com/$GITHUB_REPOSITORY/.github/workflows/nightly.yml"
+          check() {
+            cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity "$1" \
+              --certificate-oidc-issuer "$issuer" "$2"
+          }
+          check "$workflow@$GITHUB_REF" SHA256SUMS
+          awk 'NR == 1 { $0 = (substr($0, 1, 1) == "0" ? "1" : "0") substr($0, 2) } { print }' SHA256SUMS \
+            > "$RUNNER_TEMP/changed"
+          if check "$workflow@$GITHUB_REF" "$RUNNER_TEMP/changed"; then echo "nightly: a changed SHA256SUMS verified" >&2; exit 1; fi
+          if check "$workflow@refs/heads/main" SHA256SUMS; then echo "nightly: the identity of a branch verified" >&2; exit 1; fi
+          echo "SHA256SUMS: signed by $workflow@$GITHUB_REF; a changed copy and the identity of a branch fail"
+
+      # The published installer checks the signature with this cosign, as a
+      # user with cosign does: the files come from dist (file://). A second
+      # run changes nothing.
+      - name: the published installer checks the signature
+        run: |
+          set -eu
+          p=$RUNNER_TEMP/podvm-signed
+          PODVM_MIRROR="file://$PWD/dist" sh dist/podvm-install.sh --prefix "$p" > "$RUNNER_TEMP/signed.txt"
+          cat "$RUNNER_TEMP/signed.txt"
+          grep -q 'the signature of SHA256SUMS: ok (cosign, ' "$RUNNER_TEMP/signed.txt"
+          PODVM_MIRROR="file://$PWD/dist" sh dist/podvm-install.sh --prefix "$p" > "$RUNNER_TEMP/signed2.txt"
+          cat "$RUNNER_TEMP/signed2.txt"
+          grep -q 'is already installed' "$RUNNER_TEMP/signed2.txt"
+
       # TODO/packaging.md T-1905 (issue 399): a build provenance attestation
       # in GitHub's store, which `gh attestation verify` reads, for each
       # binary and archive (not the .sha256 and .sigstore files).
       - name: the subjects of the attestation
         run: |
           cd dist
-          for f in podvm-* podvm.1; do
+          for f in podvm-* podvm.1 SHA256SUMS; do
             case "$f" in
               *.sigstore | *.sha256) continue ;;
             esac
@@ -309,7 +376,7 @@ jobs:
         run: |
           tag="${{ github.ref_name }}"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" --clobber dist/podvm-* dist/podvm.1*
+            gh release upload "$tag" --clobber dist/podvm-* dist/podvm.1* dist/SHA256SUMS dist/SHA256SUMS.sigstore.json
           else
-            gh release create "$tag" --title nightly --prerelease --notes-file release-notes.txt dist/podvm-* dist/podvm.1*
+            gh release create "$tag" --title nightly --prerelease --notes-file release-notes.txt dist/podvm-* dist/podvm.1* dist/SHA256SUMS dist/SHA256SUMS.sigstore.json
           fi
