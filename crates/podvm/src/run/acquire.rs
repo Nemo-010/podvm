@@ -144,12 +144,14 @@ pub(super) fn end_tree(reaper: bool, err: &mut dyn std::io::Write) {
 }
 
 /// The read-only table of the run in `env`, or a refusal by name where the
-/// entry has no read-only layer. TODO/cli.md T-1655.
+/// entry has no read-only layer (TODO/cli.md T-1655); then the host name of
+/// the run (TODO/enter.md T-1908, T-1926).
 pub(super) fn ro_env(
     verb: &str,
     o: &mut Opts,
     rootfs: &std::path::Path,
     userland: Option<&crate::lifecycle::Userland>,
+    findings: &podvm_probe::Findings,
     env: &mut Vec<String>,
 ) -> Result<(), i32> {
     crate::lifecycle::volume::read_only_env(
@@ -160,7 +162,7 @@ pub(super) fn ro_env(
         userland,
         env,
     )?;
-    hostname_env(verb, o, rootfs, userland, env)?;
+    hostname_env(verb, o, rootfs, userland, findings, env)?;
     super::cgroup::apply(verb) // TODO/cli.md T-1747
 }
 
@@ -175,6 +177,7 @@ pub(super) fn hostname_env(
     o: &mut Opts,
     rootfs: &std::path::Path,
     userland: Option<&crate::lifecycle::Userland>,
+    findings: &podvm_probe::Findings,
     env: &mut Vec<String>,
 ) -> Result<(), i32> {
     env.retain(|e| !e.starts_with("PODVM_HOSTNAME="));
@@ -201,7 +204,16 @@ pub(super) fn hostname_env(
         eprintln!("podvm {verb}: sethostname in the UTS namespace of the run: {e}");
         return Err(podvm_image::error::EXIT_RUNTIME_ERROR);
     }
-    let held = held || crate::userns::owns_uts();
+    // TODO/enter.md T-1926 (PodUtils/podrunner#196): `run -d` and `create`
+    // of the namespace rung enter through pod-enter, whose plan opens a UTS
+    // namespace and sets the name before the exec (`Plan::hostname`, the
+    // launcher of `podvm-supervise`); where pod-enter falls back to the
+    // chroot sequence, it refuses a plan with a name by itself.
+    let by_enter = (o.detach || verb == "create")
+        && userland.is_none()
+        && podvm_enter::entered_rung(podvm_probe::select::Selection::choose(findings).rung)
+            == podvm_probe::select::Rung::Namespace;
+    let held = held || crate::userns::owns_uts() || by_enter;
     if !held {
         eprintln!(
             "podvm {verb}: --hostname needs the handler of the native-static rung or the \

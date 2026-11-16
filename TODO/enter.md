@@ -4254,3 +4254,67 @@ As uid 1000 on a host where `unshare -Urm true` exits 0: `run --rm -v DIR:/work 
 **Done (2026-11-16).** `run -d` and `create` bind each volume through pod-enter's `Plan::volumes` on the namespace rung. `run/binds.rs` decides it (`served`: a detached run or `create`, outside podvm's own user namespace, on a host where the namespace rung is reachable, and no `,` or `:` in a path), and writes the volumes to the record as `PODVM_BINDS` (`GUEST:HOST[:ro]`). The launcher (`podvm-supervise`) reads them into `Plan::volumes` and removes them from the env of the payload. Such a run no longer asks for the loader family, and `lifecycle/volume.rs` accepts the volume with no `PODVM_MAPS`. Measured as uid 1000 on the cloud host (mirror.gcr.io/library/python:3.13-slim): `run -d -v VOL:/data -v DIR:/work:ro` gives `"Rung":"namespace"`; the glibc program of the foreground proof prints "ok" for `rename` and `renameat2(RENAME_NOREPLACE)` as raw `syscall` instructions in `/data`; a file written to `/data` lands in VOL; a write to `/work` fails; `exec` reads `/data`; after `rm -f`, VOL keeps each of its files. `create -v VOL:/data` then `start` gives `"Rung":"namespace"` and writes to VOL.
 
 **Partial (2026-11-16).** A foreground run in the user namespace of T-1909 binds each volume onto the tree in the mount namespace of pid 2 (`userns::bind_volumes`, from `run/acquire.rs`), and keeps the namespace rung: `run/prepare.rs` asks for the loader family for a volume only outside that namespace. A `:ro` volume is remounted read-only, with the flags that the kernel locks kept; a guest path with a symbolic link of the image in it is refused by name. `podvm_extract::live::unmount_under` detaches each mount under a tree, the deepest first, and `remove_plain` refuses to remove a tree while a mount stays under it. Measured as uid 1000 on the cloud host (mirror.gcr.io/library/python:3.13-slim): with `-v DIR:/work -v VOL:/data`, a glibc program that calls `rename` and `renameat2(RENAME_NOREPLACE)` as raw `syscall` instructions prints "ok" in `/root/.cache/uv` and in `/data`, `inspect` gives `"Rung":"namespace"`, a file written to `/data` lands in VOL; `:ro` reads and refuses a write with "Read-only file system"; after `rm` of a kept run, three `--rm` runs and one with `PODVM_SPARE_TREE=0`, VOL keeps each of its files; `-v VOL:/bin/data` refuses ("bin of the image is a symbolic link"). The 25 integration test binaries pass as uid 1000. Remaining: `run -d` and `create`, whose entry is pod-enter's (T-1912), need a bind of a volume in pod-enter's plan: COORD-148 (PodUtils/podvm#440), which podcrates takes as podcrates@T-738 (P1): the volumes in `Plan`, a bind after the device binds and before the `chroot`, a read-only remount with the locked flags, a named refusal for a failed bind, a link of the image, or a missing host path. Then `run -d` and `create` move onto it, at the tag that carries it. **Partial, amended (2026-11-16).** podvm takes podcrates `v0.59.0` (COORD-118, PodUtils/podcrates#204), whose `Plan::volumes` binds each volume on the namespace rung, also through pod-enter's user namespace (podcrates@T-738). Each `Plan` of podvm names `volumes`, empty for now. Remaining: the record of a detached run on the namespace rung keeps its volumes, the launcher fills `Plan::volumes` from it and drops them from the env of the payload, and a volume of `run -d` stops asking for the loader family.
+
+# T-1926: `run -d --hostname` refuses on the namespace rung that pod-enter enters
+
+**Source:** PodUtils/podrunner#196 (COORD-070 of podrunner, podrunner@T-317)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+As a user with no root on a host with user namespaces, `podvm run -d --hostname NAME IMAGE CMD` exits 125 with "--hostname needs the handler of the native-static rung or the interposer of the loader family, and this entry has neither and no UTS namespace". The run enters the namespace rung through pod-enter, whose plan opens a UTS namespace and sets the name before the exec (`Plan::hostname`, podcrates `v0.52.0`, T-1908). The check of `run/acquire.rs` counted only a UTS namespace of podvm's own (the foreground `run` of T-1909), so it refused each detached run with a name. podrunner started its units with no name, and the job log showed the name of the host.
+
+## Premise
+
+The launcher of `podvm-supervise` passes `PODVM_HOSTNAME` as `Plan::hostname` where the record names the namespace rung, and pod-enter refuses a plan with a name where it falls back to the chroot sequence.
+
+## Approach
+
+`hostname_env` takes the probe findings: a detached run (`run -d`, `create`) with no userland family whose rung is the namespace rung (`entered_rung(Selection::choose(findings).rung)`) holds the name through pod-enter.
+
+## Decision
+
+The same rung function as the banner and the record, so the check cannot disagree with the entry.
+
+## Prove
+
+The integration test `crates/podvm/tests/hostname_detached.rs` as uid 1000 and as root.
+
+## Done
+
+**Done (2026-11-16).** `hostname_env` counts the UTS namespace of pod-enter's entry for a detached run on the namespace rung. Measured as uid 1000 on the cloud host: `run -d --hostname podrunner-t` of an imported image exits 0, the record names the namespace rung, and the payload reads `podrunner-t` from `/proc/sys/kernel/hostname` and `/etc/hostname`, where the host is named `vm`; before the change the run exited with the refusal. `hostname_detached.rs` passes as uid 1000 and as root.
+
+# T-1927: On the namespace rung of a user with no root, the payload is uid 0 of a one-uid namespace, not the user of the image
+
+**Source:** PodUtils/podrunner#196 (COORD-070 of podrunner, podrunner@T-301, podrunner@T-182), T-1911; COORD-154 (#447), COORD-155 (#448)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** open
+
+## Problem
+
+The entry of pod-enter through a user namespace maps the caller to uid 0 (`uid_map` `0 UID 1`). The payload of `run -d` is root of that namespace, also where the image names a `USER`, and docker runs the image's `USER` by default. podrunner's runner image has `USER runner` (uid 1001): the official runner refuses root, GNU tar as root fails at each chown to an id that is not mapped, and npm 6 as root runs its scripts as `nobody`. podrunner works around the three with variables.
+
+## Premise
+
+A one-line map can map the caller to any id: `1001 UID 1`. The process that makes the namespace holds each capability in it whatever its id, so the mounts of the rung still work, and the `execve` of the payload as a uid that is not 0 drops them. Each file of the tree (extracted by the caller) shows as owned by the mapped id; uid 0 is not mapped. T-1911 covers a map with a range of `/etc/subuid`.
+
+## Approach
+
+1. pod-enter takes the id inside the namespace in its plan (COORD-154 to podcrates); the default stays 0.
+2. podvm resolves the image's `USER`, or `-u`, against the tree as `apply_user` does, and gives that id to the plan of `run -d` and `create` on the namespace rung, and to the user namespace of a foreground `run` (T-1909, podvm's own code).
+3. `--user 0` keeps the map of today.
+
+## Decision
+
+The id of the image by default, as docker: a payload that needs root names `--user 0`.
+
+## Prove
+
+As uid 1000: `podvm run -d IMAGE id -u` of an image with `USER 1001` logs 1001, and `/proc/self/uid_map` reads `1001 1000 1`; with `--user 0` it logs 0.

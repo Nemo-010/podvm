@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: `run -d --hostname` with no root, 2026-11-16
+
+Record: T-1926 (PodUtils/podrunner#196).
+Deployed: none yet.
+
+- `podvm run -d --hostname NAME` and `create --hostname NAME` of a user
+  with no root on the namespace rung no longer exit 125: the run gets a
+  UTS namespace with NAME.
+
 ## 0.2.0-beta.25 (2026-11-16)
 
 ### Fixed: a run where a filter refuses `chroot` in each namespace, 2026-11-16
