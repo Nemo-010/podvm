@@ -18,7 +18,7 @@ fn the_list_keeps_its_order_and_refuses_an_unknown_name() {
 fn a_list_runs_as_nested_labs() {
     let rest = parse("getsockname-denied").unwrap();
     let cmd = vec!["sh".to_string(), "-c".to_string(), "true".to_string()];
-    let v: Vec<String> = inner(&rest, &cmd)
+    let v: Vec<String> = inner(&rest, &[3128], &cmd)
         .iter()
         .map(|o| o.to_string_lossy().into_owned())
         .collect();
@@ -28,6 +28,8 @@ fn a_list_runs_as_nested_labs() {
             "/proc/self/exe",
             "lab",
             "run",
+            "--allow-connect",
+            "3128",
             "getsockname-denied",
             "--",
             "sh",
@@ -35,7 +37,7 @@ fn a_list_runs_as_nested_labs() {
             "true"
         ]
     );
-    assert_eq!(inner(&[], &cmd).len(), 3);
+    assert_eq!(inner(&[], &[], &cmd).len(), 3);
 }
 
 #[test]

@@ -8,6 +8,24 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `podvm-install.sh`, 2026-11-16
+
+Record: T-1918 (the owner's ruling "Installer", podcrates `v0.58.0`).
+Deployed: none yet.
+
+- Each release carries `podvm-install.sh` and the offline bundle
+  `podvm-VERSION.tar.gz`. The installer needs no root, checks each file
+  against its pin, and a second run changes nothing.
+
+### Fixed: a volume keeps the namespace rung, 2026-11-16
+
+Record: T-1920 (PodUtils/podrunner#189).
+Deployed: none yet.
+
+- A foreground `run -v` of a user with no root binds the volume and stays
+  on the namespace rung, so a raw `rename` of `uv` or `ruff` works.
+- `podvm lab run --allow-connect PORT` lets `bind-denied` reach a proxy.
+
 ### Changed: `podvm lab` runs the profiles of `pod-lab`, 2026-11-15
 
 Record: T-1916 (PodUtils/podcrates#188).

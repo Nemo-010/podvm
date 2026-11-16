@@ -57,7 +57,7 @@ pub fn parse(list: &str) -> Result<Vec<&'static Profile>, String> {
         .collect()
 }
 
-pub const RUN_USAGE: &str = "usage: podvm lab run PROFILE[,PROFILE...] -- CMD [ARG...]\n\n\
+pub const RUN_USAGE: &str = "usage: podvm lab run [--allow-connect PORT[,PORT...]] PROFILE[,PROFILE...] -- CMD [ARG...]\n\n\
 Run CMD in a hostile host class on this host, with no root and no guest.\n\
 `podvm lab profiles` lists the profiles. The lab sets each part, checks the\n\
 profile from inside, and only then runs CMD; a part that does not hold\n\
@@ -154,11 +154,16 @@ pub fn nest_order(mut p: Vec<&'static Profile>) -> Vec<&'static Profile> {
 /// The command of the outermost lab: CMD itself, or for a list, podvm
 /// again with the rest of the list. `/proc/self/exe` is podvm in the lab
 /// process, also where a tmpfs of `small-tmp` hides a podvm under `/tmp`.
-pub fn inner(rest: &[&Profile], cmd: &[String]) -> Vec<OsString> {
+pub fn inner(rest: &[&Profile], allow: &[u16], cmd: &[String]) -> Vec<OsString> {
     let mut v: Vec<OsString> = Vec::new();
     if !rest.is_empty() {
         let names: Vec<&str> = rest.iter().map(|p| p.name).collect();
         v.extend(["/proc/self/exe", "lab", "run"].map(OsString::from));
+        if !allow.is_empty() {
+            let ports: Vec<String> = allow.iter().map(u16::to_string).collect();
+            v.push("--allow-connect".into());
+            v.push(ports.join(",").into());
+        }
         v.push(names.join(",").into());
         v.push("--".into());
     }
@@ -168,6 +173,30 @@ pub fn inner(rest: &[&Profile], cmd: &[String]) -> Vec<OsString> {
 
 /// `podvm lab run`.
 pub fn run(args: &[String]) -> i32 {
+    // `--allow-connect PORT[,PORT...]`: the ports that `bind-denied` lets a
+    // TCP connect reach (pod-lab `v0.58.0`, podcrates@T-737): the proxy of
+    // a host whose only way out is that proxy.
+    let (allow, args) = match args {
+        [f, ports, rest @ ..] if f == "--allow-connect" => (ports.as_str(), rest),
+        [f, rest @ ..] if f.starts_with("--allow-connect=") => {
+            (&f["--allow-connect=".len()..], rest)
+        }
+        _ => ("", args),
+    };
+    let allow_connect: Vec<u16> = match allow
+        .split(',')
+        .filter(|p| !p.is_empty())
+        .map(str::parse)
+        .collect()
+    {
+        Ok(v) => v,
+        Err(_) => {
+            eprintln!(
+                "podvm lab run: --allow-connect {allow}: each port is a number from 1 to 65535"
+            );
+            return EXIT_FLAG_ERROR;
+        }
+    };
     let (list, cmd) = match args {
         [list, dash, cmd @ ..] if dash == "--" && !cmd.is_empty() => (list, cmd),
         _ => {
@@ -187,8 +216,9 @@ pub fn run(args: &[String]) -> i32 {
     let opts = Options {
         partial: false,
         stdout: None,
+        allow_connect: allow_connect.clone(),
     };
-    match pod_lab::run(&settings(), first, &inner(rest, cmd), opts) {
+    match pod_lab::run(&settings(), first, &inner(rest, &allow_connect, cmd), opts) {
         Ok(ran) => pod_lab::exit_code(ran.status),
         Err(RunError::Refused(v)) => {
             print(&v);

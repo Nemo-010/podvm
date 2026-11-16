@@ -214,6 +214,28 @@ jobs:
           for d in podvm-nightly-*/; do mv "$d"* . && rmdir "$d"; done
           ls -l podvm-*
 
+      # TODO/cli.md T-1918 (the owner's ruling "Installer"): podvm-install.sh
+      # on the installer core of podcrates, with the pins of this release,
+      # and the offline bundle podvm-VERSION.tar.gz. scripts/install/core.sh
+      # and pins.py are podcrates `v0.58.0`; their SHA-256 is checked here.
+      - name: the installer and the offline bundle
+        run: |
+          set -eu
+          echo "64b5397b4beabce75f41fe4f19c1f813ae4b8647235d5245f5041931bc0077c7  scripts/install/core.sh" | sha256sum -c -
+          echo "fad06e6cb9843053f722f98bfffa7c2d304bc7e8ea24ce6fe3650264a675f472  scripts/install/pins.py" | sha256sum -c -
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
+          bins=$(cd dist && ls podvm-x86_64 podvm-aarch64 podvm-armv7 podvm-i686 podvm-riscv64gc podvm-powerpc64le podvm-loongarch64 2>/dev/null)
+          python3 -I scripts/install/pins.py sums dist $bins
+          python3 -I scripts/install/pins.py stamp scripts/install/podvm.sh --version "$version" --assets dist --out dist/podvm-install.sh
+          files=""
+          for b in $bins; do files="$files dist/$b"; done
+          # shellcheck disable=SC2086 # each file is one word
+          SOURCE_DATE_EPOCH=$(git log -1 --format=%ct) python3 -I scripts/install/pins.py bundle "dist/podvm-$version.tar.gz" "podvm-$version" dist/podvm-install.sh $files
+          (cd dist && mv SHA256SUMS podvm-SHA256SUMS &&
+            sha256sum podvm-install.sh > podvm-install.sh.sha256 &&
+            sha256sum "podvm-$version.tar.gz" > "podvm-$version.tar.gz.sha256")
+          ls -l dist/podvm-install.sh "dist/podvm-$version.tar.gz"
+
       # Keyless signing at publish, TODO/packaging.md T-1328. No
       # long-lived key to guard and rotate: the publish job's own OIDC
       # identity signs, and verification names the workflow identity.

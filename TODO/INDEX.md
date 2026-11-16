@@ -580,13 +580,13 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1915](interpose.md) | P1 | S | none | interpose | done | On the userland rung, `tar -x` fails when a symbolic link comes before its target |
 | [T-1916](net.md) | P2 | L | none | net | partial | Lab profiles: each hostile host class as a profile that a project brings up |
 | [T-1917](cli.md) | P3 | M | none | cli | partial | The help and the manual on the shared crate of PodUtils |
-| [T-1918](cli.md) | P2 | S | none | cli | blocked | podvm has no installer: the user downloads and checks the binary by hand |
+| [T-1918](cli.md) | P2 | S | none | cli | partial | podvm has no installer: the user downloads and checks the binary by hand |
 | [T-1919](cli.md) | P2 | M | none | cli | partial | The state of an issue is written by hand |
 | [T-1920](enter.md) | P1 | M | none | enter | partial | A volume moves a run off the namespace rung, and a raw syscall there sees host paths |
 
 ## Counts
 
-517 entries: 6 open, 16 partial, 3 blocked, 492 done.
+517 entries: 6 open, 17 partial, 2 blocked, 492 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -597,9 +597,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
 | P1 | 0 | 5 | 0 | 207 | 212 |
-| P2 | 4 | 7 | 3 | 169 | 183 |
+| P2 | 4 | 8 | 2 | 169 | 183 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 6 | 16 | 3 | 492 | 517 |
+| **All** | 6 | 17 | 2 | 492 | 517 |
 
 ## Work order
 

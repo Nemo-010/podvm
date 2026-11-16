@@ -34,7 +34,18 @@ Read [the limits](docs/limits.md) before you select a path.
 
 ## Install
 
-Download the binary of your architecture from
+Each release from `0.2.0-beta.25` carries `podvm-install.sh`. It finds the
+binary of your machine, checks it against the pins in the installer, and
+puts it into `~/.local/bin` (`--prefix DIR` sets another place). It needs
+no root and no compiler. A second run changes nothing. With
+`--offline podvm-VERSION.tar.gz` it needs no network.
+
+```sh
+curl -fsSLO https://github.com/PodUtils/podvm/releases/download/TAG/podvm-install.sh
+sh podvm-install.sh
+```
+
+By hand: download the binary of your architecture from
 [the releases](https://github.com/PodUtils/podvm/releases), check it
 against its `.sha256`, and put it on `PATH`:
 

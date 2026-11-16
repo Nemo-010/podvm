@@ -5839,7 +5839,7 @@ podvm keeps the parity table as the one source of the flags; the crate renders i
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** blocked
+**Status:** partial
 
 ## Problem
 
@@ -5861,8 +5861,11 @@ The installer asks before a link would shadow a `docker` or a `podman` on `PATH`
 
 On a host with no root, `sh install.sh` puts podvm under its prefix in seconds, a second run changes nothing and says so, and `dash`, `busybox sh` and `bash --posix` each run it.
 
-## Blocker
+## Done
 
+**Partial (2026-11-16).** podcrates `v0.58.0` (COORD-116, PodUtils/podcrates#200) carries the installer core (podcrates@T-702 part 1). `scripts/install/podvm.sh` is podvm's installer on it: `inst_files` maps each triple to podvm's asset (`podvm-x86_64`, `podvm-armv7`, ...), `inst_setup` prints the link for the names `docker` and `podman` and makes none, and `inst_selfcheck` runs `podvm version --verbose` and `podvm probe` with no network. `scripts/install/core.sh` and `pins.py` are those of the tag, and the publish job of `nightly.yml` checks their SHA-256, stamps `podvm-install.sh` with the pins of the release, and makes `podvm-VERSION.tar.gz` and `podvm-SHA256SUMS`. Measured on the cloud host as uid 1000, with a release stamped from the build of the workspace: `--offline podvm-0.2.0-beta.24.tar.gz` installs under `dash`, `bash --posix` and `busybox sh`, and the self-check says the probe selects `namespace`; a second run says "already installed" and downloads nothing; a bundle whose binary has one byte more is refused by its pin, and the prefix stays empty; `pins.py check` of the tree copy passes; `shellcheck --shell=sh` of the stamped file gives one note of the core (a hook that podvm redefines). Remaining: a release that carries it, and its run in the lab profiles.
+
+**Blocked (2026-11-16), cleared by `v0.58.0`.** 
 **Blocked (2026-11-15).** The core of podcrates@T-702. Clears when a tag of podcrates carries it.
 
 # T-1919: The state of an issue is written by hand
