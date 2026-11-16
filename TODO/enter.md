@@ -4295,7 +4295,7 @@ The integration test `crates/podvm/tests/hostname_detached.rs` as uid 1000 and a
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -4318,3 +4318,7 @@ The id of the image by default, as docker: a payload that needs root names `--us
 ## Prove
 
 As uid 1000: `podvm run -d IMAGE id -u` of an image with `USER 1001` logs 1001, and `/proc/self/uid_map` reads `1001 1000 1`; with `--user 0` it logs 0.
+
+## Done
+
+**Partial (2026-11-16).** podcrates answered COORD-154 with `v0.62.0` (`Plan::userns_ids`, podcrates@T-786), and podvm takes the tag. `run -d` and `create` on the namespace rung resolve `--user`, else the image's `USER`, against the tree (`run/user_ns.rs`), record `PODVM_USERNS_IDS=UID:GID`, and the launcher gives the ids to the plan; uid 0 records nothing, and the banner no longer says that the run keeps uid 0 where the ids apply. Measured as uid 1000 on the cloud host: an image with `USER runner` (1001) gives the payload `uid_map` `1001 1000 1`; `--user 0` gives `0 1000 1`; `--user runner` and `--user 1001:1001` give 1001. The integration test `crates/podvm/tests/user_ns_detached.rs` holds the three cases as uid 1000 and skips for root. Remaining: the user namespace of a foreground `run` (T-1909, podvm's own code) still maps the caller to 0.

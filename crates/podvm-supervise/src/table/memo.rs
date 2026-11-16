@@ -207,3 +207,20 @@ fn hand_memo_meta(env: &mut Vec<String>, meta: &std::fs::Metadata) {
     env.push(super::memo_fd_env());
     env.push(format!("{id}{}:{}", meta.dev(), meta.ino()));
 }
+
+/// The ids of the payload inside the user namespace of the namespace rung,
+/// `UID:GID` in decimal, from the record of `run -d` and `create`
+/// (TODO/enter.md T-1927, PodUtils/podrunner#196). The launcher gives them
+/// to `pod_enter::Plan::userns_ids` (podcrates `v0.62.0`); with no value the
+/// payload is uid 0 of the namespace, as before.
+pub const USERNS_IDS_VAR: &str = "PODVM_USERNS_IDS";
+
+/// The ids of [`USERNS_IDS_VAR`] in `env`, or `None`.
+pub fn userns_ids_of(env: &[String]) -> Option<(u32, u32)> {
+    let v = env
+        .iter()
+        .rev()
+        .find_map(|e| e.strip_prefix(&format!("{USERNS_IDS_VAR}=")))?;
+    let (u, g) = v.split_once(':')?;
+    Some((u.parse().ok()?, g.parse().ok()?))
+}

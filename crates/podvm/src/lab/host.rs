@@ -220,6 +220,10 @@ pub fn run(args: &[String]) -> i32 {
         // podcrates `v0.61.0` (podcrates@T-746): the way out of a network
         // lab; podvm gives no flag for it yet (TODO/net.md T-1924).
         way_out: false,
+        // podcrates `v0.62.0` (podcrates@T-759): no served port of the
+        // command; podvm gives no flag for it.
+        serve: Vec::new(),
+        serve_ca: None,
     };
     match pod_lab::run(&settings(), first, &inner(rest, &allow_connect, cmd), opts) {
         Ok(ran) => pod_lab::exit_code(ran.status),

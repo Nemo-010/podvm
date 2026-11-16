@@ -351,6 +351,7 @@ pub(crate) fn prepare(
     }
     let (rf, ul) = (rootfs.as_ref(), userland.as_ref()); // T-1655, T-1908, T-1926
     ro_env(verb, &mut o, rf, ul, &findings, &mut env)?;
+    super::user_ns::push(verb, &o, &cfg.config.user, &rootfs, ul, &findings, &mut env)?;
     // T-1412, T-1772: make a missing workdir as docker; refuse a bad one at 125.
     crate::lifecycle::volume::make_workdir(&rootfs, &working_dir, &o.volumes);
     if let Err(e) = podvm_enter::check_workdir(&maps, &working_dir, &image) {
@@ -380,8 +381,8 @@ pub(crate) fn prepare(
     let mut ask = o.ask.clone();
     ask.container_name = o.name.clone();
     let mut completion = crate::complete::prepare(verb, &rootfs, &ask, &mut banner)?;
-    if !cfg.config.user.is_empty() {
-        // ⚠ Read and REPORTED, never applied. podvm cannot setuid to an id
+    if !cfg.config.user.is_empty() && !super::user_ns::applied(&env) {
+        // ⚠ Read and REPORTED, not applied (T-1927 applies it on the namespace rung). podvm cannot setuid to an id
         // this machine does not map, which is the wall the project is about.
         banner.push_str(&format!(
             "podvm: the image asks to run as user {:?}; podvm runs as uid 0 \

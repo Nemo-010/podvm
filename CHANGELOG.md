@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: `run -d` runs as the user of the image with no root, 2026-11-16
+
+Record: T-1927 (PodUtils/podrunner#196, podcrates `v0.62.0`).
+Deployed: none yet.
+
+- On the namespace rung of a user with no root, `podvm run -d` and
+  `create` run the payload as the image's `USER`, or as `--user`, inside
+  the user namespace, as docker does. `--user 0` keeps uid 0.
+
 ## 0.2.0-beta.26 (2026-11-16)
 
 ### Changed: the machine tier says why it stopped waiting, 2026-11-16

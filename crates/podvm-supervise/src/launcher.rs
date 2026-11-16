@@ -138,6 +138,11 @@ fn enter_in_launcher(
         } else {
             Vec::new()
         },
+        // TODO/enter.md T-1927: the ids of `--user` or the image's `USER`
+        // inside the user namespace of the namespace rung.
+        userns_ids: (container.rung == "namespace")
+            .then(|| table::userns_ids_of(&env))
+            .flatten(),
     };
 
     // ⭐ TODO/image.md T-0204 and T-0211. The image lock is taken here and
