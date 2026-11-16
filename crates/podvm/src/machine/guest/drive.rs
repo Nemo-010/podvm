@@ -208,6 +208,20 @@ pub(super) fn drive(
                     format!("; qemu: {tail}")
                 }
             );
+            // PodUtils/podrunner#199: a guest that reset with no line, and
+            // a large initrd, ran short of memory (T-1922).
+            let bytes = initrd_bytes(argv).unwrap_or(0);
+            let reset = status.and_then(|s| s.code()) == Some(0) && boot.is_empty();
+            if !ready && reset && bytes > 100 << 20 {
+                eprintln!(
+                    "podvm {}: machine tier: an initrd of {} MiB likely needs about {} MiB of \
+                     memory: give --podvm-mem {}M (an estimate, TODO/machine.md T-1922)",
+                    r.verb,
+                    bytes.div_ceil(1 << 20),
+                    super::mem::estimate(bytes) >> 20,
+                    super::mem::estimate(bytes) >> 20
+                );
+            }
             // PodUtils/podrunner#195: what the guest printed last, where it
             // did not reach the command.
             if !ready {

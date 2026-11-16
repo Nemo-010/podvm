@@ -25,6 +25,7 @@ pub(crate) mod exec; // TODO/machine.md T-1750
 pub(crate) mod init;
 pub(crate) mod kernel;
 pub(crate) mod kernel_arm64; // TODO/machine.md T-1890
+mod mem; // TODO/machine.md T-1922
 pub(crate) mod net;
 pub(crate) mod sealed;
 pub(crate) mod squashfs;
@@ -393,10 +394,9 @@ pub fn boot(r: &Request) -> i32 {
         let _ = std::fs::remove_file(tty::socket_path(&sock));
         extra.extend(tty::argv(&tty::socket_path(&sock)));
     }
-    // TODO/machine.md T-1751: the one channel to a host socket, and the
-    // guest's memory locked where the limit allows it.
+    // TODO/machine.md T-1751: the channel to a host socket; the memory locked where it can.
     if r.sealed.is_some() {
-        match sealed::mem_lock(r.mem.unwrap_or(DEFAULT_MEM)) {
+        match sealed::mem_lock(mem::size(r.verb, r.mem, &initrd, false)) {
             Ok(a) => extra.extend(a),
             Err(why) => eprintln!(
                 "podvm {}: machine tier: the guest's memory is not locked: {why} \
@@ -419,7 +419,7 @@ pub fn boot(r: &Request) -> i32 {
     extra.extend(r.qemu_args.iter().cloned());
     let mut argv = qemu_argv(
         accel,
-        r.mem.unwrap_or(DEFAULT_MEM),
+        mem::size(r.verb, r.mem, &initrd, true), // T-1922
         &kernel,
         &initrd,
         &extra,

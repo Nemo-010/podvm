@@ -8,6 +8,18 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: the machine tier sizes the memory for a large image, 2026-11-16
+
+Record: T-1922 (PodUtils/podrunner#199).
+Deployed: none yet.
+
+- With no `--podvm-mem`, a guest whose initrd is over 100 MiB gets about
+  three times the initrd and 512 MiB of memory, in place of 512 MiB. A
+  smaller `--podvm-mem` gives a warning before the boot, and a guest that
+  resets with no output names the memory to give.
+- Where the console of the emulator closes, the message gives the exit
+  code or the signal of the emulator.
+
 ### Changed: a foreground `run` runs as the user of the image with no root, 2026-11-16
 
 Record: T-1927 (podcrates `v0.63.0`).
