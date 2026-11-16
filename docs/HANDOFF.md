@@ -1,6 +1,6 @@
 # Handoff
 
-The state on 2026-11-16, 14:50 (UTC). `main` is at the commit that adds
+The state on 2026-11-16, 15:15 (UTC), at the end of a session. `main` is at the commit that adds
 this file. `0.2.0-beta.28` is the last release (release run 43882348294
 on `3f26f5a1`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
@@ -84,8 +84,20 @@ file when each step below is done.
 5. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
    the real error of Setup.
-6. Then the work order of `TODO/PROGRESS.md` (T-1917 remainder, T-1911,
-   T-1868, T-1924, T-1925).
+6. T-1917: `podvm.1` (`podvm man --roff`, with `SOURCE_DATE_EPOCH` of the
+   release) and `llms.txt` (`podvm man --llms`) as assets of
+   `release.yml`, with `mandoc -Tlint`; then the rest of T-1917.
+7. Then the work order of `TODO/PROGRESS.md` (T-1911, T-1868, T-1924,
+   T-1925).
+
+## The state at the end of the session
+
+* `main` is green: the gate, `secrets` and `issue-sync` passed on the
+  last commits; the tree is clean, and nothing is unpushed. The branch
+  `claude/wizardly-wright-4ewh6u` mirrors `main`.
+* No release run, no `kvm.yml` run and no request issue is open.
+* The open issues of podvm that wait for a peer: #439 (podrunner), #445,
+  #446, #449, #453 (podcrates).
 
 ## Rules learned
 
