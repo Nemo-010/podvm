@@ -22,7 +22,8 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.62.0` (PodUtils/podcrates#210): its
+* podcrates is taken up to `v0.63.0` (PodUtils/podcrates#211). Since
+  `v0.62.0` (PodUtils/podcrates#210): its
   `chroot_usable` is fixed (COORD-150) and `Plan::userns_ids` serves
   T-1927 (COORD-154). The way out of a network lab (T-1924), the served
   ports of a lab (no entry yet) and the installer core of `v0.61.0`
@@ -51,7 +52,8 @@ file when each step below is done.
   read and written on its own file (Node under npm 6 read empty files).
   The host hands `PODVM_MEMO_ID`, and the interposer checks it.
 * T-1926: `run -d --hostname` keeps the name on the namespace rung.
-* T-1927 partial: `run -d` and `create` run as the image's `USER` or
+* T-1927 done: `run -d` and `create` (beta.27) and a foreground `run`
+  (podcrates `v0.63.0`, on `main`) run as the image's `USER` or
   `--user` inside the user namespace (beta.27).
 * T-1922 partial: experiment 463 shows that neither a user with no root
   nor a root of 300 MiB stops the machine tier; beta.26 names why podvm
@@ -70,11 +72,11 @@ file when each step below is done.
    user of the image: write the tag of T-1927 there with the next beta),
    #439, #442 and #444 (older answers to podrunner; close each when
    podrunner confirms).
-3. T-1927 is in beta.27 (#448 names the tag). The rest of T-1927 (a foreground `run`) waits for COORD-159
-   (#452): pod-enter changes nothing for a caller that is uid 0, which a
-   foreground `run` is inside podvm's own namespace.
-4. Close COORD-152, COORD-153 and COORD-156 (#445, #446, #449, the takes of
-   `v0.60.0` to `v0.62.0`) when podcrates reads them.
+3. T-1927 is done: `run -d` is in beta.27 (#448 names the tag), and the
+   foreground `run` (podcrates `v0.63.0`) ships in the next beta.
+4. Close COORD-152, COORD-153, COORD-156 and COORD-160 (#445, #446,
+   #449, #453, the takes of `v0.60.0` to `v0.63.0`) when podcrates reads
+   them.
 5. T-1867: keep the logs of WinPE (`X:\Windows\Panther`,
    `X:\$Windows.~BT`) before the power-off of a failed install, to read
    the real error of Setup.
