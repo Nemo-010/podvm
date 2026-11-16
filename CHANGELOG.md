@@ -10,6 +10,16 @@ They describe their recorded revision, not the current build.
 
 ## 0.2.0-beta.25 (2026-11-16)
 
+### Fixed: a run where a filter refuses `chroot` in each namespace, 2026-11-16
+
+Record: T-1923.
+Deployed: version 0.2.0-beta.25.
+
+- Where `chroot` is refused also inside a user namespace (a seccomp
+  filter of the caller), `podvm run` takes a no-chroot family in place of
+  the namespace rung, which ended with "chroot into the rootfs failed with
+  EPERM".
+
 ### Fixed: `exec` of a stopped run with no root, 2026-11-16
 
 Record: T-1921 (podcrates `v0.59.0`, COORD-150).

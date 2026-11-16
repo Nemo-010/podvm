@@ -18,12 +18,22 @@ use podvm_probe::Findings;
 /// `chroot` works, or the leg of pod-enter's entry through a user
 /// namespace passes (podcrates `v0.52.0`; the device nodes of the host are
 /// bound since `v0.53.0`, podcrates@T-688).
+///
+/// TODO/probe.md T-1923: the entry through a user namespace also needs
+/// `chroot` there. A seccomp filter of the caller (experiment 356) refuses
+/// it in each namespace, and the run then ended at "chroot into the rootfs
+/// failed with EPERM". Where the probe has the row `chroot(/tmp) in
+/// unshare(NEWUSER+maps)` (podcrates `v0.59.0`, podcrates@T-744), it must
+/// pass too.
 pub(crate) fn ns_reachable(findings: &podvm_probe::Findings) -> bool {
-    podvm_probe::probes::chroot_usable(findings)
-        || findings.rows.iter().any(|(n, out)| {
-            *n == podvm_probe::probes::USERNS_LEG
-                && matches!(out.verdict, podvm_probe::verdict::Verdict::Ok)
-        })
+    use podvm_probe::verdict::Verdict;
+    let row = |name: &str| findings.rows.iter().find(|(n, _)| *n == name);
+    let leg = matches!(row(podvm_probe::probes::USERNS_LEG), Some((_, o)) if matches!(o.verdict, Verdict::Ok));
+    let chroot_there = match row(podvm_probe::probes::USERNS_CHROOT) {
+        Some((_, o)) => matches!(o.verdict, Verdict::Ok),
+        None => true,
+    };
+    podvm_probe::probes::chroot_usable(findings) || (leg && chroot_there)
 }
 
 pub(crate) fn forced_mode() -> Result<Option<Mode>, podvm_enter::Error> {

@@ -454,3 +454,28 @@ fn store_dir(tag: &str) -> std::path::PathBuf {
     let _ = std::fs::remove_dir_all(&d);
     d
 }
+
+/// TODO/probe.md T-1923: the leg of the user namespace reaches the
+/// namespace rung only where `chroot` works there too.
+#[test]
+fn ns_reachable_needs_chroot_in_the_user_namespace() {
+    use podvm_probe::probes::{HOST_CHROOT, USERNS_CHROOT, USERNS_LEG};
+    let eperm = || Outcome::denied(podvm_probe::sys::Errno(1));
+    let f = |rows| findings_with(rows);
+    // The fixture of experiment 356: chroot refused in each namespace.
+    assert!(!ns_reachable(&f(vec![
+        (HOST_CHROOT, eperm()),
+        (USERNS_LEG, Outcome::ok()),
+        (USERNS_CHROOT, eperm()),
+    ])));
+    // A host with no root and user namespaces.
+    assert!(ns_reachable(&f(vec![
+        (HOST_CHROOT, eperm()),
+        (USERNS_LEG, Outcome::ok()),
+        (USERNS_CHROOT, Outcome::ok()),
+    ])));
+    // A table with no chroot row of the namespace keeps the leg alone.
+    assert!(ns_reachable(&f(vec![(USERNS_LEG, Outcome::ok())])));
+    assert!(ns_reachable(&f(vec![(HOST_CHROOT, Outcome::ok())])));
+    assert!(!ns_reachable(&f(vec![(USERNS_CHROOT, Outcome::ok())])));
+}

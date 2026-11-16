@@ -2037,3 +2037,36 @@ A shadow in `podvm-probe` and not a change of each caller: the callers keep the 
 ## Done
 
 **Done (2026-11-16).** `podvm-probe` shadows `chroot_usable` with a check of the row `chroot(/tmp)` only, and `rung_why.rs` reads that row by name. Measured as uid 1000 on the cloud host: `tmpfs_exec` failed with EPERM in the chroot sequence before the change, and passes after it; `exec` of the stopped run takes the loader family. The unit test holds the leg `Ok` with the caller's row `Denied` to false.
+
+# T-1923: The namespace rung is taken through a user namespace where `chroot` is refused there
+
+**Source:** `arm.yml` run 43819553294 (experiment 356, on `77a44998`)
+**Category:** probe
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** done
+
+## Problem
+
+Experiment 356 runs podvm under `unshare -Urm` with a seccomp filter that refuses `chroot` (`deny-chroot`), so that only the no-chroot families can run. On the hosted arm64 runner each run of its fixture exited 125 with "the namespace rung runs with no /proc" and "chroot into the rootfs failed with EPERM", in place of the loader family. `crate::ladder::ns_reachable` takes the namespace rung where the leg `mount(tmpfs,/tmp) in unshare(NEWUSER+maps,NEWNS)` passes, and the leg does not call `chroot`. The filter refuses `chroot` in each namespace, so the entry fails after the decision.
+
+## Premise
+
+podcrates `v0.59.0` gives the row `chroot(/tmp) in unshare(NEWUSER+maps)` (podcrates@T-744): the `chroot` of the entry through a user namespace. It is `Denied` under the filter, and `Ok` on a host with no root and user namespaces.
+
+## Approach
+
+`ns_reachable` takes the leg only where the row `chroot(/tmp) in unshare(NEWUSER+maps)` passes too; a table with no such row keeps the leg alone.
+
+## Decision
+
+The row of the crate, not a second probe of podvm.
+
+## Prove
+
+`cargo test -p podvm --bin podvm ns_reachable_needs_chroot_in_the_user_namespace`; experiment 356 in `arm.yml` passes.
+
+## Done
+
+**Done (2026-11-16).** `ns_reachable` needs the `chroot` row of the user namespace where the table has it; the unit test holds the fixture of 356 (each `chroot` refused, the leg `Ok`) to false. Measured: the unit test passes; `arm.yml` runs experiment 356 on the commit of the change.

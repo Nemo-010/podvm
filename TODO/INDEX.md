@@ -585,10 +585,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1920](enter.md) | P1 | M | none | enter | done | A volume moves a run off the namespace rung, and a raw syscall there sees host paths |
 | [T-1921](probe.md) | P1 | S | none | probe | done | `chroot_usable` reads the leg in a user namespace as the caller's `chroot`, so `exec` enters into EPERM |
 | [T-1922](machine.md) | P1 | M | none | machine | partial | The machine tier ends before the exit code for a user with no root that `sudo -u` makes |
+| [T-1923](probe.md) | P1 | S | none | probe | done | The namespace rung is taken through a user namespace where `chroot` is refused there |
 
 ## Counts
 
-519 entries: 6 open, 17 partial, 2 blocked, 494 done.
+520 entries: 6 open, 17 partial, 2 blocked, 495 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -598,10 +599,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 74 | 74 |
-| P1 | 0 | 5 | 0 | 209 | 214 |
+| P1 | 0 | 5 | 0 | 210 | 215 |
 | P2 | 4 | 8 | 2 | 169 | 183 |
 | P3 | 2 | 4 | 0 | 42 | 48 |
-| **All** | 6 | 17 | 2 | 494 | 519 |
+| **All** | 6 | 17 | 2 | 495 | 520 |
 
 ## Work order
 
