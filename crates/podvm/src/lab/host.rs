@@ -38,27 +38,8 @@ pub fn settings() -> Settings {
 /// arguments do not ask for it.
 pub fn dispatch() {
     if std::env::args_os().nth(1).is_some_and(|a| a == LAB_FLAG) {
-        quiet_sigpipe();
         pod_lab::dispatch(&settings());
     }
-}
-
-/// A SIGPIPE handler that does nothing, for the lab process. podvm sets
-/// SIGPIPE to its default at the start (TODO/cli.md T-1769), and the
-/// stand-in proxy that the lab forks inherits it: a probe that closed its
-/// socket before the stand-in wrote its answer killed the stand-in, and
-/// each later CONNECT got "Connection refused" (TODO/net.md T-1924). With a
-/// handler, the write gives EPIPE; an `exec` sets a handled signal back to
-/// its default, so CMD gets the default SIGPIPE, not an ignored one.
-fn quiet_sigpipe() {
-    extern "C" fn nothing(_: i32) {}
-    unsafe extern "C" {
-        fn signal(sig: i32, handler: usize) -> usize;
-    }
-    const SIGPIPE: i32 = 13;
-    // SAFETY: the handler touches no state; musl's signal() sets
-    // SA_RESTART.
-    unsafe { signal(SIGPIPE, nothing as extern "C" fn(i32) as usize) };
 }
 
 /// Is each name of the list `A,B` a profile?

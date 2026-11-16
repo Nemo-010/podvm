@@ -24,8 +24,10 @@ The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
   dispatches each workflow. A newer push cancels the gate of an older
   commit. The issue `[gh action] requested` is the fallback only
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.63.0`
-  (PodUtils/podcrates#211: the nested user namespace of a foreground run,
+* podvm takes the crates of PodUtils/podcrates at `v0.64.0`
+  (PodUtils/podcrates#214, COORD-166: the roots of the host in a lab with a
+  way out, the stand-in that ignores SIGPIPE, `fedorapeople.org`; before it
+  `v0.63.0`, PodUtils/podcrates#211: the nested user namespace of a foreground run,
   T-1927; before it `v0.62.0`, PodUtils/podcrates#210, and `v0.61.0`): `Plan::volumes` of pod-enter, the row
   `chroot(/tmp) in unshare(NEWUSER+maps)` of pod-hostprobe, and its
   `chroot_usable` fixed for COORD-150 (#443, T-1921). The way out of a

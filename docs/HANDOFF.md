@@ -22,7 +22,8 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.63.0` (PodUtils/podcrates#211). Since
+* podcrates is taken up to `v0.64.0` (PodUtils/podcrates#214, COORD-166,
+  #459). Before it `v0.63.0` (PodUtils/podcrates#211). Since
   `v0.62.0` (PodUtils/podcrates#210): its
   `chroot_usable` is fixed (COORD-150) and `Plan::userns_ids` serves
   T-1927 (COORD-154). The way out of a network lab (T-1924), the

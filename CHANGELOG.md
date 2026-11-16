@@ -8,6 +8,14 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: podcrates `v0.64.0`, 2026-11-17
+
+Record: T-1924, T-1868 (COORD-166).
+Deployed: none yet.
+
+- In `podvm lab run --way-out`, a program in the lab checks a real server
+  with the roots of the host; it needs no `SSL_CERT_FILE` of its own.
+
 ## 0.2.0-beta.29 (2026-11-16)
 
 ### Fixed: a run that `PODVM_MODE` forces is `Up` while it runs, 2026-11-16
