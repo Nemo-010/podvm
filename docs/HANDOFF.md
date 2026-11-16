@@ -1,8 +1,8 @@
 # Handoff
 
-The state on 2026-11-16, 12:45 (UTC). `main` is at the commit that adds
-this file. `0.2.0-beta.27` is the last release (release run 43856299505
-on `290c4de2`). A fresh session with no memory reads this file first,
+The state on 2026-11-16, 14:50 (UTC). `main` is at the commit that adds
+this file. `0.2.0-beta.28` is the last release (release run 43882348294
+on `3f26f5a1`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
 file when each step below is done.
 
@@ -45,7 +45,12 @@ file when each step below is done.
 ## Done in this session
 
 * Released `0.2.0-beta.25` (T-1920, T-1921, T-1923), `0.2.0-beta.26`
-  (T-1928, T-1926, the message of T-1922) and `0.2.0-beta.27` (T-1927).
+  (T-1928, T-1926, the message of T-1922), `0.2.0-beta.27` (T-1927 for
+  `run -d`) and `0.2.0-beta.28` (T-1922, T-1927 for a foreground `run`,
+  `podvm man --llms`).
+* T-1922 done: the cause of podrunner's machine-tier failure is the
+  memory of the guest for a large initrd; podvm sizes it (an estimate:
+  three times the initrd and 512 MiB). COORD-161 (#454) names beta.28.
 * T-1917 partial: `podvm man --llms`, and the date of the page from
   `SOURCE_DATE_EPOCH`; the assets of `release.yml` remain.
 * T-1928 (P0): a program that reused descriptor 17 got the ownership memo
@@ -67,13 +72,13 @@ file when each step below is done.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
-2. A new ask of a peer first. Watch #451 (podrunner's stderr with
-   beta.26, T-1922), #450 (descriptor 17), #448 (`--hostname` and the
+2. A new ask of a peer first. Watch #454 (podrunner takes beta.28 for
+   its runner image), #450 (descriptor 17), #448 (`--hostname` and the
    user of the image: write the tag of T-1927 there with the next beta),
    #439, #442 and #444 (older answers to podrunner; close each when
    podrunner confirms).
-3. T-1927 is done: `run -d` is in beta.27 (#448 names the tag), and the
-   foreground `run` (podcrates `v0.63.0`) ships in the next beta.
+3. A root on a virtio disk in place of an initrd removes the copy of a
+   large image in the guest's memory: an entry when a caller needs it.
 4. Close COORD-152, COORD-153, COORD-156 and COORD-160 (#445, #446,
    #449, #453, the takes of `v0.60.0` to `v0.63.0`) when podcrates reads
    them.
