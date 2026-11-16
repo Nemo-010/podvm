@@ -52,7 +52,9 @@ xcopy \"X:\\$Windows.~BT\\Sources\\Panther\" \"%T%\\XBTPANTH\\\" /e /c /h /i /y 
 xcopy \"X:\\Sources\\Panther\" \"%T%\\XSRCPANT\\\" /e /c /h /i /y /q >nul 2>&1\r\n\
 xcopy \"X:\\Windows\\INF\\setupapi*.log\" \"%T%\\XINF\\\" /c /h /i /y /q >nul 2>&1\r\n\
 xcopy \"X:\\Windows\\Logs\" \"%T%\\XLOGS\\\" /e /c /h /i /y /q >nul 2>&1\r\n\
-dir /s /b /a-d X:\\*.log > \"%T%\\XLOGLIST.TXT\" 2>&1\r\n\
+xcopy \"X:\\Windows\\*.log\" \"%T%\\XWIN\\\" /c /h /i /y /q >nul 2>&1\r\n\
+xcopy \"X:\\Windows\\System32\\winpeshl.log\" \"%T%\\XWIN\\\" /c /h /i /y /q >nul 2>&1\r\n\
+if %N%==1 dir /s /b /a-d X:\\*.log > \"%T%\\XLOGLIST.TXT\" 2>&1\r\n\
 echo pass %N% at %DATE% %TIME%> \"%T%\\STAMP.TXT\"\r\n\
 ping -n 31 127.0.0.1 >nul 2>&1 || timeout /t 30 /nobreak >nul 2>&1 || waitfor /t 30 PodvmLogsNever >nul 2>&1\r\n\
 goto again\r\n";
