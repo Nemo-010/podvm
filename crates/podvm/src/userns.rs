@@ -96,6 +96,13 @@ pub fn active() -> bool {
     ACTIVE.load(Ordering::Relaxed)
 }
 
+/// True for uid 0 of the initial user namespace: pod-enter gives such a
+/// caller no ids inside a namespace (TODO/enter.md T-1927, podcrates@T-787).
+pub fn host_root() -> bool {
+    // SAFETY: getuid cannot fail.
+    !active() && unsafe { getuid() } == 0
+}
+
 /// Name the UTS namespace of the run (`--hostname`, T-1908).
 pub fn set_hostname(name: &str) -> std::io::Result<()> {
     // SAFETY: the pointer and the length name the bytes of `name`.

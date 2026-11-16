@@ -1,6 +1,7 @@
 //! TODO/enter.md T-1927 (PodUtils/podrunner#196): on the namespace rung of
-//! a user with no root, `run -d` runs the payload as the image's `USER`,
-//! or as `--user`, inside the user namespace; `--user 0` keeps uid 0.
+//! a user with no root, `run -d` and a foreground `run` run the payload as
+//! the image's `USER`, or as `--user`, inside the user namespace; `--user 0`
+//! keeps uid 0.
 //!
 //! The image is an OCI layout with the host's `cat`, its loader and libc,
 //! an `/etc/passwd` with `runner` as 1001, and `USER runner` in its config.
@@ -210,5 +211,21 @@ fn run_detached_runs_as_the_user_of_the_image_in_the_user_namespace() {
         "1001",
         "--user 1001"
     );
+    // A foreground run, in podvm's own user namespace: pod-enter nests one
+    // with the ids (podcrates `v0.63.0`).
+    let fg = |user: &[&str]| {
+        let mut args = vec!["run", "--rm"];
+        args.extend_from_slice(user);
+        args.extend_from_slice(&["localhost/t1927:1", "cat", "/proc/self/uid_map"]);
+        let o = podvm(&store, &args);
+        assert!(o.status.success(), "run {user:?}: {}", text(&o.stderr));
+        text(&o.stdout)
+            .split_whitespace()
+            .next()
+            .unwrap_or("")
+            .to_string()
+    };
+    assert_eq!(fg(&[]), "1001", "a foreground run as the image's USER");
+    assert_eq!(fg(&["--user", "0"]), "0", "a foreground run with --user 0");
     let _ = std::fs::remove_dir_all(&dir);
 }

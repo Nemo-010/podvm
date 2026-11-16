@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: a foreground `run` runs as the user of the image with no root, 2026-11-16
+
+Record: T-1927 (podcrates `v0.63.0`).
+Deployed: none yet.
+
+- On the namespace rung of a user with no root, a foreground `podvm run`
+  runs the payload as the image's `USER`, or as `--user`, as `run -d`
+  does since `0.2.0-beta.27`. `--user 0` keeps uid 0.
+
 ### Added: `podvm man --llms`, 2026-11-16
 
 Record: T-1917.

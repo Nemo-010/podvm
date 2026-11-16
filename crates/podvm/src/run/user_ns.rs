@@ -1,5 +1,6 @@
-//! TODO/enter.md T-1927 (PodUtils/podrunner#196): the user of a detached
-//! run on the namespace rung.
+//! TODO/enter.md T-1927 (PodUtils/podrunner#196): the user of a run on the
+//! namespace rung, detached (pod-enter's user namespace) or in the
+//! foreground (podvm's own, where podcrates `v0.63.0` nests one).
 //!
 //! pod-enter maps the caller to uid 0 of a one-uid namespace unless the
 //! plan names other ids (`Plan::userns_ids`, podcrates `v0.62.0`). docker
@@ -21,7 +22,9 @@ pub(super) fn push(
 ) -> Result<(), i32> {
     env.retain(|e| !e.starts_with(&format!("{USERNS_IDS_VAR}=")));
     let rung = podvm_enter::entered_rung(podvm_probe::select::Selection::choose(findings).rung);
-    if !(o.detach || verb == "create")
+    // A detached run (pod-enter's user namespace) and a foreground run in
+    // podvm's own (podcrates `v0.63.0` nests one); a host root keeps its ids.
+    if crate::userns::host_root()
         || userland.is_some()
         || rung != podvm_probe::select::Rung::Namespace
     {

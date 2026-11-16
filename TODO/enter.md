@@ -4295,7 +4295,7 @@ The integration test `crates/podvm/tests/hostname_detached.rs` as uid 1000 and a
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -4320,5 +4320,7 @@ The id of the image by default, as docker: a payload that needs root names `--us
 As uid 1000: `podvm run -d IMAGE id -u` of an image with `USER 1001` logs 1001, and `/proc/self/uid_map` reads `1001 1000 1`; with `--user 0` it logs 0.
 
 ## Done
+
+**Done (2026-11-16).** podcrates answered COORD-159 with `v0.63.0` (podcrates@T-787): where the caller is uid 0 of a user namespace that is not the initial one, pod-enter nests a user namespace with the ids of the plan after the mounts. podvm takes the tag, and a foreground `run` records and hands the ids as `run -d` does (`run/user_ns.rs`, `run/foreground.rs`); a host root (`userns::host_root`) records none, as pod-enter changes nothing for it. Measured as uid 1000 on the cloud host: a foreground `run` of an image with `USER runner` gives the payload `uid_map` `1001 0 1` (1001 over podvm's 0, which is the caller); `--user 1001` gives the same; `--user 0` gives `0 1000 1`; `run -d` gives `1001 1000 1`; as host root the map stays the host's. `crates/podvm/tests/user_ns_detached.rs` holds the detached and the foreground cases as uid 1000.
 
 **Partial (2026-11-16).** podcrates answered COORD-154 with `v0.62.0` (`Plan::userns_ids`, podcrates@T-786), and podvm takes the tag. `run -d` and `create` on the namespace rung resolve `--user`, else the image's `USER`, against the tree (`run/user_ns.rs`), record `PODVM_USERNS_IDS=UID:GID`, and the launcher gives the ids to the plan; uid 0 records nothing, and the banner no longer says that the run keeps uid 0 where the ids apply. Measured as uid 1000 on the cloud host: an image with `USER runner` (1001) gives the payload `uid_map` `1001 1000 1`; `--user 0` gives `0 1000 1`; `--user runner` and `--user 1001:1001` give 1001. The integration test `crates/podvm/tests/user_ns_detached.rs` holds the three cases as uid 1000 and skips for root. Remaining: the user namespace of a foreground `run` (T-1909, podvm's own code) still maps the caller to 0. pod-enter gives no change to a caller that is uid 0, and the payload of a foreground `run` is spawned from inside podvm's own namespace as uid 0 (measured: `run --rm --user 1001` gives `uid_map` `0 1000 1`). COORD-159 (#452) asks podcrates for a nested user namespace in that case.
