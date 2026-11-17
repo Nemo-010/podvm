@@ -31,7 +31,7 @@ file when each step below is done.
   `chroot_usable` is fixed (COORD-150) and `Plan::userns_ids` serves
   T-1927 (COORD-154). The way out of a network lab (T-1924), the
   installer core (T-1925) and `pod-qga` (T-1868) are taken; the served
-  ports of a lab (no entry yet) are not.
+  ports of a lab (`Options::serve`, with no entry of podvm) are not.
 * The record is in the format of `pod-todo`. `podvm-count` writes the
   rows and the counts of `TODO/INDEX.md`; edit the count line of
   `TODO/PROGRESS.md` by hand to the numbers that it prints.
@@ -101,10 +101,10 @@ file when each step below is done.
 3. T-1867 is done: `windows:2025` (run 44037861805) and `windows:11`
    (run 44041116169) install under KVM and answer `ver`. A beta can
    carry it.
-4. T-1868: the guest tools of the golden image report an empty
-   `TOOLS.TXT`. Keep the mailbox of an install (`PODVM_WINDOWS_KEEP`, and
-   a step of the job `install` that copies it) and read why; then the
-   Prove of T-1868 on the golden image.
+4. T-1868 is done (run 44059854830: `exec`, `cp` and a graceful `stop`
+   of a Windows machine). Cut a beta that carries T-1867 and T-1868. One
+   leg once did not start its agent at the first boot (run 44050312708,
+   attempt 1): watch for it.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries, T-1917 and T-1925 remainders).
 

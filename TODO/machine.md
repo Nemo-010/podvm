@@ -3845,7 +3845,7 @@ the mailbox (T-1861). Experiment 452 checks it (clause 5).
 **Milestone:** none
 **Priority:** P2
 **Effort:** M
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -3889,6 +3889,8 @@ client of the QEMU Guest Agent (`guest-ping`, `guest-exec`, the file calls,
 T-1870 are the running guests that it serves.
 
 ## Done
+
+**Done (2026-11-17).** Run 44059854830 (`kvm.yml`, `only=install`, `windows=2025`, on `d16e303`): experiment 452 passes on both legs with clause 7, on the golden image of T-1867. A detached machine (`run -d --name pv452-2025 windows:2025`) answers `exec ver` with rc 0 and "Microsoft Windows [Version 10.0.26100.32230]", `exec exit 7` gives 7, a `cp` of 3 MB to `C:\Users\Public\` and back gives rc 0 both ways with the same sha256, and `stop` ends with rc 0 and `"ended":"stopped by podvm stop (guest-shutdown)"`: the graceful stop through the QEMU Guest Agent. The clause takes 14 s and 16 s. The guest tools of the install report `drivers` and `agent` 0 or 3010 (no warning). `cargo test -p podvm-windows qga` exits 0 (9 tests against a stand-in agent socket). The readiness probe (`guest-ping`) gates each `exec` and `cp`.
 
 **Partial (2026-11-17, attempt 2).** The failed leg of run 44050312708 (4 GiB, 2 CPUs) passed in attempt 2: installed in 12m19s, `run windows:2025 ver` rc 0 in 19 s. So the bound of 600 s of attempt 1 was not a slow first boot; the agent of that boot did not start, once in two runs of the leg (a dash for the cause; watch it). Experiment 452 has a clause 7 for this entry: on the golden image, `run -d --name pv452-NAME`, `exec ver` (rc 0 and the version), `exec exit 7` (rc 7), a `cp` of 3 MB to `C:\Users\Public\` and back with the same sha256, and `stop` (rc 0, with the `ended` of `machine.json`). Remaining: that run.
 

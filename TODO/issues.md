@@ -358,7 +358,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #462 | COORD-169: podvm took podcrates v0.67.0 (the answer to PodUtils/podcrates#218) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#218) | T-1930 |
 | #463 | COORD-170: pod-rootfs: the source fixup reads URLs in comments, so it probes help.ubuntu.com (podvm T-1931, PodUtils/podrunner#202) (to podcrates) | closed (podcrates `v0.68.0`: podcrates@T-846) | T-1931 |
 | #464 | COORD-171: the answer to PodUtils/podrunner#202: the connections are the source fixup; pass --no-source-fixup (to podrunner) | closed (PodUtils/podrunner#202 closed: podrunner passes `--no-source-fixup` since `2d481dd`) | T-1931 |
-| #465 | COORD-172: podvm took podcrates v0.68.0; COORD-170 is answered (the answer to PodUtils/podcrates#219) (to podcrates) | open | T-1931 |
+| #465 | COORD-172: podvm took podcrates v0.68.0; COORD-170 is answered (the answer to PodUtils/podcrates#219) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#219) | T-1931 |
 
 ## Messages whose title does not start with COORD-NNN
 

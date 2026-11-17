@@ -8,6 +8,17 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: `exec`, `cp` and a graceful `stop` of a Windows machine, 2026-11-17
+
+Record: T-1868.
+Deployed: none yet.
+
+- The install of a full Windows guest adds the virtio-win drivers and the
+  QEMU Guest Agent. A detached machine (`podvm run -d windows:NAME`) then
+  takes `podvm exec NAME CMD` (with the exit code of CMD), `podvm cp` in
+  both directions, and `podvm stop`, which shuts the guest down through
+  its agent.
+
 ### Fixed: the source fixup reads no comment, 2026-11-17
 
 Record: T-1931 (podcrates `v0.68.0`).
