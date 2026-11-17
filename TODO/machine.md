@@ -5227,4 +5227,39 @@ Experiment 452 on `kvm.yml` (`only=install`) passes clause 5 (`run windows:NAME 
 
 ## Done
 
+**Partial (2026-11-17, run 44077136976).** `windows:11` on `b2d736a`: the leg with 8 GiB and 4 CPUs passes each clause, with the overlay of `run windows:11 ver` in the store (rc 0 in 53 s) and clause 7 on `windows:11` for the first time (`exec ver`, `exit 7`, `cp`, `stop` by `guest-shutdown`, in 34 s). The leg with 2 CPUs failed clause 5 at 600 s (the first boot of the fresh golden image, T-1933), and passed clause 7 on the next boot (51 s). Remaining: a run where clause 5 passes on both legs (after T-1933), and no `podvm-windows-*-run` directory left in the store.
+
 **Partial (2026-11-17).** `windows/run.rs` puts the overlay of a foreground run into `WorkDir::run()` in the store (`windows/install_dir.rs`, which also serves the install). `cargo test -p podvm windows` passes. Remaining: the run of experiment 452.
+
+# T-1933: The first `run windows:NAME` of a fresh golden image can miss its agent on 2 CPUs
+
+**Source:** runs 44050312708 (attempt 1) and 44077136976 of `kvm.yml` (2026-11-17)
+**Category:** machine
+**Milestone:** none
+**Priority:** P1
+**Effort:** S
+**Status:** partial
+
+## Problem
+
+On the leg with 4 GiB and 2 CPUs, the first `podvm run windows:NAME ver` of a golden image fresh from `pull` failed at its bound of 600 s ("the agent did not write WQREADY.TXT") in two of three runs since the guest tools of T-1868 (`windows:2025` in run 44050312708, `windows:11` in run 44077136976). The next boot of the same image passed: the detached machine of clause 7 answered `exec`, `cp` and `stop` in 51 s.
+
+## Premise
+
+The first logon of the install runs `msiexec` of the guest tools, which asks for a restart (3010). The next boot ends the setup of the drivers before the logon, and on 2 CPUs that took longer than 600 s (an estimate from the two runs; no screen of that boot was kept).
+
+## Approach
+
+`pull` boots the installed disk once more before it becomes the golden image (`windows/settle.rs`): a `ver` through the mailbox agent with a bound of 20 min (an estimate). The golden image keeps the result of that boot.
+
+## Decision
+
+A failed boot of the installed disk fails the `pull`, and the disk is kept as for any failed install: a golden image whose first boot does not answer is no golden image.
+
+## Prove
+
+Experiment 452 on `kvm.yml` passes clause 5 on the leg with 2 CPUs for `windows:11` and `windows:2025`, and `pull` names the time of the first boot.
+
+## Done
+
+**Partial (2026-11-17).** `windows/settle.rs` boots the installed disk once after the power-off of the install (after the reports of the first logon are read) and runs `ver` through the agent with a bound of 20 min; `pull` prints "first boot of the installed disk in TIME". `cargo test -p podvm windows` passes. Remaining: the runs of experiment 452.

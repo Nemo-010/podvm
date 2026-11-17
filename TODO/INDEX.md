@@ -595,10 +595,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1930](enter.md) | P1 | M | none | enter | done | `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host |
 | [T-1931](cli.md) | P2 | S | none | cli | done | A run connects to the hosts of the package sources of the image, and no document names it |
 | [T-1932](machine.md) | P2 | S | none | machine | partial | A foreground `run windows:NAME` writes its overlay into the tmpfs of the runtime directory |
+| [T-1933](machine.md) | P1 | S | none | machine | partial | The first `run windows:NAME` of a fresh golden image can miss its agent on 2 CPUs |
 
 ## Counts
 
-529 entries: 5 open, 14 partial, 3 blocked, 507 done.
+530 entries: 5 open, 15 partial, 3 blocked, 507 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -608,10 +609,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
-| P1 | 0 | 2 | 0 | 216 | 218 |
+| P1 | 0 | 3 | 0 | 216 | 219 |
 | P2 | 3 | 8 | 2 | 174 | 187 |
 | P3 | 2 | 4 | 1 | 42 | 49 |
-| **All** | 5 | 14 | 3 | 507 | 529 |
+| **All** | 5 | 15 | 3 | 507 | 530 |
 
 ## Work order
 

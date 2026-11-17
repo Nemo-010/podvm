@@ -309,21 +309,7 @@ fn boot_and_convert(
         );
     }
     drop(guest);
-    // TODO/machine.md T-1868: the report of the virtio-win guest tools.
-    let tools = mailbox_file(plan, podvm_windows::guest_tools::REPORT);
-    let tools = tools.map(|b| String::from_utf8_lossy(&b).into_owned());
-    if let Err(why) = podvm_windows::guest_tools::report(tools.as_deref()) {
-        eprintln!(
-            "podvm {verb}: windows:{name}: {why}, so `podvm exec` and `podvm cp` cannot \
-             reach a machine of this image (TODO/machine.md T-1868)"
-        );
-    }
-    if !agent_installed(plan) {
-        eprintln!(
-            "podvm {verb}: windows:{name}: the first logon did not install the mailbox agent, \
-             so `podvm run windows:{name}` cannot run commands in this image (TODO/machine.md T-1867)"
-        );
-    }
+    super::settle::after_install(verb, name, plan, quiet).map_err(|why| fail(verb, name, why))?;
     let part = golden.with_extension("part");
     let _ = std::fs::remove_file(&part);
     podvm_windows::emulator::run_steps(&podvm_windows::convert_argv(&qemu_img, &plan.root, &part))
@@ -353,19 +339,6 @@ fn agent_mailbox() -> podvm_windows::Result<podvm_windows::Fat16> {
     let tools = podvm_windows::guest_tools::SCRIPT_TEXT;
     m.put(podvm_windows::guest_tools::SCRIPT, tools.as_bytes())?;
     Ok(m)
-}
-
-/// The file `name` of the mailbox of the install, after the power-off.
-fn mailbox_file(plan: &Plan, name: &str) -> Option<Vec<u8>> {
-    std::fs::read(&plan.mailbox)
-        .ok()
-        .and_then(podvm_windows::Fat16::from_image)?
-        .get(name)
-}
-
-/// True when the installer of the agent wrote its report to the mailbox.
-fn agent_installed(plan: &Plan) -> bool {
-    mailbox_file(plan, podvm_windows::agent::SETUP).is_some()
 }
 
 /// A screen dump of the guest into `PODVM_WINDOWS_SHOTS` where it names a

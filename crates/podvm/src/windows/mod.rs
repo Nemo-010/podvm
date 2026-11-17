@@ -46,6 +46,7 @@ mod plan;
 pub(crate) mod pull; // TODO/machine.md T-1861
 mod root_bus; // TODO/machine.md T-1867
 mod run;
+mod settle; // TODO/machine.md T-1933: the first boot inside the install
 mod setup;
 pub(crate) mod tools; // TODO/machine.md T-1875
 

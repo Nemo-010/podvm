@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: the first run of a fresh Windows golden image, 2026-11-17
+
+Record: T-1933.
+Deployed: none yet.
+
+- `podvm pull windows:NAME` boots the installed disk once more before it
+  becomes the golden image, so the slow first boot after the guest tools
+  happens in the install and not in the first `podvm run`.
+
 ### Fixed: a Windows run keeps its overlay in the store, 2026-11-17
 
 Record: T-1932.
