@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.30 (2026-11-17)
+
 ### Fixed: a detached run sees and signals only its own processes, 2026-11-17
 
 Record: T-1930 (PodUtils/podrunner#200).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.30.
 
 - `podvm run -d`, `create` and `start` on the namespace rung run the
   payload in a PID namespace of its own, with its own `/proc`. A job no
@@ -21,7 +23,7 @@ Deployed: none yet.
 ### Changed: podcrates `v0.64.0` and `v0.65.0`, 2026-11-17
 
 Record: T-1924, T-1868 (COORD-166).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.30.
 
 - In `podvm lab run --way-out`, a program in the lab checks a real server
   with the roots of the host; it needs no `SSL_CERT_FILE` of its own.
