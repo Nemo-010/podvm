@@ -142,6 +142,12 @@ The project is 0BSD. Carried material keeps its own terms
    tools: `cargo build --release -p podvm-gate -p podvm-release`, then run
    `./target/x86_64-unknown-linux-musl/release/podvm-gate` (the workspace
    builds musl, `.cargo/config.toml`). Read each exit code without a pipe.
+7. Sweep the open issues of this repository: no tool closes a COORD
+   message, as only a session can see that its peer read it. For each
+   open row of `TODO/issues.md` whose entries are done, read the peer: a
+   take that the peer's issue lists under "Takes", an ask that the peer
+   closed, or a reference whose lesson is taken. Then close the row in
+   `TODO/issues.md` and `TODO/github.txt`, with that evidence.
 
 ## 9. Talk with the other sessions of PodUtils
 

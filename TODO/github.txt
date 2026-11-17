@@ -38,7 +38,7 @@
 146 issue closed
 147 issue closed
 148 issue closed
-149 issue open
+149 issue closed
 150 issue closed
 151 issue closed
 152 issue closed
@@ -51,7 +51,7 @@
 159 issue closed
 160 issue closed
 161 issue closed
-162 issue open
+162 issue closed
 163 issue closed
 164 issue closed
 165 issue closed
@@ -255,7 +255,7 @@
 363 issue closed
 364 issue closed
 365 issue closed
-366 issue open
+366 issue closed
 367 issue closed
 368 issue closed
 369 issue closed
@@ -263,13 +263,13 @@
 371 issue closed
 372 issue closed
 373 issue closed
-374 issue open
+374 issue closed
 375 issue closed
 376 issue closed
 377 issue closed
 378 issue closed
 379 issue closed
-380 issue open
+380 issue closed
 381 issue closed
 382 issue closed
 383 issue closed
@@ -296,7 +296,7 @@
 404 issue open
 405 issue closed
 406 issue closed
-407 issue open
+407 issue closed
 408 issue closed
 409 issue closed
 410 issue closed
@@ -314,7 +314,7 @@
 422 issue closed
 423 issue open
 424 issue open
-425 issue open
+425 issue closed
 426 issue closed
 427 issue open
 428 issue open
@@ -334,15 +334,15 @@
 442 issue closed
 443 issue closed
 444 issue closed
-445 issue open
-446 issue open
+445 issue closed
+446 issue closed
 447 issue closed
 448 issue closed
-449 issue open
+449 issue closed
 450 issue closed
 451 issue closed
 452 issue closed
-453 issue open
+453 issue closed
 454 issue closed
 455 issue closed
 456 issue closed
@@ -355,3 +355,4 @@
 463 issue closed
 464 issue closed
 465 issue closed
+466 issue open

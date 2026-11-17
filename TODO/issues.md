@@ -43,7 +43,7 @@ before #127; their text is on GitHub, and the hidden ones are in
 | #146 | [Reference] VHSgunzo/ulexec @ 00934f8: two exec rungs driven from one tool | closed (lesson taken in T-0905, T-0909) | none: a reference (references/README.md) |
 | #147 | [Reference] VHSgunzo/userland-execve @ none: no such repository; 404 evidence | closed (no repository; 404 evidence in TODO/reference-map.md) | none: a reference (references/README.md) |
 | #148 | [Reference] apptainer/apptainer @ 6099bb1: confirms wall 1 for a Go runtime | closed (lesson taken in T-0706; podcrates pod-enter, pod-extract) | none: a reference (references/README.md) |
-| #149 | [Reference] carlbomsdata/winquick @ 095dd47: doctor command shape | open | none: a reference (references/README.md); open: the Source of T-1112 (partial) |
+| #149 | [Reference] carlbomsdata/winquick @ 095dd47: doctor command shape | closed (its lesson is taken: T-1112 done) | none: a reference (references/README.md); open: the Source of T-1112 (partial) |
 | #150 | [Reference] compforge/pathshim @ 8bcc34e: probe three-channel contract | closed (lesson taken in T-0101, T-0108, T-0110) | none: a reference (references/README.md) |
 | #151 | [Reference] containers/bubblewrap @ 26bb788: clone-vs-mount refusal witness | closed (lesson taken in T-0102; podcrates pod-hostprobe) | none: a reference (references/README.md) |
 | #152 | [Reference] containers/podman @ 7d39ce8: where the layer applier is reached | closed (lesson taken in T-0205) | none: a reference (references/README.md) |
@@ -56,7 +56,7 @@ before #127; their text is on GitHub, and the hidden ones are in
 | #159 | [Reference] gevico/tcg-rs @ 88c020b: filed: pure-Rust TCG engine | closed (filed; ruled in T-1307) | none: a reference (references/README.md) |
 | #160 | [Reference] hust-open-atom-club/Vex @ ebee4c7: Docker-like verbs over QEMU configs | closed (ruled in T-1307) | none: a reference (references/README.md) |
 | #161 | [Reference] indigo-dc/udocker @ 638bc42: ownership-neutral extraction and modes | closed (lesson taken in T-0301 to T-0307, T-0404; podcrates pod-extract) | none: a reference (references/README.md) |
-| #162 | [Reference] io12/userland-execve-rust @ 02ef0e0: userland exec loader, retained unlinked | open | none: a reference (references/README.md); open: T-1652 and T-1684 need the vendored upstream |
+| #162 | [Reference] io12/userland-execve-rust @ 02ef0e0: userland exec loader, retained unlinked | closed (its lesson is taken: T-1652 and T-1684 done) | none: a reference (references/README.md); open: T-1652 and T-1684 need the vendored upstream |
 | #163 | [Reference] mhx/dwarfs @ 9062b57: short write -20 is a libarchive status | closed (lesson taken in T-0203; podcrates pod-hostprobe) | none: a reference (references/README.md) |
 | #164 | [Reference] multikernel/sandlock @ 841265d: anti-pattern: filtered read, false report | closed (lesson taken in T-0107, T-0606, T-0804, T-0903; podcrates pod-hostprobe) | none: a reference (references/README.md) |
 | #165 | [Reference] novafacing/memfd-exec @ 0a15efe: upstream baseline for the memfd fork | closed (lesson taken in T-0909; not vendored) | none: a reference (references/README.md) |
@@ -259,7 +259,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #363 | [gh action] requested | closed (gate 43598389668 failed: plant case 27d did not restore `dos.rs`; fixed, a new request follows) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.18` (AGENTS.md, section 9) |
 | #364 | `--podvm-confine` on the no-chroot rung resolves a rule path against the host root, so an image's absolute symlink is refused as missing | closed (T-1887 and T-1888, commit 019e7dcd) | T-1887, T-1888 |
 | #365 | [gh action] requested | closed (gate 43603709240 failed: the check of T-1859 found nine stores of `podvm-extract` left by a user who is not root; fixed, a new request follows) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.18` at `b09df48b` (AGENTS.md, section 9) |
-| #366 | COORD-112: the answer to PodUtils/podrunner#102: no guest of another architecture yet (to podrunner) | open | T-1889, T-1890 |
+| #366 | COORD-112: the answer to PodUtils/podrunner#102: no guest of another architecture yet (to podrunner) | closed (PodUtils/podrunner#102 closed) | T-1889, T-1890 |
 | #367 | COORD-113: pod-extract remove_tree cannot remove a file in a directory of mode 0555 as a user who is not root (podvm T-1891) (to podcrates) | closed (T-1891, commit 4a02d45e) | T-1891 |
 | #368 | [gh action] requested | closed (gate 43605290339, arm 43606602497, nightly trial 43607102100 and release 43607691009 green on aaea18eb) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.18` (AGENTS.md, section 9) |
 | #369 | COORD-114: podvm took v0.45.0 in 4a02d45e (the answer to PodUtils/podcrates#157) (to podcrates) | closed (superseded by #374) | T-1827, T-1842, T-1881, T-1882, T-1891, T-1892 |
@@ -267,13 +267,13 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #371 | [gh action] requested | closed (kvm 43619241341 failed: the readiness of podcrates `v0.45.0`, T-1894) | T-1864, T-1867, T-1894 |
 | #372 | COORD-116: pod-guest v0.45.0 provision never types into a Windows guest: the screen-settle readiness fails under KVM and TCG (podvm T-1894) (to podcrates) | closed (v0.48.0 taken in 47357595) | T-1894 |
 | #373 | [gh action] requested | closed (kvm 43657522107 failed: 412 read the machine notice that T-1824 made quiet; 450 looked for the wrong output path, and `windows setup` passed under KVM in 37 s) | T-1864, T-1867, T-1894 |
-| #374 | COORD-117: podvm took v0.48.0 in 47357595 (the answer to PodUtils/podcrates#158, #159, #160, #161, #162) (to podcrates) | open | T-1893, T-1894 |
+| #374 | COORD-117: podvm took v0.48.0 in 47357595 (the answer to PodUtils/podcrates#158, #159, #160, #161, #162) (to podcrates) | closed (PodUtils/podcrates#158 to #162 closed) | T-1893, T-1894 |
 | #375 | COORD-118: the answer to PodUtils/podrunner#104: save by an index digest after a pull by tag (podvm T-1895) (to podrunner) | closed (`0.2.0-beta.19`) | T-1895 |
 | #376 | COORD-119: the answer to PodUtils/podrunner#100, case 2: a detached run of a static image where chroot is denied (podvm T-1896) (to podrunner) | closed (`0.2.0-beta.19`) | T-1896 |
 | #377 | [gh action] requested | closed (kvm 43660534832: 390, 412 and 440 pass; `windows setup` passed in 37 s; 450 gave 42 once and a timeout twice, issue 380) | T-1864, T-1867, T-1894 |
 | #378 | [gh action] requested | closed (gate 43660867122 failed: `tests/cp_tree.rs` created with `/bin/true`, which the image lacks where chroot is denied; fixed in 88019eed) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #379 | [gh action] requested | closed (gate 43664227298: each test passed; two tests left a directory as a user who is not root, fixed in the next commit) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
-| #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | open | T-1864 |
+| #380 | COORD-120: podvm took v0.49.0 in 7d30dd75; a Validation OS run under KVM times out at 600 s on one boot and passes on the next (podvm T-1864) (to podcrates) | closed (podcrates `v0.51.0` took it, PodUtils/podcrates#172 closed) | T-1864 |
 | #381 | [gh action] requested | closed (gate 43666264498, arm 43667556798, nightly trial 43667929703 and release 43668566087 green on f5a757c6: `0.2.0-beta.19`) | none: a request of the gate, `arm.yml`, the nightly trial and the release `0.2.0-beta.19` (AGENTS.md, section 9) |
 | #382 | COORD-121: the answer to PodUtils/podrunner#110: limits of memory, CPU and processes (podvm T-1897, T-1747) (to podrunner) | closed (released in `v0.2.0-beta.20`) | T-1897, T-1747 |
 | #383 | [gh action] requested | closed (kvm 43672193303: 390, 412, 440, 392 and 450 pass under KVM; the new step of 443 failed on two defects of the experiment, fixed after) | T-1852, T-1864, T-1894 |
@@ -300,7 +300,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
 | #405 | [gh action] requested | closed (run 43689812413) | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
 | #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | closed | T-1909 |
-| #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | open | T-1907 |
+| #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | closed (podcrates@T-676 done; T-1907 done) | T-1907 |
 | #408 | [gh action] requested | closed (stopped at the gate: the snapshot) | T-1905: the release of 0.2.0-beta.22 at 7e45abc4 |
 | #409 | [gh action] requested | closed (stopped at the gate: plant 27f) | T-1905: the release of 0.2.0-beta.22 at 7189f0e6 |
 | #410 | [gh action] requested | closed (release 43708756057) | T-1905: the release of 0.2.0-beta.22 at d2004f12 |
@@ -318,7 +318,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | closed | T-1914 |
 | #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
 | #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |
-| #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | open | T-1917 |
+| #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | closed (PodUtils/podnet#584 closed) | T-1917 |
 | #426 | [gh action] requested | closed (run 43735766607 failed) | the release of 0.2.0-beta.24 from b6f8958e (call C22); the trial failed on the cross targets |
 | #427 | COORD-142: the answer to PodUtils/podcrates#182: podvm has no installer yet (to podcrates) | open | T-1918 |
 | #428 | COORD-143: the answer to PodUtils/podcrates#183: how podvm maps an issue to its entries (to podcrates) | open | T-1919 |
@@ -338,15 +338,15 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #442 | COORD-149: the answer to PodUtils/podrunner#193: Node 26 on the loader family; the microVM of a user with no root (to podrunner) | closed (PodUtils/podrunner#193 closed) | T-1920 |
 | #443 | COORD-150: pod-hostprobe: chroot_usable takes the row chroot(/tmp) in unshare(NEWUSER+maps) as the caller's chroot (podvm T-1921) (to podcrates) | closed (podcrates@T-758 in podcrates `v0.61.0`) | T-1921 |
 | #444 | COORD-151: the answer to PodUtils/podrunner#195: a user with no root passes the machine tier; run your probe with v0.2.0-beta.25 for the cause (to podrunner) | closed (PodUtils/podrunner#195 closed) | T-1922 |
-| #445 | COORD-152: podvm took podcrates v0.60.0 in 959af827 (the answer to PodUtils/podcrates#206) (to podcrates) | open | T-1921 |
-| #446 | COORD-153: podvm took podcrates v0.61.0 in 013e76a1; COORD-150 is answered (the answer to PodUtils/podcrates#209) (to podcrates) | open | T-1921, T-1924, T-1925 |
+| #445 | COORD-152: podvm took podcrates v0.60.0 in 959af827 (the answer to PodUtils/podcrates#206) (to podcrates) | closed (podcrates recorded the take on PodUtils/podcrates#206) | T-1921 |
+| #446 | COORD-153: podvm took podcrates v0.61.0 in 013e76a1; COORD-150 is answered (the answer to PodUtils/podcrates#209) (to podcrates) | closed (podcrates recorded the take on PodUtils/podcrates#209) | T-1921, T-1924, T-1925 |
 | #447 | COORD-154: pod-enter: the id inside the user namespace of the namespace rung, so that a payload runs as the user of its image (podvm T-1927, PodUtils/podrunner#196) (to podcrates) | closed (podcrates@T-786 in podcrates `v0.62.0`, taken in `e62a7dc1`) | T-1927 |
 | #448 | COORD-155: the answer to PodUtils/podrunner#196: --hostname of run -d is fixed on main; the user of the image waits for pod-enter (to podrunner) | closed (PodUtils/podrunner#196 closed) | T-1926, T-1927 |
-| #449 | COORD-156: podvm took podcrates v0.62.0 in e62a7dc1; Plan::userns_ids is wired for run -d (the answer to PodUtils/podcrates#210) (to podcrates) | open | T-1927 |
+| #449 | COORD-156: podvm took podcrates v0.62.0 in e62a7dc1; Plan::userns_ids is wired for run -d (the answer to PodUtils/podcrates#210) (to podcrates) | closed (podcrates recorded the take on PodUtils/podcrates#210) | T-1927 |
 | #450 | COORD-157: the answer to PodUtils/podrunner#197: descriptor 17 is fixed in v0.2.0-beta.26 (to podrunner) | closed (PodUtils/podrunner#197 closed) | T-1928 |
 | #451 | COORD-158: the answer to PodUtils/podrunner#198: not the size and not the user; run your probe with v0.2.0-beta.26 for the timing (to podrunner) | closed (PodUtils/podrunner#198 closed) | T-1922 |
 | #452 | COORD-159: pod-enter: Plan::userns_ids for a caller that is uid 0 of a user namespace (a nested namespace), for a foreground podvm run (podvm T-1927) (to podcrates) | closed (podcrates@T-787 in podcrates `v0.63.0`) | T-1927 |
-| #453 | COORD-160: podvm took podcrates v0.63.0; the foreground run has the ids of the plan (the answer to PodUtils/podcrates#211) (to podcrates) | open | T-1927 |
+| #453 | COORD-160: podvm took podcrates v0.63.0; the foreground run has the ids of the plan (the answer to PodUtils/podcrates#211) (to podcrates) | closed (podcrates recorded the take on PodUtils/podcrates#211) | T-1927 |
 | #454 | COORD-161: the answer to PodUtils/podrunner#199: a 1.4 GiB initrd needs more than 4G of guest memory; give the unit 8G (to podrunner) | closed (PodUtils/podrunner#199 closed) | T-1922 |
 | #455 | COORD-162: pod-lab: the certificate file of a lab with a way out has no roots of the host; the stand-in dies of SIGPIPE in a consumer with the default SIGPIPE (to podcrates) | closed (podcrates `v0.64.0`: podcrates@T-792, podcrates@T-796) | T-1924 |
 | #456 | COORD-163: pod-services: list fedorapeople.org, the host of the virtio-win guest tools (podvm T-1868) (to podcrates) | closed (podcrates `v0.64.0`: podcrates@T-800, podcrates@T-804) | T-1868 |
@@ -359,6 +359,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #463 | COORD-170: pod-rootfs: the source fixup reads URLs in comments, so it probes help.ubuntu.com (podvm T-1931, PodUtils/podrunner#202) (to podcrates) | closed (podcrates `v0.68.0`: podcrates@T-846) | T-1931 |
 | #464 | COORD-171: the answer to PodUtils/podrunner#202: the connections are the source fixup; pass --no-source-fixup (to podrunner) | closed (PodUtils/podrunner#202 closed: podrunner passes `--no-source-fixup` since `2d481dd`) | T-1931 |
 | #465 | COORD-172: podvm took podcrates v0.68.0; COORD-170 is answered (the answer to PodUtils/podcrates#219) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#219) | T-1931 |
+| #466 | COORD-173: six answers of podvm wait for podrunner to close its asks #115, #177, #178, #180, #182, #189 (to podrunner) | open | T-1908, T-1914, T-1915, T-1916, T-1920 |
 
 ## Messages whose title does not start with COORD-NNN
 
