@@ -83,13 +83,13 @@ file when each step below is done.
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
 2. A new ask of a peer first. Open and waiting: #439 (podrunner), #445,
-   #446, #449, #453, #455, #456, #457 (podcrates), #458 (podrunner).
+   #446, #449, #453, #455, #456 (podcrates).
 3. Read `kvm.yml` run 43898543916: the WinPE logs of T-1867 give the
    error of Setup. Then fix the cause, and run the install again (it now
    carries the guest tools of T-1868).
 4. `0.2.0-beta.29` is released (run 43913242822): T-1925 done, T-1917
-   has its assets. T-1930 is in `0.2.0-beta.30`, named to podrunner on COORD-165
-   (#458); close #458 when podrunner closes PodUtils/podrunner#200.
+   has its assets. T-1930 is in `0.2.0-beta.30`; podrunner closed
+   PodUtils/podrunner#200, and COORD-165 (#458) is closed.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries).
 
@@ -97,7 +97,7 @@ file when each step below is done.
 
 * `main` is pushed; read the last gate run before work.
 * The open issues of podvm that wait for a peer: #439 (podrunner), #445,
-  #446, #449, #453, #455, #456, #457 (podcrates), #458 (podrunner).
+  #446, #449, #453, #455, #456 (podcrates).
 
 ## Rules learned
 

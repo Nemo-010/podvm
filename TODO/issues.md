@@ -351,7 +351,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #455 | COORD-162: pod-lab: the certificate file of a lab with a way out has no roots of the host; the stand-in dies of SIGPIPE in a consumer with the default SIGPIPE (to podcrates) | closed (podcrates `v0.64.0`: podcrates@T-792, podcrates@T-796) | T-1924 |
 | #456 | COORD-163: pod-services: list fedorapeople.org, the host of the virtio-win guest tools (podvm T-1868) (to podcrates) | closed (podcrates `v0.64.0`: podcrates@T-800, podcrates@T-804) | T-1868 |
 | #457 | COORD-164: pod-enter: a PID namespace with its own /proc on the namespace rung (podvm T-1930, PodUtils/podrunner#200) (to podcrates) | closed (podcrates `v0.65.0`: podcrates@T-806; the defect is COORD-167, #460) | T-1930 |
-| #458 | COORD-165: the answer to PodUtils/podrunner#200: a PID namespace for run -d needs pod-enter first (COORD-164) (to podrunner) | open | T-1930 |
+| #458 | COORD-165: the answer to PodUtils/podrunner#200: a PID namespace for run -d needs pod-enter first (COORD-164) (to podrunner) | closed (PodUtils/podrunner#200 closed after `v0.2.0-beta.30`) | T-1930 |
 | #459 | COORD-166: podvm took podcrates v0.64.0; COORD-162 and COORD-163 are answered (the answer to PodUtils/podcrates#214) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#214) | T-1924 |
 | #460 | COORD-167: pod-enter v0.65.0: the init of the PID namespace keeps the ready pipe of pod-supervise, so run -d never returns (podvm T-1930) (to podcrates) | closed (podcrates `v0.66.0`: podcrates@T-811) | T-1930 |
 | #461 | COORD-168: podvm took podcrates v0.66.0 in b1fa48f; the PID namespace of run -d is on (the answer to PodUtils/podcrates#216) (to podcrates) | open | T-1930 |
