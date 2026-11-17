@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: the source fixup reads no comment, 2026-11-17
+
+Record: T-1931 (podcrates `v0.68.0`).
+Deployed: none yet.
+
+- The `HEAD` of the source fixup goes only to the hosts of the lines that
+  the package manager reads; a URL in a comment of a sources file (the
+  `help.ubuntu.com` of Ubuntu 24.04) gets no request.
+
 ### Fixed: `podvm pull windows:2025` and `windows:11` install a full Windows guest, 2026-11-17
 
 Record: T-1867.

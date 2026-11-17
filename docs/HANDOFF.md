@@ -22,7 +22,8 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.67.0` (PodUtils/podcrates#218, COORD-169).
+* podcrates is taken up to `v0.68.0` (PodUtils/podcrates#219, COORD-172).
+  `v0.67.0` (PodUtils/podcrates#218, COORD-169).
   `v0.66.0` (PodUtils/podcrates#216): the PID
   namespace of `run -d` is on (T-1930 done). Before it `v0.64.0`
   (PodUtils/podcrates#214, COORD-166, #459). Before it `v0.63.0` (PodUtils/podcrates#211). Since
@@ -94,8 +95,8 @@ file when each step below is done.
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
-2. A new ask of a peer first. Open: COORD-170 (#463, podcrates: the
-   source fixup reads comments, T-1931); podrunner took COORD-171; #439 (podrunner) and the takes
+2. A new ask of a peer first. T-1931 is done (COORD-170 and COORD-171
+   closed); #439 (podrunner) and the takes
    #445, #446, #449, #453 (podcrates).
 3. T-1867 is done: `windows:2025` (run 44037861805) and `windows:11`
    (run 44041116169) install under KVM and answer `ver`. A beta can

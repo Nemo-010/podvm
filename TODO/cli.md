@@ -5966,7 +5966,7 @@ Measured on the cloud host as uid 1000, with an installer stamped from the build
 **Milestone:** none
 **Priority:** P2
 **Effort:** S
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -5989,5 +5989,7 @@ The fixup stays on by default: a host that drops tcp/80 stalls apt for minutes, 
 `podvm run --rm --no-source-fixup mirror.gcr.io/library/ubuntu:24.04 true` with `HTTPS_PROXY` at a listener sends no request; with no flag it sends one `CONNECT` to `archive.ubuntu.com:443` and one to `security.ubuntu.com:443`, and none to `help.ubuntu.com`.
 
 ## Done
+
+**Done (2026-11-17).** podcrates `v0.68.0` (PodUtils/podcrates#219, podcrates@T-846) answers COORD-170: `pod-rootfs` takes a URL only from a line that the package manager reads (no comment; in a `*.sources` file only `URIs`). Measured as uid 1000 on the cloud host with `ubuntu:24.04` and a listener as `HTTPS_PROXY`: with no flag the run sends `CONNECT archive.ubuntu.com:443` and `CONNECT security.ubuntu.com:443`, and none to `help.ubuntu.com`; with `--no-source-fixup` it sends none. podrunner passes the flag since its `2d481dd` (PodUtils/podrunner#202 closed).
 
 **Partial (2026-11-17).** Measured as uid 1000 on the cloud host (a listener on `127.0.0.1:18777` that answers 403, `ubuntu:24.04`): with no flag the run sends `CONNECT help.ubuntu.com:443`, `CONNECT archive.ubuntu.com:443` and `CONNECT security.ubuntu.com:443`; with `--no-source-fixup` it sends none, and `run -d`, `create` and `exec` take the flag. `help.ubuntu.com` is line 1 of `etc/apt/sources.list.d/ubuntu.sources`, a comment. The parity notes of `--no-source-fixup` (`run`, `exec`) now name the request, its hosts, its bounds and its cache. COORD-171 (#464) tells podrunner to pass the flag; COORD-170 (#463) asks podcrates to skip comments. Remaining: the tag of podcrates that skips them, and the Prove with no `help.ubuntu.com`.
