@@ -8,6 +8,20 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: `podvm pull windows:2025` and `windows:11` install a full Windows guest, 2026-11-17
+
+Record: T-1867.
+Deployed: none yet.
+
+- The root disk of an install is in the store, not in the runtime
+  directory, which is a small tmpfs on many hosts; Setup failed when it
+  filled.
+- The install runs through the reboots of Setup, and the answer file
+  sets the password of the built-in Administrator that Windows Server
+  asks for.
+- Under KVM, `windows:2025` installs in about 9 min and `windows:11` in 11
+  to 13 min, and `podvm run windows:NAME ver` answers.
+
 ### Changed: the documents name the request of the source fixup, 2026-11-17
 
 Record: T-1931 (PodUtils/podrunner#202).

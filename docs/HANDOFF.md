@@ -95,12 +95,11 @@ file when each step below is done.
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
 2. A new ask of a peer first. Open: COORD-170 (#463, podcrates: the
-   source fixup reads comments) and COORD-171 (#464, podrunner: pass
-   `--no-source-fixup`), both for T-1931; #439 (podrunner) and the takes
+   source fixup reads comments, T-1931); podrunner took COORD-171; #439 (podrunner) and the takes
    #445, #446, #449, #453 (podcrates).
-3. T-1867: `windows:2025` installs (run 44037861805, experiment 452
-   PASS, about 9 min under KVM). Read the run of `windows:11`
-   (`kvm.yml`, `only=install`, `windows=11`); on a pass, set T-1867 done.
+3. T-1867 is done: `windows:2025` (run 44037861805) and `windows:11`
+   (run 44041116169) install under KVM and answer `ver`. A beta can
+   carry it.
 4. T-1868: the guest tools of the golden image report an empty
    `TOOLS.TXT`. Keep the mailbox of an install (`PODVM_WINDOWS_KEEP`, and
    a step of the job `install` that copies it) and read why; then the

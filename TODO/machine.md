@@ -3715,7 +3715,7 @@ a test that pins the `-device usb-storage` line.
 **Milestone:** none
 **Priority:** P1
 **Effort:** L
-**Status:** partial
+**Status:** done
 
 ## Problem
 
@@ -3773,6 +3773,14 @@ of the phase lines and of the TCG refusal.
 runner (the room of one runner is for one install).
 
 ## Done
+
+**Done (2026-11-17).** Each clause of the Prove ran on `kvm.yml` (T-1682), experiment 452, with `PODVM_MACHINE_ACCEL` left to its default (KVM):
+- `windows:2025` (run 44037861805, on `0da1a9c`): installed in 9m17s (8 GiB, 4 CPUs) and 8m41s (4 GiB, 2 CPUs); the pull with its two downloads 702 s and 752 s; `run windows:2025 ver` prints "Microsoft Windows [Version 10.0.26100.32230]".
+- `windows:11` (run 44041116169, on `acb8f37`, `kvm.yml` input `windows=11`): installed in 11m21s (8 GiB, 4 CPUs) and 13m29s (4 GiB, 2 CPUs); the pull 758 s and 1309 s; `run windows:11 ver` prints "Microsoft Windows [Version 10.0.26200.6584]".
+- In each of the four legs: the golden image has no backing file (64 GiB virtual, 15.4 to 16.5 GiB on the disk), the sha256 of the vendor ISO is its pin, no emulator stays, and the refusal under TCG before the job gets `/dev/kvm` names `PODVM_MACHINE_ACCEL=tcg` (the step "experiment 452, the refusal under TCG").
+- `cargo test -p podvm-windows install_plan` exits 0.
+
+The first real install times replace the dash: about 9 min for `windows:2025` and 11 to 13 min for `windows:11` under KVM on a hosted runner. The guest tools of T-1868 report an empty `TOOLS.TXT` on both images; that is T-1868, not this entry.
 
 **Partial (2026-11-17, windows:2025 installs).** Run 44037861805 (`kvm.yml`, `only=install`, on `0da1a9c`): experiment 452 passes on both legs for `windows:2025`. `podvm pull windows:2025` installs under KVM in 9m17s (8 GiB, 4 CPUs) and 8m41s (4 GiB, 2 CPUs): first logon at 6m34s and 6m38s, `ready` at 6m54s and 7m12s, with 16.35 and 16.65 GiB on the root disk; the whole pull, with the download of the two ISOs, took 702 s and 752 s. The golden image `windows-2025.golden.qcow2` has a virtual size of 64 GiB, 16.2 and 16.5 GiB on the disk, and no backing file (clause 2); the sha256 of the ISO is its pin (clause 3); no emulator stays (clause 4); `podvm run windows:2025 ver` prints "Microsoft Windows [Version 10.0.26100.32230]" (rc 0, in 15 s and 64 s; clause 5). The causes, in order: the root disk in the tmpfs of `$XDG_RUNTIME_DIR` (run 44017901200), `-no-reboot` (run 44021345080), and no password of the built-in Administrator in the OOBE of Windows Server (run 44037861805 passes with it). `kvm.yml` takes the input `windows` (2025, 11 or 10) for the job `install`. Remaining: `windows:11` on its own run.
 
