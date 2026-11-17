@@ -43,11 +43,13 @@ start \"\" /wait msiexec /i %V%\\virtio-win-gt-x64.msi /qn /norestart ADDLOCAL=A
 set D=%ERRORLEVEL%\r\n\
 start \"\" /wait msiexec /i %V%\\guest-agent\\qemu-ga-x86_64.msi /qn /norestart\r\n\
 set G=%ERRORLEVEL%\r\n\
-echo drivers=%D% agent=%G%> \"%R%\"\r\n\
+rem The redirection comes first: in \"agent=0> F\" cmd reads \"0>\" as\r\n\
+rem the redirection of handle 0, and the file stayed empty (T-1868).\r\n\
+>\"%R%\" echo drivers=%D% agent=%G%\r\n\
 sc query QEMU-GA >> \"%R%\" 2>&1\r\n\
 exit /b 0\r\n\
 :nocd\r\n\
-echo drivers=nocd agent=nocd> \"%R%\"\r\n\
+>\"%R%\" echo drivers=nocd agent=nocd\r\n\
 exit /b 1\r\n";
 
 /// The medium of the virtio-win CD at `iso`: a read-only CD-ROM that the
@@ -80,7 +82,14 @@ pub fn report(text: Option<&str>) -> Result<(), String> {
     if good(code("drivers=")) && good(code("agent=")) {
         Ok(())
     } else {
-        Err(format!("the install of the guest tools reported {first:?}"))
+        // TODO/machine.md T-1868: runs 44037861805 and 44041116169 gave an
+        // empty first line; the whole text (its first 300 characters) and
+        // its length say what the script wrote.
+        let whole: String = text.chars().take(300).collect();
+        Err(format!(
+            "the install of the guest tools reported {first:?} ({} bytes: {whole:?})",
+            text.len()
+        ))
     }
 }
 
@@ -95,6 +104,12 @@ mod tests {
         assert!(SCRIPT_TEXT.contains(r"virtio-win-gt-x64.msi /qn"));
         assert!(SCRIPT_TEXT.contains(r"guest-agent\qemu-ga-x86_64.msi /qn"));
         assert!(SCRIPT_TEXT.contains(REPORT));
+        // A digit before `>` is a handle for cmd: each redirection of the
+        // report comes before its `echo`.
+        assert!(
+            !SCRIPT_TEXT.contains("%G%>")
+                && SCRIPT_TEXT.contains(">\"%R%\" echo drivers=%D% agent=%G%")
+        );
         assert!(SCRIPT_TEXT.contains("start \"\" /wait msiexec"));
         assert!(SCRIPT_TEXT
             .split("\r\n")
@@ -114,5 +129,7 @@ mod tests {
         assert!(e.contains("agent=1603"), "{e}");
         assert!(report(Some("drivers=nocd agent=nocd")).is_err());
         assert!(report(None).unwrap_err().contains("no report"));
+        let e = report(Some("\r\n\0x")).unwrap_err();
+        assert!(e.contains("4 bytes") && e.contains("\\0x"), "{e}");
     }
 }
