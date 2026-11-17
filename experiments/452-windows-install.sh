@@ -22,6 +22,10 @@
 #   4. no emulator stays;
 #   5. `podvm run windows:NAME ver` exits 0 and prints the version of
 #      Windows: the first logon installed the mailbox agent.
+#   7. TODO/machine.md T-1868: a detached machine of the golden image
+#      (`run -d`) answers `exec ver` (rc 0, the version), `exec exit 7`
+#      gives 7, a `cp` in and out keeps the sha256 of 3 MB, and `stop` ends
+#      it by `guest-shutdown` of the QEMU Guest Agent.
 # With PODVM_452_REFUSAL=1, the clause of a host with TCG only:
 #   6. `podvm pull windows:2025` exits 125 at once, names `--accel tcg`,
 #      and fetches nothing.
@@ -84,6 +88,36 @@ for name in $NAMES; do
 		vrc=$?
 		say "$name     run ver rc $vrc in $(( $(date +%s) - t0 )) s: $(printf '%s' "$ver" | tr -d '\r' | grep -i version | head -1)"
 		[ "$vrc" -eq 0 ] && printf '%s' "$ver" | grep -qi "version" || { bad "clause 5 ($name)"; tail -5 "$ROOT/experiments/results/windows-install-$name-run.err" | tee -a "$OUT"; }
+	fi
+	if [ "$rc" -eq 0 ]; then
+		m="pv452-$name"
+		E="$ROOT/experiments/results/windows-install-$name-machine.err"
+		: >"$E"
+		t0=$(date +%s)
+		if timeout 15m "$BIN" run -d --name "$m" "windows:$name" >>"$E" 2>&1; then
+			v=$(timeout 10m "$BIN" exec "$m" ver 2>>"$E")
+			erc=$?
+			timeout 5m "$BIN" exec "$m" exit 7 >>"$E" 2>&1
+			e7=$?
+			in="${TMPDIR:-/tmp}/pv452-$name.in"
+			out="${TMPDIR:-/tmp}/pv452-$name.out"
+			head -c 3000000 /dev/urandom >"$in"
+			timeout 5m "$BIN" cp "$in" "$m:C:\\Users\\Public\\" >>"$E" 2>&1
+			crc1=$?
+			timeout 5m "$BIN" cp "$m:C:\\Users\\Public\\pv452-$name.in" "$out" >>"$E" 2>&1
+			crc2=$?
+			same=no
+			[ -f "$out" ] && [ "$(sha256sum <"$in")" = "$(sha256sum <"$out")" ] && same=yes
+			timeout 5m "$BIN" stop "$m" >>"$E" 2>&1
+			src=$?
+			ended=$(find "$HOME" "${XDG_RUNTIME_DIR:-/tmp}" -name machine.json -path "*$m*" 2>/dev/null | head -1 | xargs -r grep -o '"ended":"[^"]*"' | head -1)
+			say "$name     machine: exec ver rc $erc ($(printf '%s' "$v" | tr -d '\r' | grep -i version | head -1)), exec exit 7 rc $e7, cp rc $crc1/$crc2 same $same, stop rc $src $ended, in $(( $(date +%s) - t0 )) s"
+			[ "$erc" -eq 0 ] && [ "$e7" -eq 7 ] && [ "$same" = yes ] && [ "$src" -eq 0 ] || bad "clause 7 ($name)"
+		else
+			bad "clause 7 ($name): run -d"
+		fi
+		"$BIN" rm -f "$m" >>"$E" 2>&1 || true
+		tail -8 "$E" | tee -a "$OUT"
 	fi
 	if pgrep -a qemu-system >/dev/null; then
 		bad "clause 4 ($name): an emulator stayed"
