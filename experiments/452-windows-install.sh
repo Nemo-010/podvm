@@ -21,7 +21,8 @@
 #   3. the sha256 of the ISO in the store is the pin of the catalog;
 #   4. no emulator stays;
 #   5. `podvm run windows:NAME ver` exits 0 and prints the version of
-#      Windows: the first logon installed the mailbox agent.
+#      Windows: the first logon installed the mailbox agent; no work
+#      directory of the run stays in the store (T-1932).
 #   7. TODO/machine.md T-1868: a detached machine of the golden image
 #      (`run -d`) answers `exec ver` (rc 0, the version), `exec exit 7`
 #      gives 7, a `cp` in and out keeps the sha256 of 3 MB, and `stop` ends
@@ -88,6 +89,11 @@ for name in $NAMES; do
 		vrc=$?
 		say "$name     run ver rc $vrc in $(( $(date +%s) - t0 )) s: $(printf '%s' "$ver" | tr -d '\r' | grep -i version | head -1)"
 		[ "$vrc" -eq 0 ] && printf '%s' "$ver" | grep -qi "version" || { bad "clause 5 ($name)"; tail -5 "$ROOT/experiments/results/windows-install-$name-run.err" | tee -a "$OUT"; }
+		# TODO/machine.md T-1932: the overlay of the run went into the store,
+		# and its work directory is gone after the run.
+		left=$(ls -d "$STORE"/podvm-windows-*-run 2>/dev/null | wc -l)
+		say "$name     work directories of a run left in the store: $left"
+		[ "$left" -eq 0 ] || bad "clause 5 ($name): a work directory of the run stayed"
 	fi
 	if [ "$rc" -eq 0 ]; then
 		m="pv452-$name"

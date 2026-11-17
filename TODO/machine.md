@@ -5262,4 +5262,6 @@ Experiment 452 on `kvm.yml` passes clause 5 on the leg with 2 CPUs for `windows:
 
 ## Done
 
+**Partial (2026-11-17, run 44082202946).** `windows:11` on `2c18d67`: experiment 452 passes on both legs. `pull` prints "first boot of the installed disk in 31s" (8 GiB, 4 CPUs) and "in 29s" (4 GiB, 2 CPUs); the first `run windows:11 ver` of the golden image is rc 0 in 22 s and 19 s, and clause 7 passes in 17 s and 14 s. So the extra boot ends the fault, but the Premise is not confirmed: that boot is short, not a long setup of the drivers. Something of the first boot after the install held the agent once in two runs on 2 CPUs, and the extra boot takes it in the install. One pass after two failures of three is not a rate: more runs of the leg with 2 CPUs. Remaining: those runs (`windows:2025` next).
+
 **Partial (2026-11-17).** `windows/settle.rs` boots the installed disk once after the power-off of the install (after the reports of the first logon are read) and runs `ver` through the agent with a bound of 20 min; `pull` prints "first boot of the installed disk in TIME". `cargo test -p podvm windows` passes. Remaining: the runs of experiment 452.
