@@ -297,7 +297,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #401 | Under QEMU user mode, probe says kvm: yes for the device of the host | closed | T-1907 |
 | #402 | A podvm payload has the host name of the host | closed (T-1908) | T-1908 |
 | #403 | COORD-130: pod-enter: a UTS namespace and a host name on the namespace rung (to podcrates) | closed (not needed: T-1908, T-1909) | T-1908 |
-| #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | open | T-1908 |
+| #404 | COORD-131: run --hostname is on main, for PodUtils/podrunner#115 (to podrunner) | closed (PodUtils/podrunner#115 closed: the answer holds, COORD-173) | T-1908 |
 | #405 | [gh action] requested | closed (run 43689812413) | T-1867: a request of `kvm.yml` (experiment 452 with screenshots) |
 | #406 | COORD-132: pod-enter: enter the namespace rung through a user namespace (to podcrates) | closed | T-1909 |
 | #407 | COORD-133: pod-hostprobe: kvm is yes only for a device that runs a guest of the build's architecture (to podcrates) | closed (podcrates@T-676 done; T-1907 done) | T-1907 |
@@ -314,16 +314,16 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #418 | [gh action] requested | closed (run 43726504386) | T-1747: the job cgroup of kvm.yml after a2227588 |
 | #419 | [gh action] requested | closed (run 43726557269) | T-1867: the job install of kvm.yml with the logs of Setup |
 | #420 | [gh action] requested | closed (run 43730876201) | the release of 0.2.0-beta.23 at 437bd12d |
-| #421 | COORD-137: the answer to PodUtils/podrunner#177: descriptor 17 (to podrunner) | open | T-1914 |
+| #421 | COORD-137: the answer to PodUtils/podrunner#177: descriptor 17 (to podrunner) | closed (PodUtils/podrunner#177 closed: the answer holds, COORD-173) | T-1914 |
 | #422 | COORD-138: pod-enter: the root directory never on a number of a passed descriptor (to podcrates) | closed | T-1914 |
-| #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | open | T-1915 |
-| #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | open | T-1916 |
+| #423 | COORD-139: the answer to PodUtils/podrunner#178: tar and a link before its target (to podrunner) | closed (PodUtils/podrunner#178 closed: the answer holds, COORD-173) | T-1915 |
+| #424 | COORD-140: the answer to PodUtils/podrunner#180: lab profiles from podvm (to podrunner) (to podcrates) | closed (PodUtils/podrunner#180 closed: the part of podvm holds, COORD-173) | T-1916 |
 | #425 | COORD-141: the answer to PodUtils/podnet#584: what podvm's help and manual need (to podnet) (to podcrates) | closed (PodUtils/podnet#584 closed) | T-1917 |
 | #426 | [gh action] requested | closed (run 43735766607 failed) | the release of 0.2.0-beta.24 from b6f8958e (call C22); the trial failed on the cross targets |
 | #427 | COORD-142: the answer to PodUtils/podcrates#182: podvm has no installer yet (to podcrates) | open | T-1918 |
 | #428 | COORD-143: the answer to PodUtils/podcrates#183: how podvm maps an issue to its entries (to podcrates) | open | T-1919 |
 | #429 | [gh action] requested | closed (run 43739088606) | the release of 0.2.0-beta.24 from 95d1f3eb (call C22) |
-| #430 | COORD-144: the answer to PodUtils/podrunner#182: podvm lab run is in v0.2.0-beta.24 (to podrunner) | open | T-1916 |
+| #430 | COORD-144: the answer to PodUtils/podrunner#182: podvm lab run is in v0.2.0-beta.24 (to podrunner) | closed (PodUtils/podrunner#182 closed: the answer holds, COORD-173) | T-1916 |
 | #431 | [gh action] requested | closed (a wrong hash; replaced by #432) | the kvm.yml run for T-1747, T-1907 and T-1867 |
 | #432 | [gh action] requested | closed (run 43740331439) | the kvm.yml run for T-1747, T-1907 and T-1867 from 283e3492 |
 | #433 | [gh action] requested | closed (run 43754060132) | the kvm.yml rerun for T-1747, T-1907 and T-1867 from 6539446a |
