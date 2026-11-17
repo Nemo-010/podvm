@@ -16,6 +16,10 @@ on:
         description: "One job to run (guest, windows, cgroup, nonroot, arch or install); empty runs each"
         required: false
         default: ""
+      windows:
+        description: "The catalog name of the job install (TODO/machine.md T-1867): 2025, 11 or 10"
+        required: false
+        default: "2025"
 
 permissions:
   contents: read
@@ -523,7 +527,7 @@ jobs:
       - name: experiment 452 under KVM
         env:
           HOME: /mnt/w/home
-          PODVM_452_NAMES: "2025"
+          PODVM_452_NAMES: ${{ inputs.windows || '2025' }}
           PODVM_WINDOWS_SHOTS: ${{ runner.temp }}/install-shots
           PODVM_WINDOWS_HYPERV: ${{ matrix.hyperv }}
           PODVM_WINDOWS_KEEP_FAILED: /mnt/w/failed
