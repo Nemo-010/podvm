@@ -1,6 +1,6 @@
 # Handoff
 
-The state on 2026-11-16, 16:15 (UTC), at the end of a session. `main` is at the commit that adds
+The state on 2026-11-17, 08:00 (UTC), at the end of a session. `main` is at the commit that adds
 this file. `0.2.0-beta.30` is the last release (release run 44006003310
 on `578d9479`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
@@ -80,19 +80,33 @@ file when each step below is done.
 * The host of a cloud session lacks `uidmap`: install it before a T-1911
   measurement (`apt-get install -y uidmap`).
 
+* **The Windows install works (T-1867).** `windows:2025` installs under
+  KVM in about 9 min and `podvm run windows:2025 ver` answers (run
+  44037861805). The causes, in order: the root disk in the tmpfs of
+  `$XDG_RUNTIME_DIR` (1.5 GiB), `-no-reboot` of pod-guest, and the
+  password of the built-in Administrator in the OOBE of Windows Server.
+* T-1930 done, released in `0.2.0-beta.30`: `run -d` has a PID namespace;
+  podrunner pins beta.30 and closed PodUtils/podrunner#200.
+* podcrates taken up to `v0.67.0`.
+* T-1931 (partial): podrunner#202, the `HEAD` of the source fixup;
+  `--no-source-fixup` stops it; COORD-170 and COORD-171 are open.
+
 ## Next steps, in order
 
 1. Start the session (`AGENTS.md`, section 8), with the watcher.
-2. A new ask of a peer first. Open and waiting: #439 (podrunner), #445,
-   #446, #449, #453, #455, #456 (podcrates).
-3. Read `kvm.yml` run 43898543916: the WinPE logs of T-1867 give the
-   error of Setup. Then fix the cause, and run the install again (it now
-   carries the guest tools of T-1868).
-4. `0.2.0-beta.29` is released (run 43913242822): T-1925 done, T-1917
-   has its assets. T-1930 is in `0.2.0-beta.30`; podrunner closed
-   PodUtils/podrunner#200, and COORD-165 (#458) is closed.
+2. A new ask of a peer first. Open: COORD-170 (#463, podcrates: the
+   source fixup reads comments) and COORD-171 (#464, podrunner: pass
+   `--no-source-fixup`), both for T-1931; #439 (podrunner) and the takes
+   #445, #446, #449, #453 (podcrates).
+3. T-1867: `windows:2025` installs (run 44037861805, experiment 452
+   PASS, about 9 min under KVM). Read the run of `windows:11`
+   (`kvm.yml`, `only=install`, `windows=11`); on a pass, set T-1867 done.
+4. T-1868: the guest tools of the golden image report an empty
+   `TOOLS.TXT`. Keep the mailbox of an install (`PODVM_WINDOWS_KEEP`, and
+   a step of the job `install` that copies it) and read why; then the
+   Prove of T-1868 on the golden image.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
-   T-1872, the Windows entries).
+   T-1872, the Windows entries, T-1917 and T-1925 remainders).
 
 ## The state at the end of the session
 
