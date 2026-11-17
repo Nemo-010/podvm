@@ -67,9 +67,13 @@ for name in $NAMES; do
 		say "$name     $(printf '%s\n' "$info" | grep -E '^(virtual size|disk size)' | tr '\n' ' ')"
 		printf '%s' "$info" | grep -qi "backing file" && bad "clause 2 ($name): the golden image names a backing file"
 	fi
-	iso=$(ls "$STORE"/*.iso 2>/dev/null | head -1)
-	pin=$(grep -A12 "name: \"$name\"" "$ROOT/crates/podvm-windows/src/catalog.rs" | sed -n 's/.*sha256: "\([0-9a-f]*\)".*/\1/p' | head -1)
-	if [ -n "$iso" ]; then
+	# The ISO of this name by its file in the catalog: the store also holds
+	# the virtio-win CD of TODO/machine.md T-1868.
+	entry=$(grep -A12 "name: \"$name\"" "$ROOT/crates/podvm-windows/src/catalog.rs")
+	file=$(printf '%s\n' "$entry" | sed -n 's/.*file: "\([^"]*\)".*/\1/p' | head -1)
+	pin=$(printf '%s\n' "$entry" | sed -n 's/.*sha256: "\([0-9a-f]*\)".*/\1/p' | head -1)
+	iso="$STORE/$file"
+	if [ -n "$file" ] && [ -f "$iso" ]; then
 		got=$(sha256sum "$iso" | cut -d' ' -f1)
 		say "$name     iso sha256 $got"
 		[ "$got" = "$pin" ] || bad "clause 3 ($name): the ISO changed (pin $pin)"

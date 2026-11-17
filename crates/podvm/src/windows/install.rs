@@ -132,6 +132,10 @@ pub(crate) fn install(verb: &str, e: &Entry, iso: &Path, quiet: bool) -> Result<
     }
     let target = target_of(verb, e)?;
     let mut plan = super::plan::build(&super::root_bus::install_args())?;
+    // The root disk goes into the store, where `preflight` counted its room.
+    let work = super::install_dir::WorkDir::make(&podvm_windows::catalog::store_dir(), e.name)
+        .map_err(|why| fail(verb, e.name, why))?;
+    plan.root = work.0.join("root.qcow2");
     let password = match prepare(verb, e.name, target, iso, &mut plan) {
         Ok(p) => p,
         Err(code) => {

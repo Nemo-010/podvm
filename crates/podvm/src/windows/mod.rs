@@ -38,6 +38,7 @@ mod doctor;
 mod doctor_more; // TODO/machine.md T-1871
 mod dos;
 mod install; // TODO/machine.md T-1867
+mod install_dir; // TODO/machine.md T-1867: the work directory in the store
 pub(crate) mod machine; // TODO/machine.md T-1870
 mod named; // TODO/machine.md T-1861, T-1867
 mod origin;
