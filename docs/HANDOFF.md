@@ -102,9 +102,10 @@ file when each step below is done.
    (run 44041116169) install under KVM and answer `ver`. A beta can
    carry it.
 4. T-1867 and T-1868 are in `0.2.0-beta.31` (`exec`, `cp` and a
-   graceful `stop` of a Windows machine, run 44059854830). One
-   leg once did not start its agent at the first boot (run 44050312708,
-   attempt 1): watch for it.
+   graceful `stop` of a Windows machine, run 44059854830). T-1933 (P1):
+   on 2 CPUs the foreground `run windows:NAME` through the mailbox fails
+   at 600 s in 3 of 4 runs, while a detached machine passes on the same
+   image; see the entry for the next step.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries, T-1917 and T-1925 remainders).
 

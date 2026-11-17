@@ -5227,6 +5227,8 @@ Experiment 452 on `kvm.yml` (`only=install`) passes clause 5 (`run windows:NAME 
 
 ## Done
 
+**Partial (2026-11-17, run 44088895746).** Experiment 452 (`windows:2025`) counts the work directories of a run left in the store after clause 5: 0 on both legs; the leg with 4 CPUs passes clause 5 with the overlay in the store (rc 0 in 18 s). Remaining: clause 5 on the leg with 2 CPUs, which T-1933 holds.
+
 **Partial (2026-11-17, run 44077136976).** `windows:11` on `b2d736a`: the leg with 8 GiB and 4 CPUs passes each clause, with the overlay of `run windows:11 ver` in the store (rc 0 in 53 s) and clause 7 on `windows:11` for the first time (`exec ver`, `exit 7`, `cp`, `stop` by `guest-shutdown`, in 34 s). The leg with 2 CPUs failed clause 5 at 600 s (the first boot of the fresh golden image, T-1933), and passed clause 7 on the next boot (51 s). Remaining: a run where clause 5 passes on both legs (after T-1933), and no `podvm-windows-*-run` directory left in the store.
 
 **Partial (2026-11-17).** `windows/run.rs` puts the overlay of a foreground run into `WorkDir::run()` in the store (`windows/install_dir.rs`, which also serves the install). `cargo test -p podvm windows` passes. Remaining: the run of experiment 452.
@@ -5246,7 +5248,7 @@ On the leg with 4 GiB and 2 CPUs, the first `podvm run windows:NAME ver` of a go
 
 ## Premise
 
-The first logon of the install runs `msiexec` of the guest tools, which asks for a restart (3010). The next boot ends the setup of the drivers before the logon, and on 2 CPUs that took longer than 600 s (an estimate from the two runs; no screen of that boot was kept).
+Measured (runs 44082202946, 44088895746): the boot after the install is short (16 to 31 s), so the first guess (a long setup of the drivers after the restart that `msiexec` asks for) is wrong. The fault is the foreground run through the mailbox on 2 CPUs, after the guest tools of T-1868; a detached machine, which uses the QEMU Guest Agent, passes on the same image.
 
 ## Approach
 
@@ -5261,6 +5263,8 @@ A failed boot of the installed disk fails the `pull`, and the disk is kept as fo
 Experiment 452 on `kvm.yml` passes clause 5 on the leg with 2 CPUs for `windows:11` and `windows:2025`, and `pull` names the time of the first boot.
 
 ## Done
+
+**Partial (2026-11-17, run 44088895746, the fault is the mailbox run).** `windows:2025` on `9d6be71`: the extra boot of `pull` passes on both legs (16 s and 18 s), and the leg with 4 CPUs passes each clause. On the leg with 2 CPUs the next boot, the first `run windows:2025 ver`, failed again at 600 s ("the agent did not write WQREADY.TXT"), and the detached machine of clause 7 on the same image passed (`exec`, `cp`, `stop` in 16 s). So the fault is not the first boot of the image (the Premise was wrong): it is the foreground run through the mailbox, on 2 CPUs, in 3 of 4 runs since the guest tools of T-1868 (44050312708 attempt 1, 44077136976, 44088895746; 44082202946 passed). The detached machine reaches the guest through the QEMU Guest Agent, not the mailbox. The agent of the mailbox probes for its volume 600 times with a nap (about 20 min), and it writes no line before it finds the volume, so a run that times out cannot tell "the agent did not start" from "the volume did not come". The extra boot stays: it costs some 20 s and proves that the installed disk boots. Next: read what the guest did (a screen of the foreground run at its bound, or a line of the agent before the probe), and judge whether a foreground run of an image with the guest tools goes through the QEMU Guest Agent, as a detached machine does.
 
 **Partial (2026-11-17, run 44082202946).** `windows:11` on `2c18d67`: experiment 452 passes on both legs. `pull` prints "first boot of the installed disk in 31s" (8 GiB, 4 CPUs) and "in 29s" (4 GiB, 2 CPUs); the first `run windows:11 ver` of the golden image is rc 0 in 22 s and 19 s, and clause 7 passes in 17 s and 14 s. So the extra boot ends the fault, but the Premise is not confirmed: that boot is short, not a long setup of the drivers. Something of the first boot after the install held the agent once in two runs on 2 CPUs, and the extra boot takes it in the install. One pass after two failures of three is not a rate: more runs of the leg with 2 CPUs. Remaining: those runs (`windows:2025` next).
 
