@@ -221,6 +221,7 @@ pub fn xml(a: &Answer) -> String {
         <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE><ProtectYourPC>3</ProtectYourPC>
       </OOBE>
       <UserAccounts>
+        <AdministratorPassword><Value>{pass}</Value><PlainText>true</PlainText></AdministratorPassword>
         <LocalAccounts>
           <LocalAccount wcm:action="add">
             <Name>{user}</Name><Group>Administrators</Group>
@@ -299,9 +300,11 @@ mod tests {
             let tools = x.find(crate::guest_tools::SCRIPT).expect("the guest tools");
             assert!(tools < x.find(&format!("echo {READY}")).unwrap(), "{t:?}");
             assert_eq!(x.contains("BypassTPMCheck"), t == Target::Win11, "{t:?}");
-            // The password is escaped, and appears only in its two places.
+            // The password is escaped, and appears only in its three places:
+            // the built-in Administrator (Windows Server asks for it in the
+            // OOBE, run 44021345080), the account and the logon.
             assert!(x.contains("Pv-canary-&lt;&amp;&gt;&quot;"), "{t:?}");
-            assert_eq!(x.matches("Pv-canary").count(), 2, "{t:?}");
+            assert_eq!(x.matches("Pv-canary").count(), 3, "{t:?}");
         }
         assert_eq!(Target::of("11"), Some(Target::Win11));
         assert_eq!(Target::of("dos"), None);
