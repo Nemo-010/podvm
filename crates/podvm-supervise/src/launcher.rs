@@ -143,12 +143,12 @@ fn enter_in_launcher(
         userns_ids: (container.rung == "namespace")
             .then(|| table::userns_ids_of(&env))
             .flatten(),
-        // TODO/enter.md T-1930 (PodUtils/podrunner#200): off until the init
-        // of pod-enter's PID namespace closes the descriptors it inherits.
-        // In `v0.65.0` it keeps the ready pipe of `pod_supervise::start`
-        // (`O_CLOEXEC`, which only an exec closes), so `run -d` waits until
-        // the payload ends (COORD-167).
-        pid_namespace: false,
+        // TODO/enter.md T-1930 (PodUtils/podrunner#200): a PID namespace
+        // with its own `/proc` on the namespace rung (podcrates `v0.65.0`;
+        // its init closes the descriptors of the caller since `v0.66.0`,
+        // COORD-167), so that a payload sees and signals only its own
+        // processes.
+        pid_namespace: container.rung == "namespace" && container.userland_exec.is_empty(),
     };
 
     // ⭐ TODO/image.md T-0204 and T-0211. The image lock is taken here and

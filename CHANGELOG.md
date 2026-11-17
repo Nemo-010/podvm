@@ -8,6 +8,16 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a detached run sees and signals only its own processes, 2026-11-17
+
+Record: T-1930 (PodUtils/podrunner#200).
+Deployed: none yet.
+
+- `podvm run -d`, `create` and `start` on the namespace rung run the
+  payload in a PID namespace of its own, with its own `/proc`. A job no
+  longer sees or signals the processes of the host, and `podvm exec`
+  enters the same PID namespace.
+
 ### Changed: podcrates `v0.64.0` and `v0.65.0`, 2026-11-17
 
 Record: T-1924, T-1868 (COORD-166).

@@ -349,4 +349,4 @@
 457 issue closed
 458 issue open
 459 issue closed
-460 issue open
+460 issue closed

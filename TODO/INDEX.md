@@ -592,11 +592,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1927](enter.md) | P1 | M | none | enter | done | On the namespace rung of a user with no root, the payload is uid 0 of a one-uid namespace, not the user of the image |
 | [T-1928](interpose.md) | P0 | S | none | interpose | done | A payload that closes descriptor 17 and opens a file there gets the ownership memo read and written on that file |
 | [T-1929](enter.md) | P3 | S | none | enter | open | `PODVM_MODE=rundir` and `tmpfs` refuse each tree of root: the device nodes of the fixups |
-| [T-1930](enter.md) | P1 | M | none | enter | blocked | `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host |
+| [T-1930](enter.md) | P1 | M | none | enter | done | `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host |
 
 ## Counts
 
-527 entries: 6 open, 15 partial, 3 blocked, 503 done.
+527 entries: 6 open, 15 partial, 2 blocked, 504 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -606,10 +606,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
-| P1 | 0 | 3 | 1 | 214 | 218 |
+| P1 | 0 | 3 | 0 | 215 | 218 |
 | P2 | 3 | 8 | 2 | 172 | 185 |
 | P3 | 3 | 4 | 0 | 42 | 49 |
-| **All** | 6 | 15 | 3 | 503 | 527 |
+| **All** | 6 | 15 | 2 | 504 | 527 |
 
 ## Work order
 

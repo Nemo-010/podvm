@@ -7,7 +7,7 @@ start.
 
 ## State
 
-527 entries: 6 open, 15 partial, 3 blocked, 503 done.
+527 entries: 6 open, 15 partial, 2 blocked, 504 done.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
@@ -24,9 +24,9 @@ The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
   dispatches each workflow. A newer push cancels the gate of an older
   commit. The issue `[gh action] requested` is the fallback only
   (`docs/decisions.md`, 2026-11-13, "Workflow fallback").
-* podvm takes the crates of PodUtils/podcrates at `v0.65.0`
-  (PodUtils/podcrates#215: `Plan::pid_namespace`, off until COORD-167,
-  T-1930; before it `v0.64.0`, PodUtils/podcrates#214, COORD-166: the roots of the host in a lab with a
+* podvm takes the crates of PodUtils/podcrates at `v0.66.0`
+  (PodUtils/podcrates#216: the PID namespace of `run -d`, T-1930;
+  `v0.65.0`, PodUtils/podcrates#215; before it `v0.64.0`, PodUtils/podcrates#214, COORD-166: the roots of the host in a lab with a
   way out, the stand-in that ignores SIGPIPE, `fedorapeople.org`; before it
   `v0.63.0`, PodUtils/podcrates#211: the nested user namespace of a foreground run,
   T-1927; before it `v0.62.0`, PodUtils/podcrates#210, and `v0.61.0`): `Plan::volumes` of pod-enter, the row
