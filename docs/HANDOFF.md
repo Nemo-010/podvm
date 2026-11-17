@@ -22,8 +22,10 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.64.0` (PodUtils/podcrates#214, COORD-166,
-  #459). Before it `v0.63.0` (PodUtils/podcrates#211). Since
+* podcrates is taken up to `v0.65.0` (PodUtils/podcrates#215). Its
+  `Plan::pid_namespace` stays off: its init keeps the ready pipe of
+  `run -d` (COORD-167, #460, T-1930). Before it `v0.64.0`
+  (PodUtils/podcrates#214, COORD-166, #459). Before it `v0.63.0` (PodUtils/podcrates#211). Since
   `v0.62.0` (PodUtils/podcrates#210): its
   `chroot_usable` is fixed (COORD-150) and `Plan::userns_ids` serves
   T-1927 (COORD-154). The way out of a network lab (T-1924), the
@@ -88,7 +90,8 @@ file when each step below is done.
    carries the guest tools of T-1868).
 4. `0.2.0-beta.29` is released (run 43913242822): T-1925 done, T-1917
    has its assets. T-1930 (P1, PodUtils/podrunner#200) waits for
-   COORD-164 (#457); take the tag of podcrates that carries it first.
+   COORD-167 (#460); then set `pid_namespace` in `podvm-supervise`'s
+   launcher and run its Prove.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries).
 

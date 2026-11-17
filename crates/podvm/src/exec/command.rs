@@ -396,9 +396,10 @@ pub fn exec(args: &[String]) -> i32 {
         no_new_privs: false,
         die_with_parent: false,
         confine: None,
-        hostname: None,      // T-1908: the name rides in the env of the record
-        volumes: Vec::new(), // T-1920: `exec` joins the mounts of the run
-        userns_ids: None,    // podcrates `v0.62.0`; T-1927 fills it for `run -d`
+        hostname: None,       // T-1908: the name rides in the env of the record
+        volumes: Vec::new(),  // T-1920: `exec` joins the mounts of the run
+        userns_ids: None,     // podcrates `v0.62.0`; T-1927 fills it for `run -d`
+        pid_namespace: false, // podcrates `v0.65.0`; T-1930 sets it for `run -d`
     };
     if let Err(c) = serve_devices(&mut plan, &mut err) {
         drop(memo);

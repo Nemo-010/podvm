@@ -4386,4 +4386,6 @@ As uid 1000 on the cloud host: in `podvm run -d IMAGE sleep 600`, `podvm exec NA
 
 ## Blocker
 
-The plan option of `pod-enter` (COORD-164, PodUtils/podvm#457). Clears when a podcrates tag carries it.
+The init of `pod-enter`'s PID namespace keeps the descriptors of the launcher (COORD-167, PodUtils/podvm#460). Clears when a podcrates tag closes them in the init.
+
+**Amended (2026-11-17).** podcrates `v0.65.0` carries `Plan::pid_namespace` (podcrates@T-806, COORD-164 closed). With it on for the launcher of `run -d` on the namespace rung, measured as uid 1000 on the cloud host: in the unit, `ps -o pid,args` lists only the init (1), the payload (2) and the `exec`; `kill -0` of a host process of the same uid gives "No such process"; `/proc` holds 6 entries; `podvm stop` ends the unit with 143. But `podvm run -d` does not return (stopped by `timeout` at 60 s and 200 s, with the unit `Up`): the init is a fork with no exec, so it keeps the `O_CLOEXEC` ready pipe of `pod_supervise::start`, whose caller reads to the end of the file. podvm takes the tag with `pid_namespace: false` until the fix.

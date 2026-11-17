@@ -24,4 +24,4 @@ name = "podvm-workload"
 path = "src/workload.rs"
 
 [dependencies]
-pod-services = { git = "https://github.com/PodUtils/podcrates", tag = "v0.64.0" }
+pod-services = { git = "https://github.com/PodUtils/podcrates", tag = "v0.65.0" }

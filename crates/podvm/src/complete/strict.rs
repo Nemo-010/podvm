@@ -467,7 +467,8 @@ fn one_step(
         confine: None,
         hostname: None, // T-1908: an entry joins or checks; it names no UTS namespace
         volumes: Vec::new(),
-        userns_ids: None, // podcrates `v0.62.0`; T-1927 fills it for `run -d`
+        userns_ids: None,     // podcrates `v0.62.0`; T-1927 fills it for `run -d`
+        pid_namespace: false, // podcrates `v0.65.0`; T-1930 sets it for `run -d`
     };
     let mut sink = std::io::sink();
     let spawned = podvm_enter::spawn(root, &plan, &mut sink);
