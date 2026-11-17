@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Fixed: a Windows run keeps its overlay in the store, 2026-11-17
+
+Record: T-1932.
+Deployed: none yet.
+
+- A foreground `podvm run windows:NAME CMD` writes the overlay of the guest
+  beside the catalog, not into the runtime directory, which is a small
+  tmpfs on many hosts.
+
 ## 0.2.0-beta.31 (2026-11-17)
 
 ### Added: `exec`, `cp` and a graceful `stop` of a Windows machine, 2026-11-17

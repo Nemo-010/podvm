@@ -594,10 +594,11 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1929](enter.md) | P3 | S | none | enter | open | `PODVM_MODE=rundir` and `tmpfs` refuse each tree of root: the device nodes of the fixups |
 | [T-1930](enter.md) | P1 | M | none | enter | done | `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host |
 | [T-1931](cli.md) | P2 | S | none | cli | done | A run connects to the hosts of the package sources of the image, and no document names it |
+| [T-1932](machine.md) | P2 | S | none | machine | partial | A foreground `run windows:NAME` writes its overlay into the tmpfs of the runtime directory |
 
 ## Counts
 
-528 entries: 6 open, 13 partial, 2 blocked, 507 done.
+529 entries: 6 open, 14 partial, 2 blocked, 507 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -608,9 +609,9 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
 | P1 | 0 | 2 | 0 | 216 | 218 |
-| P2 | 3 | 7 | 2 | 174 | 186 |
+| P2 | 3 | 8 | 2 | 174 | 187 |
 | P3 | 3 | 4 | 0 | 42 | 49 |
-| **All** | 6 | 13 | 2 | 507 | 528 |
+| **All** | 6 | 14 | 2 | 507 | 529 |
 
 ## Work order
 

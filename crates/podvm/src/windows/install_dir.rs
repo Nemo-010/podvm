@@ -6,15 +6,29 @@
 
 use std::path::{Path, PathBuf};
 
-/// The work directory of an install in the store, removed at its end
-/// (`PODVM_WINDOWS_KEEP` keeps it): the root disk and the sticks.
+/// The work directory of an install or a foreground run in the store,
+/// removed at its end (`PODVM_WINDOWS_KEEP` keeps it): the root disk (or
+/// the overlay of a run) and the sticks.
 pub(super) struct WorkDir(pub(super) PathBuf);
 
 impl WorkDir {
-    pub(super) fn make(store: &Path, name: &str) -> std::io::Result<Self> {
+    /// The work directory of the install of `name`.
+    pub(super) fn install(name: &str) -> std::io::Result<Self> {
+        Self::make(
+            &podvm_windows::catalog::store_dir(),
+            &format!("install-{name}"),
+        )
+    }
+
+    /// The work directory of a foreground run (TODO/machine.md T-1932).
+    pub(super) fn run() -> std::io::Result<Self> {
+        Self::make(&podvm_windows::catalog::store_dir(), "run")
+    }
+
+    fn make(store: &Path, what: &str) -> std::io::Result<Self> {
         use std::os::unix::fs::DirBuilderExt as _;
         let tag = format!(
-            "{}{}-install-{name}",
+            "{}{}-{what}",
             podvm_windows::SCRATCH_PREFIX,
             std::process::id()
         );

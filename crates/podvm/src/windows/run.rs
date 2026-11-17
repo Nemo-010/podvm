@@ -36,10 +36,23 @@ pub(crate) fn run(verb: &str, a: &Args) -> i32 {
         eprintln!("podvm {verb}: {} is not a file\n{USAGE}", image.display());
         return EXIT_FLAG_ERROR;
     }
-    let plan = match plan::build(a) {
+    let mut plan = match plan::build(a) {
         Ok(p) => p,
         Err(c) => return c,
     };
+    // TODO/machine.md T-1932: the overlay of the run grows with each write
+    // of the guest, so it goes into the store, not into the runtime
+    // directory, a small tmpfs on many hosts (as the root disk of an
+    // install, T-1867).
+    let work = match super::install_dir::WorkDir::run() {
+        Ok(w) => w,
+        Err(e) => {
+            eprintln!("podvm {verb}: {e}");
+            podvm_windows::cleanup(&plan);
+            return EXIT_RUNTIME_ERROR;
+        }
+    };
+    plan.root = work.0.join("root.qcow2");
     // Backstops every explicit cleanup below: a panic past staging still
     // removes the per-run directory on unwind.
     let _run_guard = podvm_windows::RunGuard::arm(&plan);

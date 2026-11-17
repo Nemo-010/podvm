@@ -5195,3 +5195,36 @@ Experiment 463 passes in the job `nonroot` of `kvm.yml`; `cargo test -p podvm --
 **Partial (2026-11-16, podrunner's run with beta.27).** PodUtils/podrunner#199: with the cached base archive removed, the runner image fails as the lab user ("the console of the emulator closed 2.6 s after the start, with an initrd of 1348 MiB", no console line), and `alpine:3.20` passes on the same host for the same user. So the cache and the user are not the cause; the size of the initrd is the lead. A kernel panic prints at EMERG past `loglevel=0` (the note of `machine/ssh/qemu.rs`), and no console line came, so the guest likely did not start: the emulator ended while it loaded the initrd. podvm now waits up to 2 s for the emulator's status after its console closed, so the message names a code or a signal (an OOM kill) in place of "still running". Experiment 463 has clause 6: a root of 1400 MiB with `--podvm-mem 4G` and `8G`, with the lines of the kernel log that name an OOM kill. Remaining: that run, then the cause and its fix (more memory, or a root on a disk or on 9p in place of an initrd).
 
 **Partial (2026-11-16, the threshold).** Runs 43875288378 and 43876504275 (experiment 463 clause 6): a root of 1400 MiB (an initrd of 1416 MiB) resets the guest at `-m 4G` (the emulator exits with 0 after 1.4 s, no console line) and boots at 5G, 6G and 8G; the cause of PodUtils/podrunner#199 is the memory of the guest. `machine/guest/mem.rs` estimates the need as three times the initrd and 512 MiB (an estimate from this measurement): with no `--podvm-mem` the guest of an initrd over 100 MiB gets the estimate in place of 512 MiB; a smaller `--podvm-mem` gives one line before the boot; and the message of a guest that reset with no line names the estimate. COORD-161 (#454) tells podrunner to give the unit 8G. Remaining: the run of clause 6 that holds the three cases; a root on a disk in place of an initrd, which removes the copy, is a separate entry when a caller needs it.
+
+# T-1932: A foreground `run windows:NAME` writes its overlay into the tmpfs of the runtime directory
+
+**Source:** the review of `v0.2.0-beta.31` (2026-11-17), after T-1867
+**Category:** machine
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** partial
+
+## Problem
+
+A foreground `podvm run windows:NAME CMD` staged its per-run directory under `$XDG_RUNTIME_DIR`, overlay included. The overlay grows with each write of the guest, and on many hosts that directory is a small tmpfs: on a hosted runner it holds about 1.5 GiB, and the install of T-1867 failed with no error in a log when its root disk filled it. A detached machine (`run -d`) keeps its overlay beside the catalog already.
+
+## Premise
+
+The install of T-1867 moved its root disk into the store (`windows/install_dir.rs`); the run takes the same work directory.
+
+## Approach
+
+`WorkDir::run()` makes a work directory in the store, and the plan of the run takes its overlay there; the directory is removed at the end, unless `PODVM_WINDOWS_KEEP`.
+
+## Decision
+
+The sockets and the small files of the run stay in the runtime directory: a socket path holds at most 107 bytes.
+
+## Prove
+
+Experiment 452 on `kvm.yml` (`only=install`) passes clause 5 (`run windows:NAME ver`) with the overlay in the store, and no `podvm-windows-*-run` directory stays in the store after it.
+
+## Done
+
+**Partial (2026-11-17).** `windows/run.rs` puts the overlay of a foreground run into `WorkDir::run()` in the store (`windows/install_dir.rs`, which also serves the install). `cargo test -p podvm windows` passes. Remaining: the run of experiment 452.
