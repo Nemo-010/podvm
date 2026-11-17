@@ -385,6 +385,14 @@ pub(super) fn container_fields(
                 .to_string(),
         ),
         ("Rung", c.rung.clone()),
+        // TODO/enter.md T-1935: the tier on the rung, a dash for none.
+        (
+            "Tier",
+            match super::syscall::cap_of(&c.env) {
+                Some(_) => super::syscall::WORD.to_string(),
+                None => "-".to_string(),
+            },
+        ),
         // TODO/cli.md T-1695: the labels of the run, KEY=VALUE, one comma
         // between two.
         ("Labels", c.hardening.labels.join(",")),

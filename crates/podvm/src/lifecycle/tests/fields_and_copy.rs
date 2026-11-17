@@ -167,7 +167,7 @@ fn the_record_carries_the_loader_drive_and_nothing_else() {
     assert!(detached_drive(Some(&memfd)).is_empty());
     assert!(detached_drive(None).is_empty());
     // TODO/enter.md T-1896: the native-static rung drives its foreground
-    // argv; the syscall tier keeps no detached driver.
+    // argv; the syscall tier takes the same drive (T-1935).
     let native = Userland {
         dispatch_exe: Some("/bin/sleep".to_string()),
         guest_argv: vec!["sleep".to_string(), "9".to_string()],
@@ -183,8 +183,13 @@ fn the_record_carries_the_loader_drive_and_nothing_else() {
         syscall: true,
         ..native.clone()
     };
-    assert!(detached_drive(Some(&syscall)).is_empty());
-    assert!(refuse_detached_userland("run", Some(&syscall), true).is_err());
+    assert_eq!(detached_drive(Some(&syscall)), drive);
+    assert!(refuse_detached_userland("run", Some(&syscall), true).is_ok());
+    let emulate = Userland {
+        emulator: Some("qemu".to_string()),
+        ..native.clone()
+    };
+    assert!(detached_drive(Some(&emulate)).is_empty());
 }
 
 /// TODO/enter.md T-1317. The pre-fetch tier's truth table: chroot, the

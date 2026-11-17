@@ -123,8 +123,9 @@ pub const RUN_OPTIONS: &str = "\
                    it under a static qemu-user of PATH on the native-static
                    rung (run only, TODO/enter.md T-1651), syscall runs a
                    static program on that rung with a fixed uname, a
-                   capped /tmp of the run and guest paths in /proc/self
-                   (a foreground run only, TODO/enter.md T-1657), and each
+                   capped /tmp and guest paths in /proc/self; run -d and
+                   create keep it, and exec in such a container enters it
+                   (TODO/enter.md T-1657, T-1935), and each
                    other value is a flag error. With no flag the ladder
                    selects, under every name the binary answers to, and
                    `system info` names the entered rung (TODO/machine.md

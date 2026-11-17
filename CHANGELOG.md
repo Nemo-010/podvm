@@ -8,6 +8,23 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Added: the syscall tier for a detached container, 2026-11-17
+
+Record: T-1935.
+Deployed: none yet.
+
+- `podvm run -d --podvm-tier=syscall` and `create` keep the tier. `exec`
+  in such a container enters the tier, and `inspect` has the field
+  `Tier`. On a host with the userland rung only (a GitHub-hosted runner),
+  this tier gives a raw `rename`, `renameat2` or `link` of a dynamic
+  program (`uv`, `ruff`) the paths of the image: on the loader family
+  these reach the host and fail with EACCES (PodUtils/podrunner#189).
+- The tier no longer kills a child of `posix_spawn` (each process spawn of
+  a Rust program, such as `uv venv`): the handler read past the end of
+  the stack of the child. Python's `subprocess` no longer loses the count
+  of `/tmp` (its `close_range` closed it), so its child no longer exits
+  127.
+
 ### Fixed: the first run of a fresh Windows golden image, 2026-11-17
 
 Record: T-1933.

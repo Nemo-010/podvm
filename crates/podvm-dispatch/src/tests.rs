@@ -87,3 +87,29 @@ fn the_tier_counts_growth_and_names_its_release() {
     assert_eq!(&u[130..135], b"zzzzz", "the release stays the host's");
     assert!(!crate::uts::set(&[b'a'; 65]), "a name of 65 bytes");
 }
+
+/// TODO/enter.md T-1935: `close_range` keeps the root's descriptor and the
+/// count of `/tmp`.
+#[test]
+fn close_range_goes_around_the_kept_descriptors() {
+    use crate::handler::range_gaps;
+    assert_eq!(range_gaps(3, 10, [-1, -1]), None);
+    assert_eq!(range_gaps(3, 10, [1000, 1001]), None);
+    assert_eq!(
+        range_gaps(3, u32::MAX as i64, [1000, 1001]),
+        Some([Some((3, 999)), None, Some((1002, u32::MAX as i64))])
+    );
+    assert_eq!(
+        range_gaps(3, 2000, [1001, 1000]),
+        Some([Some((3, 999)), None, Some((1002, 2000))])
+    );
+    assert_eq!(range_gaps(1000, 1000, [1000, -1]), Some([None, None, None]));
+    assert_eq!(
+        range_gaps(3, 1500, [1000, -1]),
+        Some([Some((3, 999)), None, Some((1001, 1500))])
+    );
+    assert_eq!(
+        range_gaps(3, 1500, [5, 1000]),
+        Some([Some((3, 4)), Some((6, 999)), Some((1001, 1500))])
+    );
+}

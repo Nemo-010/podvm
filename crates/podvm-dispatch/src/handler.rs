@@ -29,6 +29,8 @@ const PR_SET_SYSCALL_USER_DISPATCH: i64 = 59;
 /// The stack of a vfork child, and the part of the given stack it keeps.
 const VFORK_STACK: i64 = 256 << 10;
 const WINDOW: i64 = 256;
+const GETPID: i64 = 39;
+const PROCESS_VM_READV: i64 = 310;
 
 /// The registers of `ucontext_t.uc_mcontext.gregs` (x86_64).
 pub mod reg {
@@ -180,9 +182,13 @@ fn clone(a: [i64; 6], g: *mut i64) -> i64 {
         if m >= 0 {
             let top = (m + VFORK_STACK - WINDOW) & !15;
             // SAFETY: the window above sp is the libc's, in the parent's
-            // stack; the copy lands in the new map.
+            // stack, up to the end of its map; the copy lands in the new map.
             unsafe {
-                core::ptr::copy_nonoverlapping(sp as *const u8, top as *mut u8, WINDOW as usize)
+                core::ptr::copy_nonoverlapping(
+                    sp as *const u8,
+                    top as *mut u8,
+                    window_of(sp) as usize,
+                )
             };
             sp = top;
             moved = m;
@@ -227,35 +233,86 @@ fn clone(a: [i64; 6], g: *mut i64) -> i64 {
     }
 }
 
+/// TODO/enter.md T-1935: the bytes of the window above `sp` that can be
+/// read. glibc's `clone` puts `sp` 16 bytes below the end of the map of
+/// `posix_spawn`, so a copy of the whole window read past the map (into the
+/// guard page of Rust's alternate stack, measured with `uv venv`), and the
+/// spawn died of SIGSEGV. musl keeps more than that above `sp`, in the same
+/// map. `process_vm_readv` of this process answers EFAULT for a page that
+/// cannot be read; `mincore` does not tell a guard page from a stack.
+fn window_of(sp: i64) -> i64 {
+    let next = (sp & !4095) + 4096;
+    if sp + WINDOW <= next {
+        return WINDOW;
+    }
+    let mut byte = 0u8;
+    let local = [core::ptr::addr_of_mut!(byte) as i64, 1];
+    let remote = [next, 1];
+    // SAFETY: getpid takes no argument; process_vm_readv writes one byte
+    // into `byte` and reads one byte of this process at `next`, or fails.
+    let r = unsafe {
+        let pid = sc(GETPID, 0, 0, 0);
+        sc6(
+            PROCESS_VM_READV,
+            pid,
+            local.as_ptr() as i64,
+            1,
+            remote.as_ptr() as i64,
+            1,
+            0,
+        )
+    };
+    if r == 1 {
+        WINDOW
+    } else {
+        next - sp
+    }
+}
+
 /// Keep the root's descriptor out of reach of close, dup2 and close_range.
 fn guard_fd(n: i64, a: [i64; 6]) -> Option<i64> {
     // T-1657: the memfd of the count of `/tmp` is kept as the root's is.
     let count = crate::tier::FD.load(core::sync::atomic::Ordering::Relaxed);
-    if count >= 0 {
-        match n {
-            nr::CLOSE if a[0] == count => return Some(-sys::EBADF),
-            nr::DUP2 | nr::DUP3 if a[1] == count => return Some(-sys::EBUSY),
-            _ => {}
-        }
-    }
     let root = state::root_fd();
     match n {
-        nr::CLOSE if a[0] == root => Some(-sys::EBADF),
-        nr::DUP2 | nr::DUP3 if a[1] == root => Some(-sys::EBUSY),
-        nr::CLOSE_RANGE if a[0] <= root && root <= a[1] => {
-            // SAFETY: two calls around the root's descriptor.
-            unsafe {
-                if a[0] < root {
-                    sc(nr::CLOSE_RANGE, a[0], root - 1, a[2]);
-                }
-                if root < a[1] {
-                    sc(nr::CLOSE_RANGE, root + 1, a[1], a[2]);
-                }
+        nr::CLOSE if a[0] == root || (count >= 0 && a[0] == count) => Some(-sys::EBADF),
+        nr::DUP2 | nr::DUP3 if a[1] == root || (count >= 0 && a[1] == count) => Some(-sys::EBUSY),
+        nr::CLOSE_RANGE => {
+            let gaps = range_gaps(a[0], a[1], [root, count])?;
+            for (lo, hi) in gaps.into_iter().flatten() {
+                // SAFETY: close_range of a range with no kept descriptor.
+                unsafe { sc(nr::CLOSE_RANGE, lo, hi, a[2]) };
             }
             Some(0)
         }
         _ => None,
     }
+}
+
+/// TODO/enter.md T-1935: the parts of `lo..=hi` around the kept
+/// descriptors (a negative one is none), or `None` where the range holds
+/// none of them and the call goes to the kernel as it is. Python's
+/// `subprocess` closes each descriptor above 2 with one `close_range`, and
+/// before this the count of `/tmp` went with it, so its child could not map
+/// the count and exited 127.
+pub(crate) fn range_gaps(lo: i64, hi: i64, keep: [i64; 2]) -> Option<[Option<(i64, i64)>; 3]> {
+    let mut k = keep.map(|f| (f >= 0 && lo <= f && f <= hi).then_some(f));
+    if k == [None, None] {
+        return None;
+    }
+    k.sort_unstable_by_key(|f| f.unwrap_or(i64::MAX));
+    let mut out = [None; 3];
+    let mut from = lo;
+    for (i, f) in k.into_iter().flatten().enumerate() {
+        if from < f {
+            out[i] = Some((from, f - 1));
+        }
+        from = f + 1;
+    }
+    if from <= hi {
+        out[2] = Some((from, hi));
+    }
+    Some(out)
 }
 
 /// True where `munmap(addr, len)` takes the stack that this handler runs

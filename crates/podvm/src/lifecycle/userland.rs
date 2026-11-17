@@ -243,11 +243,13 @@ pub fn detached_drive(userland: Option<&Userland>) -> Vec<String> {
 /// TODO/enter.md T-1896 (PodUtils/podrunner#100, case 2): the detached
 /// drive of the native-static rung is the argv of its foreground entry,
 /// `podvm --podvm-dispatch-enter ROOT EXE ARGV...`, which the launcher
-/// execs through `spawn_userland` as it execs a loader argv. The
-/// emulate and syscall tiers keep no detached driver.
+/// execs through `spawn_userland` as it execs a loader argv. The syscall
+/// tier takes the same drive (T-1935): the variable of the tier is in the
+/// environment that the record keeps. The emulate tier keeps no detached
+/// driver.
 fn native_drive(u: &Userland) -> Option<Vec<String>> {
     let exe = u.dispatch_exe.as_ref()?;
-    if u.emulator.is_some() || u.syscall {
+    if u.emulator.is_some() {
         return None;
     }
     let me = std::fs::read_link("/proc/self/exe").ok()?;

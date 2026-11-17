@@ -60,6 +60,7 @@ pub const CONTAINER_INSPECT_FIELDS: &[&str] = &[
     "RootfsPath",
     "LogPath",
     "Rung",
+    "Tier",
     "Labels",
     "Complete.Fixups",
     "Complete.Degraded",

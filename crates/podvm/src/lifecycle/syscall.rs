@@ -101,3 +101,58 @@ pub fn tier_env(
         }
     }
 }
+
+/// TODO/enter.md T-1935: the cap of `/tmp` of a container whose run took
+/// the syscall tier, from the variable of the tier in its record; `None`
+/// for each other container.
+pub fn cap_of(record_env: &[String]) -> Option<u64> {
+    let v = record_env
+        .iter()
+        .find_map(|e| e.strip_prefix(podvm_dispatch::TIER_VAR)?.strip_prefix('='))?;
+    v.split(':').next()?.parse().ok()
+}
+
+/// TODO/enter.md T-1935: the entry of `exec`. In a container whose run took
+/// the syscall tier, the command enters the same tier (a raw system call of
+/// a dynamic program sees the image there, not the host); else the shared
+/// entry decision of `run`.
+#[allow(clippy::too_many_arguments)]
+pub fn exec_entry(
+    record_env: &[String],
+    maps: &podvm_enter::userland::Maps,
+    argv: &[String],
+    working_dir: &str,
+    env: &mut Vec<String>,
+    support_native: bool,
+    findings: &podvm_probe::Findings,
+    unsafe_host_paths: bool,
+) -> Result<Option<Userland>, i32> {
+    if let Some(cap) = cap_of(record_env) {
+        tier_env(env, true, cap, None);
+        return decide("exec", maps, argv, working_dir, env, cap).map(Some);
+    }
+    super::decide_entry(
+        "exec",
+        maps,
+        argv,
+        working_dir,
+        env,
+        support_native,
+        findings,
+        unsafe_host_paths,
+        None,
+    )
+}
+
+#[cfg(test)]
+#[test]
+fn the_cap_comes_from_the_record_of_the_tier() {
+    let v = |s: &[&str]| s.iter().map(|x| x.to_string()).collect::<Vec<_>>();
+    assert_eq!(
+        cap_of(&v(&["A=1", "PODVM_DISPATCH_TIER=268435456"])),
+        Some(268435456)
+    );
+    assert_eq!(cap_of(&v(&["PODVM_DISPATCH_TIER=1024:-:3128"])), Some(1024));
+    assert_eq!(cap_of(&v(&["PODVM_DISPATCH_TIERX=1"])), None);
+    assert_eq!(cap_of(&v(&["A=1"])), None);
+}

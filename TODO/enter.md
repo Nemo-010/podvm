@@ -4433,7 +4433,7 @@ The device nodes and the devpts of the namespace rung are pod-enter's code. COOR
 **Milestone:** none
 **Priority:** P1
 **Effort:** M
-**Status:** open
+**Status:** partial
 
 ## Problem
 
@@ -4454,3 +4454,7 @@ The syscall tier serves `run -d`, `create`, `start`, `exec` and `rm`: the `/tmp`
 ## Prove
 
 As uid 1000 on the cloud host under the seccomp filter of the Problem: `run -d` of `python:3.13-slim` with the glibc program of the Problem prints 0 for each raw call in `/root` and `/tmp`, `inspect` names the tier, `exec` sees the files, and `rm -f` leaves no directory of the run.
+
+## Done
+
+**Partial (2026-11-17, the tier for `run -d`).** `run -d --podvm-tier=syscall` and `create` keep the tier: `run/prepare.rs` no longer refuses them, and the `/tmp` of the container is the `/tmp` of its own tree (the handler caps it by its guest path, and `rm` removes the tree); `lifecycle/userland.rs` gives the tier the detached drive of the native-static rung; `exec` in such a container enters the tier (`lifecycle::syscall::exec_entry`, from the variable of the tier in the record); `inspect` has the field `Tier`. Two faults of the tier were found on the way and fixed in `podvm-dispatch`: the vfork path of the handler copied 256 bytes above the `sp` of the child, past the end of the 36 KiB stack of glibc's `posix_spawn` and into the guard page of Rust's alternate stack, so each spawn of a Rust program died of SIGSEGV (`uv venv`; now `window_of` stops at a page that `process_vm_readv` cannot read); and a `close_range` closed the memfd of the count of `/tmp`, so a child of Python's `subprocess` exited 127 (now `range_gaps` goes around it). Measured as uid 1000 on the cloud host under the seccomp filter of the Problem (`inspect`: `userland syscall`), `public.ecr.aws/docker/library/python:3.13-slim`: the glibc program prints 0 for raw `renameat2`, `rename` and `link` in `/root`, `/tmp` and a volume, in the main payload and through `exec`; `uv venv` passes 5 of 5, `uv pip install six` and `uv cache clean` pass; `ruff check` writes its cache. On the loader family the same `ruff check` gives "Failed to rename temporary cache file ... Permission denied (os error 13)", as in PodUtils/podrunner#189. podrunner's argv (`-w`, `--hostname`, `--label`, `--no-source-fixup`, `--report`, `-e`, two volumes) runs, and `stop` then `start` keeps the tier. The 35 integration test binaries of podvm, podvm-supervise and podvm-dispatch pass as uid 1000. Remaining: a detached run of a dynamic program takes the tier with no flag where the userland rung is the best rung and Syscall User Dispatch arms (after the measure of T-1740).

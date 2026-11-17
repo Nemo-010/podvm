@@ -142,16 +142,15 @@ pub(super) fn enter(
     // where chroot is denied the loader and memfd families drive, with
     // T-0505's fresh-entry contract unchanged (separate banners, separate
     // records). A refusal names the blocking call.
-    let userland = match crate::lifecycle::decide_entry(
-        "exec",
+    let userland = match crate::lifecycle::syscall::exec_entry(
+        &container.env,
         &maps,
         &o.command,
         &working_dir,
-        &env,
+        &mut env,
         support_native,
         &findings,
         o.unsafe_host_paths,
-        None,
     ) {
         Ok(u) => u,
         Err(code) => return code,
