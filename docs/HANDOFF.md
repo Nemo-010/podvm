@@ -22,7 +22,8 @@ file when each step below is done.
 * The pkgforge mirrors (the owner's ruling "Web access") answer 403
   through the egress proxy of a podvm cloud session; use the GitHub MCP
   tools then.
-* podcrates is taken up to `v0.66.0` (PodUtils/podcrates#216): the PID
+* podcrates is taken up to `v0.67.0` (PodUtils/podcrates#218, COORD-169).
+  `v0.66.0` (PodUtils/podcrates#216): the PID
   namespace of `run -d` is on (T-1930 done). Before it `v0.64.0`
   (PodUtils/podcrates#214, COORD-166, #459). Before it `v0.63.0` (PodUtils/podcrates#211). Since
   `v0.62.0` (PodUtils/podcrates#210): its
