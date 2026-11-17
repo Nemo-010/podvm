@@ -7,6 +7,7 @@
 /// stalled in the apply of the WIM at 5%, with no error in Panther.
 /// ⛔ A diagnosis only: Windows installed on SATA does not boot from NVMe.
 pub(super) fn root_bus(argv: Vec<String>) -> Vec<String> {
+    let argv = rebooting(argv);
     let argv = match std::env::var("PODVM_WINDOWS_ISO_BUS").as_deref() {
         Ok("usb") => iso_on_usb(argv),
         _ => argv,
@@ -15,6 +16,16 @@ pub(super) fn root_bus(argv: Vec<String>) -> Vec<String> {
         return argv;
     }
     on_sata(argv)
+}
+
+/// TODO/machine.md T-1867: the install reboots several times, so its
+/// emulator keeps running across a reboot. `pod-guest` gives `-no-reboot`
+/// to a run that ends on a power-off of the agent; with it, run 44017901200
+/// ended at the first reboot, after Setup had applied the image ("successful
+/// finalize", then "Requesting reboot of system"). The install ends on the
+/// power-off of its answer file, and its deadline bounds a reboot loop.
+pub(super) fn rebooting(argv: Vec<String>) -> Vec<String> {
+    argv.into_iter().filter(|a| a != "-no-reboot").collect()
 }
 
 /// TODO/machine.md T-1867: `PODVM_WINDOWS_ISO_BUS=usb` puts the setup ISO on
@@ -106,4 +117,13 @@ fn the_root_moves_to_sata_with_its_boot_index() {
     assert_eq!(on_sata(a)[1], "ide-hd,drive=root,bus=ide.2,bootindex=1");
     let b = vec!["nvme,drive=mailbox,serial=x".to_string()];
     assert_eq!(on_sata(b.clone()), b);
+}
+
+#[cfg(test)]
+#[test]
+fn the_install_keeps_running_across_a_reboot() {
+    let a: Vec<String> = ["-rtc", "base=localtime", "-no-reboot", "-nic", "user"]
+        .map(String::from)
+        .to_vec();
+    assert_eq!(rebooting(a), ["-rtc", "base=localtime", "-nic", "user"]);
 }
