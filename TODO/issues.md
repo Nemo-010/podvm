@@ -360,6 +360,7 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #464 | COORD-171: the answer to PodUtils/podrunner#202: the connections are the source fixup; pass --no-source-fixup (to podrunner) | closed (PodUtils/podrunner#202 closed: podrunner passes `--no-source-fixup` since `2d481dd`) | T-1931 |
 | #465 | COORD-172: podvm took podcrates v0.68.0; COORD-170 is answered (the answer to PodUtils/podcrates#219) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#219) | T-1931 |
 | #466 | COORD-173: six answers of podvm wait for podrunner to close its asks #115, #177, #178, #180, #182, #189 (to podrunner) | open | T-1908, T-1914, T-1915, T-1916, T-1920 |
+| #467 | COORD-174: pod-enter stage::copy_tree refuses the device nodes of a tree of root, so PODVM_MODE=rundir and tmpfs never stage (podvm T-1929) (to podcrates) | open | T-1929 |
 
 ## Messages whose title does not start with COORD-NNN
 

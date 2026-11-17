@@ -4332,7 +4332,7 @@ As uid 1000: `podvm run -d IMAGE id -u` of an image with `USER 1001` logs 1001, 
 **Milestone:** none
 **Priority:** P3
 **Effort:** S
-**Status:** open
+**Status:** blocked
 
 ## Problem
 
@@ -4354,6 +4354,9 @@ The staging skips the device nodes that podvm's fixups made (the set of `dev/` t
 
 As root on the cloud host: `PODVM_MODE=rundir podvm run --rm IMAGE true` and `PODVM_MODE=tmpfs podvm run --rm IMAGE true` exit 0 for `mirror.gcr.io/library/busybox:musl`, and the payload reads 16 bytes from `/dev/urandom`.
 
+## Blocker
+
+`pod_enter::stage::copy_tree` refuses each node that is not a file, a directory or a link, and the staging is podcrates' code. COORD-174 (PodUtils/podvm#467) asks it to make a device again with `mknod(2)` where that passes, else to skip it and count it. Clears when a podcrates tag carries it.
 
 # T-1930: `run -d` on the namespace rung has no PID namespace: a job sees and signals the processes of the host
 
