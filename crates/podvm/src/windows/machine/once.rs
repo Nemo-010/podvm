@@ -34,7 +34,12 @@ pub(crate) fn run_once(verb: &str, image: &str, mem: Option<u64>, argv: &[String
         Err(code) => return Some(code),
     };
     let sock = machines::qga_socket(&machines::root(), &name);
-    let code = match (super::find(&name), qga::ready(&sock, qga::READY_WAIT)) {
+    // ⛔ The client of the probe ends here: QEMU serves one client of the
+    // channel at a time, and `exec` connects again. With the probe's client
+    // held, the first run of kvm.yml (44097296278) waited out its bound of
+    // 900 s on both legs.
+    let ready = qga::ready(&sock, qga::READY_WAIT).map(drop);
+    let code = match (super::find(&name), ready) {
         (Some(r), Ok(_)) => Some(super::exec(&r, &command(argv), &[], None)),
         (_, Err(e)) => {
             eprintln!(
