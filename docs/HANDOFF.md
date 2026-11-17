@@ -105,7 +105,10 @@ file when each step below is done.
    graceful `stop` of a Windows machine, run 44059854830). T-1933 (P1):
    on 2 CPUs the foreground `run windows:NAME` through the mailbox fails
    at 600 s in 3 of 4 runs, while a detached machine passes on the same
-   image; see the entry for the next step.
+   image. Now a foreground run of a golden image goes through the guest
+   agent of a machine (`windows/machine/once.rs`); a `kvm.yml` run of
+   experiment 452 proves it. COORD-175 (#468) asks podcrates for evidence
+   of the mailbox timeout.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries, T-1917 and T-1925 remainders).
 

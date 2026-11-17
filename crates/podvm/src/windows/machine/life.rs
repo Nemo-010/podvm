@@ -50,6 +50,16 @@ pub(crate) fn start_if(verb: &str, want: &str) -> Option<Result<String, i32>> {
 
 /// `podvm rm [-f] NAME` of a machine.
 pub(crate) fn rm(name: &str, force: bool) -> i32 {
+    let code = remove("rm", name, force);
+    if code == 0 {
+        println!("{name}");
+    }
+    code
+}
+
+/// Remove the machine `name` (stop it first with `force`), with each
+/// report on stderr under `verb`.
+pub(super) fn remove(verb: &str, name: &str, force: bool) -> i32 {
     let root = machines::root();
     let Some(r) = machines::read(&root, name) else {
         return EXIT_RUNTIME_ERROR;
@@ -57,7 +67,7 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
     if r.running() {
         if !force {
             eprintln!(
-                "podvm rm: the machine {name} runs; `podvm stop {name}` first, or `podvm rm -f {name}`"
+                "podvm {verb}: the machine {name} runs; `podvm stop {name}` first, or `podvm rm -f {name}`"
             );
             return EXIT_RUNTIME_ERROR;
         }
@@ -69,16 +79,13 @@ pub(crate) fn rm(name: &str, force: bool) -> i32 {
         std::thread::sleep(Duration::from_millis(100));
     }
     if r.running() || machines::alive(r.keeper_pid, r.keeper_start) {
-        eprintln!("podvm rm: the emulator of {name} did not end; nothing was removed");
+        eprintln!("podvm {verb}: the emulator of {name} did not end; nothing was removed");
         return EXIT_RUNTIME_ERROR;
     }
     match std::fs::remove_dir_all(machines::dir_in(&root, name)) {
-        Ok(()) => {
-            println!("{name}");
-            0
-        }
+        Ok(()) => 0,
         Err(e) => {
-            eprintln!("podvm rm: {name}: {e}");
+            eprintln!("podvm {verb}: {name}: {e}");
             EXIT_RUNTIME_ERROR
         }
     }

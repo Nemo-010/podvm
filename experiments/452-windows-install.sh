@@ -21,8 +21,10 @@
 #   3. the sha256 of the ISO in the store is the pin of the catalog;
 #   4. no emulator stays;
 #   5. `podvm run windows:NAME ver` exits 0 and prints the version of
-#      Windows: the first logon installed the mailbox agent; no work
-#      directory of the run stays in the store (T-1932).
+#      Windows; no work directory of the run stays in the store (T-1932),
+#      and no machine of the run stays (T-1933: the command goes through
+#      the guest agent of a machine). The same run through the mailbox
+#      agent (`PODVM_WINDOWS_MAILBOX=1`) is measured, not judged.
 #   7. TODO/machine.md T-1868: a detached machine of the golden image
 #      (`run -d`) answers `exec ver` (rc 0, the version), `exec exit 7`
 #      gives 7, a `cp` in and out keeps the sha256 of 3 MB, and `stop` ends
@@ -94,6 +96,13 @@ for name in $NAMES; do
 		left=$(ls -d "$STORE"/podvm-windows-*-run 2>/dev/null | wc -l)
 		say "$name     work directories of a run left in the store: $left"
 		[ "$left" -eq 0 ] || bad "clause 5 ($name): a work directory of the run stayed"
+		machines=$("$BIN" ps -a 2>/dev/null | grep -c ' win-')
+		say "$name     machines of the run left: $machines"
+		[ "$machines" -eq 0 ] || bad "clause 5 ($name): a machine of the run stayed"
+		t0=$(date +%s)
+		mver=$(PODVM_WINDOWS_MAILBOX=1 timeout 12m "$BIN" run "windows:$name" ver 2>"$ROOT/experiments/results/windows-install-$name-mailbox.err")
+		mrc=$?
+		say "$name     (measured) run ver through the mailbox rc $mrc in $(( $(date +%s) - t0 )) s: $(printf '%s' "$mver" | tr -d '\r' | grep -i version | head -1)"
 	fi
 	if [ "$rc" -eq 0 ]; then
 		m="pv452-$name"

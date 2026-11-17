@@ -116,24 +116,41 @@ pub(crate) fn run_detached(
     lifetime: Option<u64>,
     publish: &[String],
 ) -> i32 {
+    match create(verb, name, image, mem, lifetime, publish) {
+        Ok(name) => {
+            println!("{name}");
+            0
+        }
+        Err(c) => c,
+    }
+}
+
+/// Make the machine and start its keeper; give its name. Each refusal is
+/// on stderr (TODO/machine.md T-1933: a foreground run uses it too, and its
+/// stdout is the output of the command only).
+fn create(
+    verb: &str,
+    name: Option<&str>,
+    image: &str,
+    mem: Option<u64>,
+    lifetime: Option<u64>,
+    publish: &[String],
+) -> Result<String, i32> {
     let root = machines::root();
     let name = match name {
         Some(n) if !machines::valid_name(n) => {
             eprintln!("podvm {verb}: {n:?} is no valid name ([a-zA-Z0-9][a-zA-Z0-9_.-]*)");
-            return EXIT_FLAG_ERROR;
+            return Err(EXIT_FLAG_ERROR);
         }
         Some(n) => n.to_string(),
-        None => match fresh_name(&root) {
-            Ok(n) => n,
-            Err(c) => return c,
-        },
+        None => fresh_name(&root)?,
     };
     let dir = machines::dir_in(&root, &name);
     if dir.exists() {
         eprintln!(
             "podvm {verb}: the name {name:?} is in use; `podvm rm {name}` removes the old one"
         );
-        return EXIT_RUNTIME_ERROR;
+        return Err(EXIT_RUNTIME_ERROR);
     }
     // The kind of the name decides the network, before any fetch.
     let desktop = podvm_windows::catalog::name_of(image)
@@ -144,19 +161,11 @@ pub(crate) fn run_detached(
             "podvm {verb}: -p needs a guest with a network: {image} has none; a setup ISO \
              of the catalog (windows:2025, 11, 10) has one (TODO/machine.md T-1869)"
         );
-        return EXIT_FLAG_ERROR;
+        return Err(EXIT_FLAG_ERROR);
     }
-    let (base, flavor) = match base_of(verb, image) {
-        Ok(b) => b,
-        Err(c) => return c,
-    };
-    if let Err(c) = super::plan::provide(verb, flavor != "dos") {
-        return c;
-    }
-    let accel = match super::plan::accelerator() {
-        Ok(a) => a,
-        Err(c) => return c,
-    };
+    let (base, flavor) = base_of(verb, image)?;
+    super::plan::provide(verb, flavor != "dos")?;
+    let accel = super::plan::accelerator()?;
     let r = Record {
         name: name.clone(),
         image: image.to_string(),
@@ -176,18 +185,15 @@ pub(crate) fn run_detached(
     if let Err(why) = make(&r, &dir, accel) {
         let _ = std::fs::remove_dir_all(&dir);
         eprintln!("podvm {verb}: {name}: {why}");
-        return EXIT_RUNTIME_ERROR;
+        return Err(EXIT_RUNTIME_ERROR);
     }
     match start_keeper(&name, accel, &dir) {
-        Ok(()) => {
-            println!("{name}");
-            0
-        }
+        Ok(()) => Ok(name),
         Err(why) => {
             eprintln!("podvm {verb}: {name}: {why}");
             let _ = stop_record(&root, &name);
             let _ = std::fs::remove_dir_all(&dir);
-            EXIT_RUNTIME_ERROR
+            Err(EXIT_RUNTIME_ERROR)
         }
     }
 }
@@ -433,6 +439,8 @@ mod agent; // TODO/machine.md T-1868
 pub(crate) use agent::{cp_if, exec};
 mod life; // TODO/machine.md T-1870
 pub(crate) use life::{rm, start_if};
+// TODO/machine.md T-1933: a foreground run of a golden image on the agent.
+pub(crate) mod once;
 // TODO/machine.md T-1869, T-1870: the verbs that read a machine.
 mod view;
 pub(crate) use view::{logs, port, ps_rows, screenshot};

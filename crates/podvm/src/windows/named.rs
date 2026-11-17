@@ -38,7 +38,22 @@ pub(super) fn run_named(
             return super::dos::dos_run(verb, mem, None, qemu_extra, None, &argv.join(" "));
         }
         Kind::ValidationOs => vos_image(verb, e),
-        Kind::Iso => golden_image(verb, e),
+        Kind::Iso => golden_image(verb, e).and_then(|golden| {
+            // TODO/machine.md T-1933: the command goes through the guest
+            // agent of a machine; the mailbox stays for a run with extra
+            // arguments of the emulator and for an image with no agent.
+            let on_agent =
+                qemu_extra.is_empty() && std::env::var_os("PODVM_WINDOWS_MAILBOX").is_none();
+            match on_agent
+                .then(|| {
+                    super::machine::once::run_once(verb, &format!("windows:{}", e.name), mem, argv)
+                })
+                .flatten()
+            {
+                Some(code) => Err(code),
+                None => Ok(golden),
+            }
+        }),
         Kind::Drivers => Err(no_guest(verb, e)),
     };
     let image = match image {
