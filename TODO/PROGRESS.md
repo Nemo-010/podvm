@@ -76,9 +76,8 @@ status with `podvm-count` in the same commit as the work.
 2a. The Windows guest plan of the review of 2026-11-14: T-1861 to T-1877 and T-1898 to T-1900
    (`podvm run windows:NAME`). The owner accepts the vendor terms
    (`docs/decisions.md`, "Windows media"). Take the P1 entries first:
-   [T-1861](machine.md), [T-1867](machine.md) (partial: the install of a
-   setup ISO is built; the job `install` of `kvm.yml` proves it); then the
-   P2 entries and T-1898 to T-1900 (P3). podcrates
+   [T-1861](machine.md) (the install of a setup ISO is done: `windows:2025`
+   and `windows:11` install under KVM); then the P2 entries and T-1898 to T-1900 (P3). podcrates
    `v0.45.0` carries the parts of the crates that they asked for
    (podcrates@T-590 to podcrates@T-595, podcrates@T-610; issues 350 and
    360), and podvm takes that tag: no entry of the plan waits for

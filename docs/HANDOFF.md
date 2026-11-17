@@ -89,7 +89,7 @@ file when each step below is done.
   podrunner pins beta.30 and closed PodUtils/podrunner#200.
 * podcrates taken up to `v0.67.0`.
 * T-1931 (partial): podrunner#202, the `HEAD` of the source fixup;
-  `--no-source-fixup` stops it; COORD-170 and COORD-171 are open.
+  `--no-source-fixup` stops it; COORD-170 is open, COORD-171 is closed.
 
 ## Next steps, in order
 

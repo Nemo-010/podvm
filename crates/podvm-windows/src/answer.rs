@@ -38,8 +38,8 @@ impl Target {
 
     /// The index of the image in `install.wim` of the evaluation ISO: the
     /// one image of the client ISOs, and the Standard edition with the
-    /// Desktop Experience of the server ISO (an estimate until T-1867 reads
-    /// the WIM).
+    /// Desktop Experience of the server ISO (T-1867: the installs of
+    /// `windows:2025` and `windows:11` applied these indexes).
     pub fn image_index(self) -> u32 {
         match self {
             Target::Win11 | Target::Win10 => 1,

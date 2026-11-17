@@ -166,7 +166,8 @@ podvm images
 `podvm pull windows:2025` (also `11` and `10`) installs Windows from its
 setup ISO under KVM into a golden image, with one line for each phase; the
 password of the user `podvm` is in a file of mode 0600 beside the image.
-The first install under KVM is not measured yet (TODO/machine.md T-1867).
+Under KVM on a hosted runner, `windows:2025` installs in about 9 min and
+`windows:11` in 11 to 13 min (TODO/machine.md T-1867).
 The first run of `windows:validationos` provisions it one time. `podvm
 images` lists the Windows names that the store holds, and `podvm rmi
 windows:NAME` removes their files. The operator accepts the terms of each
