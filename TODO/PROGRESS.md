@@ -11,12 +11,12 @@ start.
 
 The state on 2026-11-16 (`docs/HANDOFF.md` has the detail):
 
-* The newest release is `v0.2.0-beta.30` (2026-11-17, release run
-  44006003310 on `578d9479`; the gate 44002036426, `arm.yml` 44002037381
-  and the nightly trial 44002041802 passed first): T-1930 (a PID
-  namespace for `run -d`, PodUtils/podrunner#200), podcrates `v0.64.0` to
-  `v0.66.0`. Before it, beta.29 (T-1786, T-1911 in part, T-1917, T-1924,
-  T-1925, T-1868 in part). `release.yml` needs a successful gate run
+* The newest release is `v0.2.0-beta.31` (2026-11-17, release run
+  44069288805 on `a3370f59`; the gate 44066665515, `arm.yml` 44066666416
+  and the nightly trial 44066671601 passed first): T-1867 (`windows:2025`
+  and `windows:11` install), T-1868 (`exec`, `cp` and `stop` of a Windows
+  machine), T-1931, podcrates `v0.67.0` and `v0.68.0`. Before it, beta.30
+  (T-1930). `release.yml` needs a successful gate run
   on its commit; dispatch `nightly.yml` with `trial=true` and `arm.yml` on
   `main` first, and push nothing to `main` until the release run ends
   (call C22).

@@ -1,8 +1,8 @@
 # Handoff
 
-The state on 2026-11-17, 08:00 (UTC), at the end of a session. `main` is at the commit that adds
-this file. `0.2.0-beta.30` is the last release (release run 44006003310
-on `578d9479`). A fresh session with no memory reads this file first,
+The state on 2026-11-17, 11:30 (UTC), at the end of a session. `main` is at the commit that adds
+this file. `0.2.0-beta.31` is the last release (release run 44069288805
+on `a3370f59`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
 file when each step below is done.
 
@@ -101,8 +101,8 @@ file when each step below is done.
 3. T-1867 is done: `windows:2025` (run 44037861805) and `windows:11`
    (run 44041116169) install under KVM and answer `ver`. A beta can
    carry it.
-4. T-1868 is done (run 44059854830: `exec`, `cp` and a graceful `stop`
-   of a Windows machine). Cut a beta that carries T-1867 and T-1868. One
+4. T-1867 and T-1868 are in `0.2.0-beta.31` (`exec`, `cp` and a
+   graceful `stop` of a Windows machine, run 44059854830). One
    leg once did not start its agent at the first boot (run 44050312708,
    attempt 1): watch for it.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
