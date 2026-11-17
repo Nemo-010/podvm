@@ -596,10 +596,12 @@ See [entry closure](RULES.md#5-entry-closure) for their use.
 | [T-1931](cli.md) | P2 | S | none | cli | done | A run connects to the hosts of the package sources of the image, and no document names it |
 | [T-1932](machine.md) | P2 | S | none | machine | partial | A foreground `run windows:NAME` writes its overlay into the tmpfs of the runtime directory |
 | [T-1933](machine.md) | P1 | S | none | machine | partial | The first `run windows:NAME` of a fresh golden image can miss its agent on 2 CPUs |
+| [T-1934](enter.md) | P2 | S | none | enter | blocked | A unit on the namespace rung has no usable pty: no `/dev/ptmx`, and the host's `/dev/pts` |
+| [T-1935](enter.md) | P1 | M | none | enter | open | `run -d` on the userland rung: a raw path call of a dynamic program reaches the host |
 
 ## Counts
 
-530 entries: 5 open, 15 partial, 3 blocked, 507 done.
+532 entries: 6 open, 15 partial, 4 blocked, 507 done.
 
 Counted from the rows above by
 `./target/x86_64-unknown-linux-musl/release/podvm-count` and asserted
@@ -609,10 +611,10 @@ the gate. A number here that disagrees with the rows cannot reach a commit.
 | Priority | Open | Partial | Blocked | Done | Total |
 | --- | --- | --- | --- | --- | --- |
 | P0 | 0 | 0 | 0 | 75 | 75 |
-| P1 | 0 | 3 | 0 | 216 | 219 |
-| P2 | 3 | 8 | 2 | 174 | 187 |
+| P1 | 1 | 3 | 0 | 216 | 220 |
+| P2 | 3 | 8 | 3 | 174 | 188 |
 | P3 | 2 | 4 | 1 | 42 | 49 |
-| **All** | 5 | 15 | 3 | 507 | 530 |
+| **All** | 6 | 15 | 4 | 507 | 532 |
 
 ## Work order
 

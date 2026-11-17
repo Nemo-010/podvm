@@ -362,6 +362,8 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #466 | COORD-173: six answers of podvm wait for podrunner to close its asks #115, #177, #178, #180, #182, #189 (to podrunner) | open | T-1908, T-1914, T-1915, T-1916, T-1920 |
 | #467 | COORD-174: pod-enter stage::copy_tree refuses the device nodes of a tree of root, so PODVM_MODE=rundir and tmpfs never stage (podvm T-1929) (to podcrates) | open | T-1929 |
 | #468 | COORD-175: pod-guest: evidence of a mailbox run that times out before WQREADY (podvm T-1933) (to podcrates) | open | T-1933 |
+| #469 | COORD-176: pod-enter: a new devpts instance and /dev/ptmx on the namespace rung, so that openpty works in a unit (podvm T-1934, PodUtils/podrunner#216) (to podcrates) | open | T-1934 |
+| #470 | COORD-177: the answers to PodUtils/podrunner#216 (no pty: namespace rung) and #189 (raw renameat2 on the userland rung) (to podrunner) | open | T-1934, T-1935 |
 
 ## Messages whose title does not start with COORD-NNN
 

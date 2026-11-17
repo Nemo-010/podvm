@@ -4392,3 +4392,65 @@ As uid 1000 on the cloud host: in `podvm run -d IMAGE sleep 600`, `podvm exec NA
 **Done (2026-11-17).** podcrates `v0.66.0` (PodUtils/podcrates#216, podcrates@T-811) closes the descriptors of the caller in the init of the PID namespace (COORD-167, #460), and the launcher of `podvm-supervise` sets `Plan::pid_namespace` (podcrates `v0.65.0`, podcrates@T-806) for each run of the namespace rung that it starts (`run -d`, `create`, `start`). Measured as uid 1000 on the cloud host (alpine:3.20): `run -d --name pd IMAGE sleep 600` returns in under 1 s; `podvm exec pd ps -o pid,args` lists only the init (1), the payload (2) and the `exec`; `podvm exec pd kill -0 PID` of a `sleep` of the same uid on the host gives "No such process"; `stop` ends the unit with 143; `start` starts it again in a new PID namespace. In `v0.65.0` the same run -d did not return (COORD-167). The 28 integration test binaries of podvm and podvm-supervise pass as uid 1000.
 
 Before: the blocker was the plan option of `pod-enter` (COORD-164, #457), then the descriptors that its init kept (COORD-167, #460).
+
+# T-1934: A unit on the namespace rung has no usable pty: no `/dev/ptmx`, and the host's `/dev/pts`
+
+**Source:** PodUtils/podrunner#216 (COORD-079 of podrunner, finding F3 of a user QA of podrunner `v0.1.0-beta.7`)
+**Category:** enter
+**Milestone:** none
+**Priority:** P2
+**Effort:** S
+**Status:** blocked
+
+## Problem
+
+In a unit on the namespace rung, `openpty(3)` fails: Python's `pty.spawn` gives "out of pty devices", `script` fails, and the pager tests of pallets/click fail (24 of 2628). Measured as uid 1000 on the cloud host with `public.ecr.aws/docker/library/python:3.13-slim` and podvm `0.2.0-beta.31`, in a foreground run and in `run -d` (`inspect`: `namespace fresh-chroot`): `/dev/ptmx` does not exist, and `/dev/pts` is a bind of the host's devpts (`ptmxmode=000`), so an open of `/dev/pts/ptmx` gives EACCES. With user namespaces denied (the userland rung), `os.openpty()` passes (`/dev/pts/0`).
+
+## Premise
+
+pod-enter (podcrates `v0.68.0`) binds the host's `/dev/pts` on the `/dev/pts` of the image (`ns_optional`) and the host's nodes of `ns_dev_bind::DEVICES` (`null`, `zero`, `full`, `random`, `urandom`, `tty`); `ptmx` is not in that list. Measured: as uid 1000 in `unshare -Urm`, `mount -t devpts -o newinstance,ptmxmode=0666,mode=0620 devpts DIR` passes and `DIR/ptmx` opens.
+
+## Approach
+
+pod-enter mounts a new devpts instance (`newinstance,ptmxmode=0666,mode=0620`) on `/dev/pts` in its user namespace, and makes `/dev/ptmx` a bind of `/dev/pts/ptmx`; where the mount is refused, it binds the host's `/dev/ptmx` beside the host's `/dev/pts`, and writes its refused line. podvm then names the line in the run report, so that podrunner's `doctor --run` can name a unit with no pty.
+
+## Decision
+
+-
+
+## Prove
+
+As uid 1000 on the cloud host, `run -d` of `python:3.13-slim` and `podvm exec UNIT python3 -c 'import pty; pty.spawn(["true"])'` exit 0, `script -qec 'echo pty-ok' /dev/null` prints `pty-ok` (an image with `script`), and the foreground run gives the same.
+
+## Blocker
+
+The device nodes and the devpts of the namespace rung are pod-enter's code. COORD-176 (PodUtils/podvm#469) asks podcrates for the devpts instance and `/dev/ptmx`; COORD-177 (PodUtils/podvm#470) answers podrunner. Clears when a podcrates tag carries it.
+
+# T-1935: `run -d` on the userland rung: a raw path call of a dynamic program reaches the host
+
+**Source:** PodUtils/podrunner#189 (COORD-066 of podrunner, its amendment of 2026-11-17), T-1740, T-1920; the answer is COORD-177 (PodUtils/podvm#470)
+**Category:** enter
+**Milestone:** none
+**Priority:** P1
+**Effort:** M
+**Status:** open
+
+## Problem
+
+On a host where only the userland rung works (a GitHub-hosted `ubuntu-24.04` runner, whose AppArmor restricts user namespaces), a unit of podrunner (`run -d`) runs a dynamic program on the loader family. `uv` and `ruff` persist a temporary file through `tempfile` and `rustix`, whose backend issues the `syscall` instruction itself; the interposer does not see that call, so the kernel resolves the path on the host. Measured as uid 1000 on the cloud host under a seccomp filter that denies `unshare` and `clone(CLONE_NEWUSER)`, with podvm `0.2.0-beta.31` (`inspect`: `userland fresh-chroot`): a glibc program with raw `renameat2(RENAME_NOREPLACE)`, `rename` and `link` gets -13 (EACCES) in `/root` and -2 (ENOENT) in `/tmp`; the libc calls of the same program work. T-1920 moved such a run onto the namespace rung where that rung works; here it does not.
+
+## Premise
+
+The syscall tier (`--podvm-tier=syscall`, T-1657, T-1731) gives each system call of a dynamic program to podvm's handler through Syscall User Dispatch, raw or not. `run/prepare.rs` refuses it for `run -d` and `create`, because its `/tmp` is a directory of the run that the end of the run removes.
+
+## Approach
+
+The syscall tier serves `run -d`, `create`, `start`, `exec` and `rm`: the `/tmp` of the run lives in the record of the container and goes with `rm`. Then, on a host where the userland rung is the best rung and Syscall User Dispatch arms, a detached run of a dynamic program takes the syscall tier (T-1740 measures the cost).
+
+## Decision
+
+-
+
+## Prove
+
+As uid 1000 on the cloud host under the seccomp filter of the Problem: `run -d` of `python:3.13-slim` with the glibc program of the Problem prints 0 for each raw call in `/root` and `/tmp`, `inspect` names the tier, `exec` sees the files, and `rm -f` leaves no directory of the run.
