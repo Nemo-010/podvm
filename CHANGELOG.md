@@ -8,10 +8,12 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+## 0.2.0-beta.31 (2026-11-17)
+
 ### Added: `exec`, `cp` and a graceful `stop` of a Windows machine, 2026-11-17
 
 Record: T-1868.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.31.
 
 - The install of a full Windows guest adds the virtio-win drivers and the
   QEMU Guest Agent. A detached machine (`podvm run -d windows:NAME`) then
@@ -22,7 +24,7 @@ Deployed: none yet.
 ### Fixed: the source fixup reads no comment, 2026-11-17
 
 Record: T-1931 (podcrates `v0.68.0`).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.31.
 
 - The `HEAD` of the source fixup goes only to the hosts of the lines that
   the package manager reads; a URL in a comment of a sources file (the
@@ -31,7 +33,7 @@ Deployed: none yet.
 ### Fixed: `podvm pull windows:2025` and `windows:11` install a full Windows guest, 2026-11-17
 
 Record: T-1867.
-Deployed: none yet.
+Deployed: version 0.2.0-beta.31.
 
 - The root disk of an install is in the store, not in the runtime
   directory, which is a small tmpfs on many hosts; Setup failed when it
@@ -45,7 +47,7 @@ Deployed: none yet.
 ### Changed: the documents name the request of the source fixup, 2026-11-17
 
 Record: T-1931 (PodUtils/podrunner#202).
-Deployed: none yet.
+Deployed: version 0.2.0-beta.31.
 
 - The notes of `--no-source-fixup` say that, without the flag, podvm sends
   one `HEAD https://HOST/` to each host of an `http://` package source of
