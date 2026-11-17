@@ -1,8 +1,8 @@
 # Handoff
 
 The state on 2026-11-16, 16:15 (UTC), at the end of a session. `main` is at the commit that adds
-this file. `0.2.0-beta.29` is the last release (release run 43913242822
-on `978e38dd`). A fresh session with no memory reads this file first,
+this file. `0.2.0-beta.30` is the last release (release run 44006003310
+on `578d9479`). A fresh session with no memory reads this file first,
 then `AGENTS.md`, `TODO/PROGRESS.md` and `docs/decisions.md`. Remove this
 file when each step below is done.
 
@@ -88,8 +88,8 @@ file when each step below is done.
    error of Setup. Then fix the cause, and run the install again (it now
    carries the guest tools of T-1868).
 4. `0.2.0-beta.29` is released (run 43913242822): T-1925 done, T-1917
-   has its assets. T-1930 is done on `main`; cut a beta for podrunner
-   (COORD-165, #458) and name it there.
+   has its assets. T-1930 is in `0.2.0-beta.30`, named to podrunner on COORD-165
+   (#458); close #458 when podrunner closes PodUtils/podrunner#200.
 5. Then the work order of `TODO/PROGRESS.md` (T-1911 `start`, T-1929,
    T-1872, the Windows entries).
 
