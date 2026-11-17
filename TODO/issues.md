@@ -356,6 +356,8 @@ section 11): #313 in `54258666`, #314 in `c5f9e315`; both are closed.
 | #460 | COORD-167: pod-enter v0.65.0: the init of the PID namespace keeps the ready pipe of pod-supervise, so run -d never returns (podvm T-1930) (to podcrates) | closed (podcrates `v0.66.0`: podcrates@T-811) | T-1930 |
 | #461 | COORD-168: podvm took podcrates v0.66.0 in b1fa48f; the PID namespace of run -d is on (the answer to PodUtils/podcrates#216) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#216) | T-1930 |
 | #462 | COORD-169: podvm took podcrates v0.67.0 (the answer to PodUtils/podcrates#218) (to podcrates) | closed (podcrates read it: the takes of PodUtils/podcrates#218) | T-1930 |
+| #463 | COORD-170: pod-rootfs: the source fixup reads URLs in comments, so it probes help.ubuntu.com (podvm T-1931, PodUtils/podrunner#202) (to podcrates) | open | T-1931 |
+| #464 | COORD-171: the answer to PodUtils/podrunner#202: the connections are the source fixup; pass --no-source-fixup (to podrunner) | open | T-1931 |
 
 ## Messages whose title does not start with COORD-NNN
 

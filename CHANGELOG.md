@@ -8,6 +8,15 @@ They describe their recorded revision, not the current build.
 
 ## Unreleased
 
+### Changed: the documents name the request of the source fixup, 2026-11-17
+
+Record: T-1931 (PodUtils/podrunner#202).
+Deployed: none yet.
+
+- The notes of `--no-source-fixup` say that, without the flag, podvm sends
+  one `HEAD https://HOST/` to each host of an `http://` package source of
+  the image before the payload starts, and that the flag stops it.
+
 ## 0.2.0-beta.30 (2026-11-17)
 
 ### Fixed: a detached run sees and signals only its own processes, 2026-11-17
