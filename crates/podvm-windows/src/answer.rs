@@ -193,6 +193,7 @@ pub fn xml(a: &Answer) -> String {
       </DiskConfiguration>
       <ImageInstall>
         <OSImage>
+          <Compact>false</Compact>
           <InstallFrom><MetaData wcm:action="add"><Key>/IMAGE/INDEX</Key><Value>{index}</Value></MetaData></InstallFrom>
           <InstallTo><DiskID>0</DiskID><PartitionID>3</PartitionID></InstallTo>
         </OSImage>
